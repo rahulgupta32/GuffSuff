@@ -1,0 +1,11 @@
+# Global Code Owners
+* @rahulgupta32
+
+# Security & Crypto Modules
+/packages/crypto-adapter/ @rahulgupta32
+/docs/ENCRYPTION_ARCHITECTURE.md @rahulgupta32
+/docs/THREAT_MODEL.md @rahulgupta32
+
+# Infrastructure & CI
+/.github/ @rahulgupta32
+/infrastructure/ @rahulgupta32
