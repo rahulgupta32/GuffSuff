@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> Unauthenticated
+    Unauthenticated --> AuthenticatedSession : Complete OTP & Issue Token Pair
+    AuthenticatedSession --> TokenRefreshed : Present Valid Refresh Token (Issue New Pair)
+    TokenRefreshed --> AuthenticatedSession
+    AuthenticatedSession --> SessionRevoked : Device Unlinked or User Logout
+    AuthenticatedSession --> TokenReuseBreach : Re-use Consumed Refresh Token
+    TokenReuseBreach --> SessionRevoked : Revoke All Family Device Sessions
+    SessionRevoked --> [*]

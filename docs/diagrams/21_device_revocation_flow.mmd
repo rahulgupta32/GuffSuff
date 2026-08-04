@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant User as User App
+    participant API as API Gateway
+    participant DB as PostgreSQL DB
+    participant Redis as Redis Cache
+    participant Sockets as Realtime Gateway
+
+    User->>API: POST /api/v1/devices/:deviceId/revoke
+    API->>DB: Update device status = 'REVOKED' & Purge Public Prekeys
+    API->>Redis: Invalidate Refresh Token & Access Token Hashes
+    API->>Sockets: Push Device Revocation Socket Event
+    Sockets->>User: Force Disconnect WebSocket Connection

@@ -1,11 +1,14 @@
-# GuffSuff Observability & Monitoring Specification
+# GuffSuff Observability & Security Monitoring Policy
 
-> **Status**: Initial Draft (Phase 0 Bootstrap)
+> **Document Status**: Phase 2 Security Architecture Baseline
 
 ---
 
-## Telemetry Standards
+## 1. Security Telemetry & Metrics
 
-- **Structured Logging**: JSON format with trace ID and request correlation headers.
-- **Redaction Rules**: Automatic scrubbing of phone numbers, tokens, OTP codes, authorization headers, and ciphertexts.
-- **Metrics**: Prometheus-compatible endpoints (`/metrics`) tracking latency (p95, p99), WebSocket connection counts, delivery success rate, and queue backlogs.
+- Metrics exported via Prometheus endpoints on private internal ports (`/metrics`).
+- High-priority security alerts:
+  - Excessive OTP requests or verification failures (> 10/min).
+  - Rapid rate-limit threshold trips (HTTP 429 surges).
+  - Database connection pool exhaustion or query latency spikes (> 500ms).
+  - Unhandled WebSocket authentication failures.

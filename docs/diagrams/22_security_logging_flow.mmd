@@ -1,0 +1,4 @@
+graph TD
+    AppLog[Application Service Logs] --> RedactionFilter[Allowlist Redaction Pipeline]
+    RedactionFilter -->|Strip Tokens, Keys & Phone Numbers| SafeJSON[Safe Structured JSON Log]
+    SafeJSON --> LogDrain[Elasticsearch / CloudWatch Archive]

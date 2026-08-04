@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant MobileApp as Mobile App
+    participant API as API Gateway
+    participant DB as PostgreSQL DB
+    participant Redis as Redis Cache
+
+    MobileApp->>API: POST /api/v1/auth/register (Phone + E.164 + Public Key Bundle)
+    API->>DB: Insert new device record (UUIDv7 + Device Public Keys)
+    API->>Redis: Generate Ephemeral Refresh Token + Store SHA-256 Hash
+    API-->>MobileApp: 201 Created (Access JWT + Refresh Token)

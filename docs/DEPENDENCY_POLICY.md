@@ -1,15 +1,15 @@
-# GuffSuff Dependency Management Policy
+# GuffSuff Third-Party Dependency Management Policy
 
-> **Status**: Initial Draft (Phase 0 Bootstrap)
+> **Document Status**: Phase 2 Security Architecture Baseline
 
 ---
 
-## Evaluation Criteria for New Dependencies
+## 1. Dependency Admission Criteria
 
-Before adding any third-party library or package to GuffSuff:
+Before adding any third-party library to `package.json` or `pubspec.yaml`, developers MUST verify:
 
-1. **Maintenance**: Must have active maintenance within the last 6 months.
-2. **License**: Compatible open-source license (MIT, Apache 2.0, BSD-3-Clause, MPL-2.0).
-3. **Security Audit**: Zero unpatched Critical or High CVEs in advisory databases.
-4. **Minimal Footprint**: Avoid monolithic libraries for single helper functions.
-5. **Pinning**: All dependencies must be pinned to exact versions or safe semver ranges.
+1. **Active Maintenance**: Repository updated within the last 6 months; active issue triage.
+2. **Permissive License**: MIT, Apache-2.0, BSD-3-Clause, or MPL-2.0. (AGPL/GPL requires explicit legal review).
+3. **Zero Known High CVEs**: Scanned clean via `npm audit` / `pub audit`.
+4. **Minimal Transitive Dependencies**: Low total sub-dependency footprint.
+5. **Zero Malicious Post-Install Scripts**: Package does not execute arbitrary native shell scripts upon installation.
