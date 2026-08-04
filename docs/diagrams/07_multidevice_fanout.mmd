@@ -1,0 +1,14 @@
+graph TD
+    Sender[Sender Device A1] -->|Encrypt Payload 1| EnvelopeD1[Envelope for Recipient Device B1]
+    Sender -->|Encrypt Payload 2| EnvelopeD2[Envelope for Recipient Device B2]
+    Sender -->|Encrypt Payload 3| EnvelopeD3[Self-Sync Envelope for Sender Device A2]
+    
+    subgraph Server Envelope Fan-Out Routing
+        EnvelopeD1 --> Gateway[Realtime Gateway Router]
+        EnvelopeD2 --> Gateway
+        EnvelopeD3 --> Gateway
+    end
+    
+    Gateway --> B1[Recipient Device B1]
+    Gateway --> B2[Recipient Device B2]
+    Gateway --> A2[Sender Secondary Device A2]

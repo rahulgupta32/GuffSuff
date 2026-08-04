@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    actor Admin as Admin User
+    participant Console as Next.js Admin App
+    participant API as Admin API Endpoint
+    participant AuditLog as admin_audit_events DB Table
+
+    Admin->>Console: Suspend User Account (Reason: Spam Abuse)
+    Console->>API: POST /api/v1/admin/users/:id/restrict
+    API->>API: Verify Admin RBAC Role & MFA Token
+    API->>AuditLog: Write Immutable Audit Record (Actor, Action, Target, IP, Reason)
+    API-->>Console: Action Success & Audit Recorded

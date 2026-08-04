@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant Sender as Group Member (Sender)
+    participant Gateway as Realtime Gateway Router
+    participant Mem1 as Group Member 1
+    participant Mem2 as Group Member 2
+    participant Mem3 as Group Member 3
+
+    Sender->>Sender: Pairwise Encrypt Payload for Member 1, 2, 3 Devices
+    Sender->>Gateway: Submit Group Envelope Batch
+    Gateway->>Mem1: Route Envelope Payload 1
+    Gateway->>Mem2: Route Envelope Payload 2
+    Gateway->>Mem3: Route Envelope Payload 3

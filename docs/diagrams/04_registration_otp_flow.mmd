@@ -1,0 +1,18 @@
+sequenceDiagram
+    autonumber
+    actor User as Nepali Mobile User
+    participant App as Flutter Mobile App
+    participant API as services/api
+    participant Redis as Redis Cache
+    participant SMS as Nepal SMS Gateway
+
+    User->>App: Input Phone (+977 9841234567)
+    App->>API: POST /api/v1/auth/otp/request
+    API->>API: Validate E.164 Format & Rate Limits
+    API->>Redis: Save Argon2id(OTP) with 5m TTL
+    API->>SMS: Dispatch 6-digit OTP SMS
+    SMS-->>User: SMS Received ("Your GuffSuff code is 123456")
+    User->>App: Input Code 123456
+    App->>API: POST /api/v1/auth/otp/verify
+    API->>Redis: Check Hash Match & Attempt Counter
+    API-->>App: Return JWT Access & Refresh Tokens

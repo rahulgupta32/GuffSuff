@@ -1,0 +1,23 @@
+graph TB
+    subgraph Client Device Trust Boundary
+        Client[Flutter App & Local Encrypted SQLite]
+    end
+    
+    subgraph Platform Server Trust Boundary
+        APIService[services/api]
+        RealtimeService[services/realtime]
+        DB[(PostgreSQL)]
+        S3[(S3 Object Store)]
+    end
+    
+    Client -->|E2EE Encrypted Payload| APIService
+    Client -->|Opaque Envelope| RealtimeService
+    
+    subgraph Zero-Knowledge Server Zone
+        APIService -.->|CANNOT READ| Ciphertext[Opaque Message Ciphertext]
+        RealtimeService -.->|CANNOT READ| MediaBlob[Encrypted Media File]
+    end
+    
+    APIService --> DB
+    RealtimeService --> DB
+    APIService --> S3

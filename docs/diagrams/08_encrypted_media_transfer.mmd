@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    participant App as Sender App
+    participant API as services/api
+    participant S3 as S3 Encrypted Bucket
+    participant Recipient as Recipient App
+
+    App->>App: Generate Random K_media & AES-GCM Encrypt File
+    App->>API: POST /api/v1/attachments/upload-url
+    API-->>App: Short-lived Presigned PUT URL
+    App->>S3: Upload Encrypted Ciphertext Blob
+    App->>Recipient: Send E2EE Message containing (objectKey, K_media, IV)
+    Recipient->>API: Request Download Presigned GET URL
+    Recipient->>S3: Fetch Ciphertext Blob
+    Recipient->>Recipient: Decrypt File locally using K_media

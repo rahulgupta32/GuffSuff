@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    actor Alice as Sender (Alice)
+    participant AliceApp as Alice Flutter App
+    participant Realtime as services/realtime Gateway
+    participant DB as PostgreSQL DB
+    participant BobApp as Bob Flutter App
+    actor Bob as Recipient (Bob)
+
+    Alice->>AliceApp: Type & Send "Namaste"
+    AliceApp->>AliceApp: Encrypt Payload locally (AES-GCM E2EE)
+    AliceApp->>Realtime: WSS ENVELOPE_DELIVERY
+    Realtime->>DB: Save Opaque Envelope (message_envelopes)
+    Realtime->>BobApp: WSS Route ENVELOPE_DELIVERY Payload
+    BobApp->>BobApp: Decrypt Payload locally
+    BobApp-->>Realtime: WSS ACK_DELIVERY
+    Realtime-->>AliceApp: Update UI to "Delivered" (Double Check)

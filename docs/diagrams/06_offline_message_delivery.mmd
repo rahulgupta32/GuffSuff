@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    participant SenderApp as Sender App
+    participant Gateway as Realtime Gateway
+    participant DB as PostgreSQL DB
+    participant RecipientApp as Recipient App (Offline -> Online)
+
+    SenderApp->>Gateway: Send Message Envelope
+    Gateway->>DB: Store Envelope (State: PENDING_DELIVERY)
+    Note over RecipientApp: Recipient Device Disconnected (Offline)
+    Gateway-->>SenderApp: Server Receipt ACK (Sent State)
+    Note over RecipientApp: Recipient Device Connects (Online)
+    RecipientApp->>Gateway: WSS Handshake & Authenticate
+    Gateway->>DB: Fetch Undelivered Envelopes for Device
+    Gateway->>RecipientApp: Flush Pending Envelopes Batch
+    RecipientApp-->>Gateway: ACK Batch Received
+    Gateway->>DB: Update State to DELIVERED

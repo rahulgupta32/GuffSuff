@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    actor User as User
+    participant App as Flutter App
+    participant API as services/api
+    participant DB as PostgreSQL DB
+    participant Worker as Background Worker
+
+    User->>App: Confirm Account Deletion
+    App->>API: DELETE /api/v1/account
+    API->>DB: Set Status DELETION_PENDING & Revoke Sessions/Prekeys
+    API-->>App: Account Disabled Notice
+    Note over Worker: 30-Day Permanent Purge Job Runs
+    Worker->>DB: Delete User Profile, Phone Identity, Device Keys
