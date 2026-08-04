@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant Gateway as Realtime Gateway
+    participant Worker as services/worker
+    participant Push as FCM / APNs Push Engine
+    participant Device as Recipient Device (Screen Off)
+
+    Gateway->>Worker: Enqueue Opaque Push Event (Recipient Device Offline)
+    Worker->>Push: Send High-Priority Silent Push (Opaque Event ID only, NO PLAINTEXT)
+    Push->>Device: Deliver Push Notification
+    Device->>Gateway: Wake Background Process & Connect Socket to Fetch Encrypted Payload

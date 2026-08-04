@@ -9,25 +9,22 @@ This document records key architectural decisions, privacy models, technology as
 | ADR ID | Date | Title | Status | Authors / Approvers |
 | :--- | :--- | :--- | :--- | :--- |
 | **ADR-000** | 2026-08-05 | Monorepo Bootstrap & Security Foundations | Approved | Rahul Gupta (`@rahulgupta32`), AI Architect |
+| **ADR-001** | 2026-08-05 | Git Branching & Repository Protection Strategy | Approved | Rahul Gupta (`@rahulgupta32`), Core Team |
+| **ADR-002** | 2026-08-05 | Flutter for Mobile Application Development | Approved | Rahul Gupta (`@rahulgupta32`), Mobile Architect |
+| **ADR-003** | 2026-08-05 | TypeScript and NestJS for Backend Services | Approved | Rahul Gupta (`@rahulgupta32`), Backend Lead |
+| **ADR-004** | 2026-08-05 | PostgreSQL as Durable System of Record | Approved | Rahul Gupta (`@rahulgupta32`), DB Architect |
+| **ADR-005** | 2026-08-05 | Redis for Ephemeral Coordination & Caching | Approved | Rahul Gupta (`@rahulgupta32`), Backend Lead |
+| **ADR-006** | 2026-08-05 | S3-Compatible Encrypted Object Storage | Approved | Rahul Gupta (`@rahulgupta32`), Security Lead |
+| **ADR-007** | 2026-08-05 | Dual Protocol: REST + WebSockets | Approved | Rahul Gupta (`@rahulgupta32`), Protocol Architect |
+| **ADR-008** | 2026-08-05 | Monorepo Organization & Workspace Packages | Approved | Rahul Gupta (`@rahulgupta32`), Lead Architect |
+| **ADR-009** | 2026-08-05 | Device-Based Identity Architecture | Approved | Rahul Gupta (`@rahulgupta32`), Security Lead |
+| **ADR-010** | 2026-08-05 | Local Device-Side Message Search | Approved | Rahul Gupta (`@rahulgupta32`), Privacy Lead |
+| **ADR-011** | 2026-08-05 | UTC Storage with Presentation Calendar Conversion | Approved | Rahul Gupta (`@rahulgupta32`), Core Team |
+| **ADR-012** | 2026-08-05 | Admin Web Console Framework Selection (Next.js) | Approved | Rahul Gupta (`@rahulgupta32`), Frontend Lead |
+| **ADR-013** | 2026-08-05 | Modular Monolith vs Independently Deployable Services | Approved | Rahul Gupta (`@rahulgupta32`), Backend Lead |
+| **ADR-014** | 2026-08-05 | Background Job Technology Evaluation (BullMQ) | Approved | Rahul Gupta (`@rahulgupta32`), Systems Architect |
+| **ADR-015** | 2026-08-05 | API Contract Generation Strategy (OpenAPI) | Approved | Rahul Gupta (`@rahulgupta32`), Lead Architect |
 
 ---
 
-## ADR-000: Monorepo Bootstrap & Security Foundations
-
-- **Status**: Approved
-- **Date**: 2026-08-05
-- **Deciders**: Rahul Gupta (`@rahulgupta32`), GuffSuff Core Architecture Team
-
-### Context
-GuffSuff requires a clean, scalable, multi-platform monorepo supporting mobile clients (Android/iOS), administrative interfaces, real-time WebSocket communication servers, background job processing, and shared cryptography/domain packages.
-
-### Decision
-1. **Repository Structure**: Adopt a standardized monorepo structure separating `apps/`, `services/`, `packages/`, `infrastructure/`, and `docs/`.
-2. **Monorepo Safety Controls**: Enforce `.gitignore`, `gitleaks` secret detection, and strict pre-commit hooks before committing any application code.
-3. **Documentation-Driven Architecture**: Mandate initial creation and maintenance of core technical documents in `docs/` (`PRODUCT_REQUIREMENTS.md`, `SYSTEM_ARCHITECTURE.md`, `THREAT_MODEL.md`, `ENCRYPTION_ARCHITECTURE.md`, etc.) before starting feature code.
-4. **Crypto Boundary**: Restrict cryptographic operations to `packages/crypto-adapter` to ensure zero custom cryptography in application layers.
-
-### Consequences
-- High clarity of module boundaries and dependencies.
-- Zero credential / secret leak guarantee via enforced pre-commit scanning.
-- Traceable evolution of all privacy and architectural choices.
+Refer to individual decision records under [`docs/adr/`](adr/) for detailed context, security implications, and revisit conditions.

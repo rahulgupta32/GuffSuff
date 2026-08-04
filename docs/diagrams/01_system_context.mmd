@@ -1,0 +1,13 @@
+graph TD
+    User[Nepali Mobile User] -->|Mobile App Flutter| GuffSuffApp[GuffSuff Mobile Application]
+    Admin[Trust & Safety / Support Agent] -->|Web Console Next.js| GuffSuffAdmin[GuffSuff Admin Console]
+    
+    subgraph GuffSuff Platform Boundary
+        GuffSuffApp -->|HTTPS / WSS| APIGateway[API & Realtime Gateway Services]
+        GuffSuffAdmin -->|HTTPS| APIGateway
+        APIGateway --> CoreServices[PostgreSQL / Redis / BullMQ Services]
+        APIGateway --> ObjectStorage[S3-Compatible Encrypted Object Store]
+    end
+    
+    APIGateway -->|Push Notifications| PushService[FCM / APNs]
+    APIGateway -->|SMS OTP| TelecomSMS[Nepal Telecom / Sparrow SMS Gateway]

@@ -1,0 +1,21 @@
+graph TD
+    Internet((Public Internet)) --> WAF[Cloudflare WAF / Load Balancer]
+    
+    subgraph Cloud VPC
+        subgraph Public Subnet
+            WAF --> APIPods[NestJS API Pods]
+            WAF --> SocketPods[NestJS Realtime Pods]
+        end
+        
+        subgraph Private Subnet
+            APIPods --> WorkerPods[NestJS Worker Pods]
+            APIPods --> RedisCluster[(Redis Cluster)]
+            SocketPods --> RedisCluster
+            APIPods --> PostgresDB[(PostgreSQL Primary + Standby)]
+            WorkerPods --> PostgresDB
+        end
+        
+        subgraph Encrypted Storage Subnet
+            APIPods --> S3Bucket[(Private S3 Storage Bucket)]
+        end
+    end

@@ -1,0 +1,27 @@
+graph TD
+    subgraph Presentation Layer
+        Screens[Flutter UI Screens / Views]
+        Widgets[GuffSuff Design System Widgets]
+    end
+    
+    subgraph State & Logic Layer
+        Riverpod[Riverpod State Providers]
+        Router[GoRouter Navigation]
+    end
+    
+    subgraph Data & Sync Layer
+        Dio[Dio HTTP Client]
+        Drift[(Drift Local Encrypted SQLite DB)]
+        CryptoAdapter[packages/crypto-adapter Interface]
+    end
+    
+    subgraph Native Storage Layer
+        Keystore[Keychain / Android Keystore]
+    end
+    
+    Screens --> Riverpod
+    Riverpod --> Router
+    Riverpod --> Dio
+    Riverpod --> Drift
+    Riverpod --> CryptoAdapter
+    CryptoAdapter --> Keystore

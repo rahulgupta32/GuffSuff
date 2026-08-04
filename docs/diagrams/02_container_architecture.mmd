@@ -1,0 +1,39 @@
+graph TB
+    subgraph Client Layer
+        MobileApp[Flutter Mobile App Android/iOS]
+        AdminWeb[Next.js Admin Web App]
+    end
+    
+    subgraph Edge Layer
+        LB[WAF & Public Load Balancer]
+    end
+    
+    subgraph Microservice Cluster NestJS
+        API[services/api REST Gateway]
+        Realtime[services/realtime WebSocket Gateway]
+        Worker[services/worker Background Queue]
+    end
+    
+    subgraph Data & Persistence Layer
+        DB[(PostgreSQL 16 Primary)]
+        Redis[(Redis Cluster Cache/PubSub)]
+        S3[(S3 Object Storage)]
+    end
+    
+    MobileApp -->|HTTPS| LB
+    MobileApp -->|WSS| LB
+    AdminWeb -->|HTTPS| LB
+    
+    LB --> API
+    LB --> Realtime
+    
+    API --> DB
+    API --> Redis
+    API --> S3
+    
+    Realtime --> Redis
+    Realtime --> DB
+    
+    Worker --> DB
+    Worker --> Redis
+    Worker --> S3
