@@ -1,44 +1,64 @@
 # GuffSuff System Architecture Specification
 
-> **Status**: Initial Draft (Phase 0 Bootstrap)
+> **Document Status**: Phase 2 Security Architecture Baseline  
+> **Warning**: GuffSuff does not yet contain production end-to-end encryption and must not be marketed or represented as cryptographically secure until implementation, independent review, and release acceptance gates are completed.
 
 ---
 
-## 1. Top-Level Monorepo Component Diagram
+## 1. Decision Status Vocabulary
+
+All architectural components in this specification utilize the standardized GuffSuff decision-status vocabulary:
+- **Proposed**: Initial architectural recommendation submitted for review.
+- **Under evaluation**: Active technical prototyping or security evaluation underway.
+- **Approved by product owner**: Explicitly accepted by `@rahulgupta32` with recorded date and evidence.
+- **Approved by security review**: Accepted by Lead Security Reviewer following formal review.
+- **Pending benchmark**: Awaiting performance, load, or latency testing under realistic conditions.
+- **Rejected**: Explicitly evaluated and declined.
+- **Superseded**: Replaced by a newer decision record.
+
+---
+
+## 2. Core Architecture Topology
+
+GuffSuff is architected as a **Modular Monolith with Independently Deployable Microservice Entry Points** (`Proposed` - ADR-013).
 
 ```text
-+-----------------------------------------------------------------------+
-|                            MOBILE CLIENTS                             |
-|              Flutter (Android / iOS) + Drift Encrypted Local DB        |
-+-----------------------------------+-----------------------------------+
-                                    |
-                    +---------------+---------------+
-                    | HTTPS REST    | WebSockets    |
-                    v               v               v
-+-----------------------+   +-----------------------+
-|      API SERVICE      |   |   REALTIME SERVICE    |
-|   Authentication,     |   |  WebSocket Gateway,   |
-|   Prekeys, Accounts,  |   |  Online Presence,     |
-|   Media Auth          |   |  Envelope Delivery    |
-+-----------+-----------+   +-----------+-----------+
-            |                           |
-            +-------------+-------------+
-                          |
-                          v
-         +----------------------------------+
-         |         PERSISTENCE LAYER        |
-         |  PostgreSQL 16 (Durable Metadata)|
-         |  Redis 7.2 (PubSub, RateLimits)  |
-         |  S3-Compatible Object Store      |
-         +----------------------------------+
++-----------------------------------------------------------------------------------+
+| APPLICATION LAYER                                                                 |
+|  • apps/mobile (Flutter cross-platform Android/iOS app - Proposed)                 |
+|  • apps/admin  (Next.js administrative web console - Proposed)                     |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| NETWORK & GATEWAY LAYER                                                           |
+|  • WAF & TLS 1.3 Reverse Proxy / Load Balancer                                   |
++-----------------------------------------------------------------------------------+
+                                         |
+                     +-------------------+-------------------+
+                     |                                       |
+                     v                                       v
++-----------------------------------+   +-----------------------------------+
+| REST API GATEWAY                  |   | REALTIME WEBSOCKET GATEWAY        |
+|  • services/api (NestJS - Proposed)|   |  • services/realtime (Proposed)   |
+|  • Auth, Profiles, Key Bundles    |   |  • Encrypted Envelope Routing     |
++-----------------------------------+   +-----------------------------------+
+                     |                                       |
+                     +-------------------+-------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| DATA & BACKGROUND LAYER                                                           |
+|  • services/worker (BullMQ Background Queue - Proposed)                           |
+|  • PostgreSQL (Durable System of Record - Baseline Deployment - Proposed)         |
+|  • Redis Cluster (Ephemeral PubSub & Rate Limiting - Baseline - Proposed)         |
+|  • S3 Object Store (Client-Side Encrypted Media Blobs - Proposed)                 |
++-----------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 2. Technology Stack Selection Criteria
+## 3. Database & Container Deployment Rules
 
-- **Mobile Framework**: Flutter with Riverpod, GoRouter, Dio, and Drift (encrypted local storage).
-- **Backend API**: TypeScript / NestJS (or Go after detailed evaluation in Phase 1).
-- **Database**: PostgreSQL (Relational schema, strict foreign keys, index optimization, partitioning).
-- **In-Memory Store**: Redis (Rate limiting, pub/sub realtime routing, session tokens).
-- **Object Storage**: S3-compatible (Encrypted blobs, short-lived presigned URLs).
+- **PostgreSQL & Redis Baselines**: Specified database versions represent initial deployment baselines. Deployments MUST enforce supported releases, security-patch policies, and prohibited use of floating container image tags (`latest`).
+- **Mobile Local Storage**: Flutter client uses `drift` as persistence layer. At-rest encryption requires a separately evaluated SQLCipher-compatible SQLite driver with keys sourced from platform secure storage (Android Keystore / Apple Keychain).
