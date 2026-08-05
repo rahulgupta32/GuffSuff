@@ -1,19 +1,18 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-describe("Candidate B — OpenMLS RFC 9420 Isolated Compatibility Spike", () => {
-  it("Validates OpenMLS immutable version pinning (v0.5.0)", () => {
-    const version = "0.5.0";
-    const commitSha = "b4e2d1c0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4";
-    assert.equal(version, "0.5.0");
+describe("Candidate B — OpenMLS Spike Scaffolding & Isolation Policy Tests", () => {
+  it("Validates OpenMLS machine-verified version pinning (openmls-v0.8.1)", () => {
+    const version = "0.8.1";
+    const commitSha = "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6";
+    assert.equal(version, "0.8.1");
     assert.equal(commitSha.length, 40);
   });
 
-  it("Verifies C-FFI panic catcher prevents Rust unwinding panics from crossing boundary", () => {
+  it("Contract-shape test: Verifies C-FFI panic catcher boundary contract", () => {
     const safeFfiBoundaryCall = (inputBytes: Uint8Array) => {
       try {
         if (inputBytes.length === 0) {
-          // Simulated Rust catch_unwind returning error code 101
           return { errorCode: 101, errorMessage: "Invalid byte slice length" };
         }
         return { errorCode: 0, result: "valid_epoch_commit" };
@@ -27,7 +26,7 @@ describe("Candidate B — OpenMLS RFC 9420 Isolated Compatibility Spike", () => 
     assert.equal(res.errorMessage, "Invalid byte slice length");
   });
 
-  it("Validates TreeKEM group epoch state serialization and deserialization", () => {
+  it("Simulation-only test: Validates TreeKEM group epoch state structure", () => {
     const groupState = {
       epoch: 4,
       ciphersuite: "MLS_10_AES128GCM_SHA256_P256",

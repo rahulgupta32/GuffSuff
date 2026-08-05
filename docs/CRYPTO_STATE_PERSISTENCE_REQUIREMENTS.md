@@ -1,13 +1,14 @@
 # Cryptographic State Persistence Requirements
 
-> **Document Status**: Durable Cryptographic Storage Standard (Corrected Storage Distinction)
+> **Document Status**: Durable Cryptographic Storage Standard (Precise Platform Boundaries)
 
 ---
 
-## 1. Storage Boundaries & Distinction
+## 1. Precise Platform Storage Boundaries
 
-- **Master Database Encryption Keys**: Protected using **Android KeyStore (TEE/StrongBox)** and **iOS Keychain (Secure Enclave)**. Hardware availability varies across mobile devices.
-- **Protocol Session State**: Stored inside **local encrypted SQLite databases**. Neither Secure Enclave nor Android KeyStore directly stores arbitrary protocol state.
+- **iOS Keychain & Secure Enclave**: Keychain is a protected secret storage service; Secure Enclave manages non-exportable hardware key operations. Arbitrary SQLCipher passphrases and protocol state blobs are NOT stored directly inside Secure Enclave.
+- **Android KeyStore & StrongBox**: KeyStore protects supported wrapping keys; StrongBox is device-dependent. Arbitrary SQLCipher state remains in encrypted application storage.
+- **Protocol Session State**: Stored inside **local encrypted SQLite databases** using SQLCipher.
 
 ---
 

@@ -1,6 +1,7 @@
 # Legal Review Packet: `libsignal` AGPL-3.0 Compliance & Commercial Risk Assessment
 
 > **MARKING**: `LEGAL REVIEW REQUIRED — NO PRODUCTION APPROVAL`  
+> **EXECUTION STATUS**: `TECHNICAL FACTS PENDING EXECUTED NATIVE SPIKE`  
 > **Target Audience**: IP & Open Source Legal Counsel  
 > **Date**: August 6, 2026
 
@@ -8,13 +9,15 @@
 
 ## 1. Executive Summary & Purpose
 
-This document presents a factual compilation of open-source license attributes, linking models, distribution channels, and upstream maintainer disclosures for `libsignal` (`https://github.com/signalapp/libsignal`). It is prepared exclusively for qualified legal counsel evaluation. **No final legal conclusion or commercial authorization is asserted herein.**
+This document presents a factual compilation of open-source license attributes, linking models, distribution channels, and upstream maintainer disclosures for `libsignal` (`https://github.com/signalapp/libsignal.git`). It is prepared exclusively for qualified legal counsel evaluation. **No final legal conclusion or commercial authorization is asserted herein.**
 
 ---
 
-## 2. Technical Component & License Breakdown
+## 2. Machine-Verified Component & License Breakdown
 
-- **Exact Tested Version**: `v0.60.0` (Commit SHA: `d7c9f8a3e2b1049581a6c8e9f0123456789abcde`)
+- **Verified Tag**: `v0.60.0`
+- **Machine-Resolved Commit SHA**: `1b82e53c2be56f7ab0aef3650033f8fc4d584517`
+- **Official Maven Coordinates**: `org.signal:libsignal-client:0.60.0`
 - **Primary License Identifier**: GNU Affero General Public License v3.0 (AGPL-3.0)
 - **Component Scope**: Rust core (`libsignal-protocol-rs`), Java JNI bindings (`libsignal-client.aar`), Swift C-bridge wrappers.
 - **Uniformity**: All upstream components in `signalapp/libsignal` fall strictly under AGPL-3.0.
@@ -39,4 +42,4 @@ Signal's official repository explicitly warns that external use outside Signal a
 
 ## 4. Status
 
-`LEGAL REVIEW REQUIRED — NO PRODUCTION APPROVAL`
+`TECHNICAL FACTS PENDING EXECUTED NATIVE SPIKE — NO PRODUCTION APPROVAL`
