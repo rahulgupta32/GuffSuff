@@ -20,4 +20,5 @@ GuffSuff operates primarily in Nepal (`Asia/Kathmandu` timezone, UTC+05:45) wher
 ---
 
 ## Rationale & Anti-Patterns
+
 - Core backend database logic must NEVER depend on custom Bikram Sambat date calculations to avoid leap year / month length edge-case bugs in SQL queries.

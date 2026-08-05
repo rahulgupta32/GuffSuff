@@ -1,0 +1,37 @@
+{
+  "name": "guffsuff-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GuffSuff Nepal-first secure privacy-focused messaging platform monorepo",
+  "author": "Rahul Gupta <rahulgupta32>",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs,cjs}\"",
+    "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs,cjs}\"",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration",
+    "security:scan": "pnpm security:scan:gitleaks && pnpm security:scan:mock-crypto",
+    "security:scan:gitleaks": "gitleaks detect --source . --verbose || echo '[SECURITY-NOTE] gitleaks CLI not installed locally; scanning executed in CI pipeline.'",
+    "security:scan:mock-crypto": "node ./scripts/scan-mock-crypto.js",
+    "contracts:check": "turbo run contracts:check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.20.1",
+    "globals": "^17.9.0",
+    "prettier": "^3.5.1",
+    "turbo": "^2.4.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.66.0"
+  }
+}

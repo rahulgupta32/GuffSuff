@@ -1,0 +1,9 @@
+dist
+.next
+coverage
+node_modules
+build
+.dart_tool
+.pub-cache
+*.lock
+pnpm-lock.yaml

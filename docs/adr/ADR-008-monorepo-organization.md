@@ -25,5 +25,6 @@ We maintain a single **GuffSuff Monorepo** organized as:
 ---
 
 ## Tooling Standards
+
 - npm / pnpm workspaces for Node.js services and TypeScript packages.
 - Flutter pub workspace configuration for mobile app and Dart crypto bindings.

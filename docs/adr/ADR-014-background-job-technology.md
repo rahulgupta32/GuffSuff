@@ -17,6 +17,7 @@
 We select **BullMQ (Redis-backed queue engine for Node.js/TypeScript)** for `services/worker`.
 
 ### Key Capabilities
+
 - Retries with exponential backoff.
 - Dead-letter queues (DLQ) for unhandled errors.
 - Concurrency controls and rate-limited job execution.

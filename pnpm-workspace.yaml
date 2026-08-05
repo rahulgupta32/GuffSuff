@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+  - "services/*"
+  - "apps/*"
+allowBuilds:
+  "@scarf/scarf": true
+  msgpackr-extract: true
+  sharp: true

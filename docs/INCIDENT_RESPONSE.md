@@ -7,12 +7,12 @@
 
 ## 1. Incident Severity Classification
 
-| Incident Level | Criteria / Trigger Example | Response SLA | Incident Commander Role | Escalation Target |
-| :--- | :--- | :--- | :--- | :--- |
-| **SEV-1 (Critical)** | Active data breach, secret leak, compromise of signing keys or database. | Immediate (< 15 mins) | Lead Security Engineer | CISO & Product Owner |
-| **SEV-2 (High)** | Disruption of OTP authentication or realtime WebSocket gateway; severe rate-limit bypass. | < 1 Hour | Operations Lead | DevSecOps Lead |
-| **SEV-3 (Medium)**| Non-critical API degradation or localized abuse surge. | < 4 Hours | Backend Lead | Operations Lead |
-| **SEV-4 (Low)** | Minor security finding or non-exploitable dependency vulnerability. | < 24 Hours | Security Engineer | Module Lead |
+| Incident Level       | Criteria / Trigger Example                                                                | Response SLA          | Incident Commander Role | Escalation Target    |
+| :------------------- | :---------------------------------------------------------------------------------------- | :-------------------- | :---------------------- | :------------------- |
+| **SEV-1 (Critical)** | Active data breach, secret leak, compromise of signing keys or database.                  | Immediate (< 15 mins) | Lead Security Engineer  | CISO & Product Owner |
+| **SEV-2 (High)**     | Disruption of OTP authentication or realtime WebSocket gateway; severe rate-limit bypass. | < 1 Hour              | Operations Lead         | DevSecOps Lead       |
+| **SEV-3 (Medium)**   | Non-critical API degradation or localized abuse surge.                                    | < 4 Hours             | Backend Lead            | Operations Lead      |
+| **SEV-4 (Low)**      | Minor security finding or non-exploitable dependency vulnerability.                       | < 24 Hours            | Security Engineer       | Module Lead          |
 
 ---
 

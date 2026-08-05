@@ -2,11 +2,11 @@ name: Security Scanning
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Daily at 02:00 UTC
+    - cron: "0 2 * * *" # Daily at 02:00 UTC
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   security-audit:
@@ -19,7 +19,7 @@ jobs:
       - name: CodeQL Analysis Initialization
         uses: github/codeql-action/init@v3
         with:
-          languages: 'javascript-typescript'
+          languages: "javascript-typescript"
 
       - name: CodeQL Perform Analysis
         uses: github/codeql-action/analyze@v3

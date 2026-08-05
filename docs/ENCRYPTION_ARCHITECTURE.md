@@ -17,8 +17,15 @@ export interface ICryptoAdapter {
   establishOutboundSession(recipientPrekeyBundle: PrekeyBundle): Promise<SessionState>;
   encryptPayload(session: SessionState, plaintext: Uint8Array): Promise<EncryptedEnvelopePayload>;
   decryptPayload(session: SessionState, envelope: EncryptedEnvelopePayload): Promise<Uint8Array>;
-  encryptAttachment(fileData: Uint8Array): Promise<{ ciphertext: Uint8Array; mediaKey: Uint8Array; iv: Uint8Array; mac: Uint8Array }>;
-  decryptAttachment(ciphertext: Uint8Array, mediaKey: Uint8Array, iv: Uint8Array, mac: Uint8Array): Promise<Uint8Array>;
+  encryptAttachment(
+    fileData: Uint8Array
+  ): Promise<{ ciphertext: Uint8Array; mediaKey: Uint8Array; iv: Uint8Array; mac: Uint8Array }>;
+  decryptAttachment(
+    ciphertext: Uint8Array,
+    mediaKey: Uint8Array,
+    iv: Uint8Array,
+    mac: Uint8Array
+  ): Promise<Uint8Array>;
 }
 ```
 
@@ -34,6 +41,7 @@ export interface ICryptoAdapter {
 ## 3. Mock Provider Safeguards
 
 If a future development mock is created for offline pipeline testing, it MUST enforce:
+
 - Mandatory exclusion from production compilation.
 - Startup failure if `NODE_ENV=production` or `APP_ENV=production`.
 - Visible UI indicator on mobile app ("DEVELOPMENT MOCK ENCRYPTION ACTIVE").

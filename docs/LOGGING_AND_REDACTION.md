@@ -25,20 +25,21 @@ Application code, proxies, log drainers, crash reporting SDKs, and CI runners MU
 
 ## 2. Safe Logging Allowlist Representations
 
-| Category | Unsafe Field | Approved Safe Representation |
-| :--- | :--- | :--- |
-| **Request Tracking** | User IP / Full URL | `requestId` (UUIDv7 correlation ID), HTTP method, route template (e.g. `/api/v1/auth/otp/verify`). |
-| **User Identity** | Phone number / Email | Pseudonymous `userId` (UUIDv7) or masked phone (`+97798****567`). |
-| **Session Authentication** | `Authorization: Bearer <jwt>` | SHA-256 fingerprint of JWT header (`tokenFingerprint: "a1b2c3..."`). |
-| **Realtime Envelope** | `encryptedPayload` Base64 | `envelopeId`, `conversationId`, `senderDeviceId`, payload size in bytes. |
-| **S3 Media File** | File name / $K_{media}$ key | Opaque `objectKey` UUID, MIME category (`image/*`), binary size bytes. |
-| **Error Handling** | Raw SQL error with values | Generic `errorClass` (e.g. `QueryFailedError`), internal error code (`DB_CONSTRAINT_VIOLATION`). |
+| Category                   | Unsafe Field                  | Approved Safe Representation                                                                       |
+| :------------------------- | :---------------------------- | :------------------------------------------------------------------------------------------------- |
+| **Request Tracking**       | User IP / Full URL            | `requestId` (UUIDv7 correlation ID), HTTP method, route template (e.g. `/api/v1/auth/otp/verify`). |
+| **User Identity**          | Phone number / Email          | Pseudonymous `userId` (UUIDv7) or masked phone (`+97798****567`).                                  |
+| **Session Authentication** | `Authorization: Bearer <jwt>` | SHA-256 fingerprint of JWT header (`tokenFingerprint: "a1b2c3..."`).                               |
+| **Realtime Envelope**      | `encryptedPayload` Base64     | `envelopeId`, `conversationId`, `senderDeviceId`, payload size in bytes.                           |
+| **S3 Media File**          | File name / $K_{media}$ key   | Opaque `objectKey` UUID, MIME category (`image/*`), binary size bytes.                             |
+| **Error Handling**         | Raw SQL error with values     | Generic `errorClass` (e.g. `QueryFailedError`), internal error code (`DB_CONSTRAINT_VIOLATION`).   |
 
 ---
 
 ## 3. Automated Redaction Verification Tests
 
 Automated CI integration tests MUST verify that sensitive fields are not emitted by:
+
 - API service console logs (`services/api`).
 - Realtime gateway logs (`services/realtime`).
 - Worker background process logs (`services/worker`).

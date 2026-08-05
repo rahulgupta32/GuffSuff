@@ -17,6 +17,7 @@ GuffSuff supports encrypted media sharing (images, videos, audio notes, voice me
 We select **S3-Compatible Object Storage** with client-side encrypted blobs and short-lived presigned URLs.
 
 ### Operational Model
+
 1. Sender client encrypts attachment locally using random key $K_{media}$ via AES-256-GCM.
 2. Sender requests single-use presigned upload URL from `services/api`.
 3. Sender uploads opaque ciphertext binary blob directly to Object Storage.
@@ -26,6 +27,7 @@ We select **S3-Compatible Object Storage** with client-side encrypted blobs and 
 ---
 
 ## Security Controls
+
 - Object storage buckets MUST be strictly private with public access blocked.
 - Server never holds unencrypted media or decryption keys.
 - EXIF metadata (GPS coordinates, camera metadata) stripped client-side prior to encryption.
@@ -33,4 +35,5 @@ We select **S3-Compatible Object Storage** with client-side encrypted blobs and 
 ---
 
 ## Alternatives Considered
+
 - Direct server file proxying: Rejected due to server CPU/memory exhaustion and bandwidth bottleneck.

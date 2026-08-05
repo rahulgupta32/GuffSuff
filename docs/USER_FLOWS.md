@@ -7,6 +7,7 @@
 ## 1. Onboarding & Registration Sequence
 
 ### Flow: First Installation, Language Selection, & Phone OTP Verification
+
 1. **Language Selection**: Client prompts user to select interface language (Nepali Devanagari or English). Saved in local preferences.
 2. **Phone Input**: User selects country code (`+977` default) and enters mobile number (e.g. `9841234567`). Client validates number length and format.
 3. **API Call**: Client sends `POST /api/v1/auth/otp/request`.
@@ -21,6 +22,7 @@
 ## 2. Messaging & Group Operations
 
 ### Flow: One-to-One Offline Encrypted Messaging
+
 1. **Compose Message**: User A opens chat with User B and types text.
 2. **Device Connection Check**: If device is offline, client stores message in local SQLite with state `QUEUED_OFFLINE`.
 3. **Prekey Retrieval**: If session with User B is uninitialized, client fetches User B's public prekey bundle via `GET /api/v1/keys/prekey/:userId/:deviceId`.
@@ -34,6 +36,7 @@
 ## 3. Account Privacy & Administrative Flows
 
 ### Flow: Account Deletion Request
+
 1. **User Request**: User selects "Delete Account" in Settings. Prompts for optional PIN / OTP re-authentication.
 2. **API Call**: Client calls `DELETE /api/v1/account`.
 3. **Database Action**: Server creates record in `account_deletion_requests`, marks user status `DELETION_PENDING`, revokes all active `sessions`, and deletes prekeys.

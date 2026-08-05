@@ -36,6 +36,7 @@ We evaluate cryptographic candidate engines across 21 functional, security, oper
 ## 2. Cryptographic Candidates Under Evaluation
 
 ### Candidate A: Signal Protocol (`libsignal-ffi` / `libsignal-client`)
+
 - **Official Source**: `https://github.com/signalapp/libsignal`
 - **License**: AGPL-3.0 (Requires careful dual-licensing or separate process boundary evaluation for proprietary mobile apps).
 - **Supported Languages**: Rust core with C/FFI bindings, Java/Kotlin, Swift.
@@ -44,6 +45,7 @@ We evaluate cryptographic candidate engines across 21 functional, security, oper
 - **Evaluation Status**: **UNDER EVALUATION** (Primary candidate for 1-to-1 asynchronous E2EE).
 
 ### Candidate B: Messaging Layer Security (MLS / IETF RFC 9420)
+
 - **Official Source**: OpenMLS (`https://github.com/openmls/openmls`) / Cisco MLS (`https://github.com/cisco/mbed-mls`)
 - **License**: Apache-2.0 / MIT.
 - **Supported Languages**: Rust core with C/FFI bindings.
@@ -52,6 +54,7 @@ We evaluate cryptographic candidate engines across 21 functional, security, oper
 - **Evaluation Status**: **UNDER EVALUATION** (Primary candidate for scalable group messaging).
 
 ### Candidate C: Hybrid Architecture (Signal for 1-to-1 + MLS for Groups)
+
 - **Evaluation Status**: **UNDER EVALUATION** (Subject to independent cryptographic review in Phase 2).
 
 ---

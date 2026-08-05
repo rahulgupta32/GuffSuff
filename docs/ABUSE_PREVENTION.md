@@ -7,12 +7,12 @@
 
 ## 1. Rate Limiting & Behavioral Abuse Controls
 
-| Action Category | Applied Limit | Defense Mechanism | Mitigation Action |
-| :--- | :--- | :--- | :--- |
-| **New Conversation Start** | Max 10 new chats / hour | Sliding window rate limit in Redis | Block new chat initiation for 1 hour. |
-| **Group Invite Dispatches** | Max 5 group invites / hour | Group creation rate limit | Require CAPTCHA or delay invite links. |
-| **Media File Uploads** | 50MB per file / 500MB daily quota | Presigned URL quota check | Reject presigned upload URL issuance. |
-| **Contact Discovery Queries** | Max 50 queries / hour | Redis rate limiter | Return 429 Too Many Requests. |
+| Action Category               | Applied Limit                     | Defense Mechanism                  | Mitigation Action                      |
+| :---------------------------- | :-------------------------------- | :--------------------------------- | :------------------------------------- |
+| **New Conversation Start**    | Max 10 new chats / hour           | Sliding window rate limit in Redis | Block new chat initiation for 1 hour.  |
+| **Group Invite Dispatches**   | Max 5 group invites / hour        | Group creation rate limit          | Require CAPTCHA or delay invite links. |
+| **Media File Uploads**        | 50MB per file / 500MB daily quota | Presigned URL quota check          | Reject presigned upload URL issuance.  |
+| **Contact Discovery Queries** | Max 50 queries / hour             | Redis rate limiter                 | Return 429 Too Many Requests.          |
 
 ---
 

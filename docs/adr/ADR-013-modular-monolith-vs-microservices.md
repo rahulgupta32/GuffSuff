@@ -17,6 +17,7 @@ We evaluated whether GuffSuff's backend should be built as fully independent mic
 We choose **Modular NestJS Architecture with Shared Domain Packages (Option B)**.
 
 ### Architecture Structure
+
 - The backend is authored as modular NestJS domains (`AuthModule`, `AccountModule`, `DeviceModule`, `MessageModule`, `RealtimeGatewayModule`, `WorkerModule`).
 - In local development, all modules run in a single NestJS process for developer simplicity.
 - In staging and production, separate entry-point binaries are compiled and deployed as distinct containers:
@@ -27,4 +28,5 @@ We choose **Modular NestJS Architecture with Shared Domain Packages (Option B)**
 ---
 
 ## Rationale
+
 - Prevents premature microservice fragmentation overhead while maintaining strict module boundaries and independent horizontal container autoscaling in production.

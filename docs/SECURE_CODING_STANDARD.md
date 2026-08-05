@@ -18,12 +18,14 @@
 ## 2. Language-Specific Guidelines
 
 ### TypeScript / Node.js / NestJS Rules
+
 - **No `eval()` or Dynamic Code Execution**: `eval`, `Function()`, and `vm.runInContext` are strictly prohibited.
 - **SQL Injection Prevention**: Parameterize all queries using ORM/Kysely parameter bindings. Raw string concatenation in SQL queries is forbidden.
 - **Path Traversal Protection**: Validate and sanitize all file paths using `path.resolve` and verify paths remain within designated target directories.
 - **Strict Error Handling**: Do not expose internal stack traces or database error messages in API HTTP responses.
 
 ### Dart / Flutter Rules
+
 - **Secure Key Storage**: Store keys exclusively in hardware-backed storage via `flutter_secure_storage` (Keychain/Keystore). Never hardcode secrets in `.dart` source code.
 - **Input Sanitization**: Escape user text rendering to prevent UI injection attacks.
 - **SQLCipher Usage**: Ensure SQLite operations use encrypted drivers with keys derived from secure storage.

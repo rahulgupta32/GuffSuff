@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16.8-alpine3.21
+    container_name: guffsuff-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: guffsuff_dev
+      POSTGRES_USER: guffsuff_user
+      POSTGRES_PASSWORD: guffsuff_local_pass
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guffsuff_user -d guffsuff_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4.2-alpine3.21
+    container_name: guffsuff-redis
+    restart: unless-stopped
+    command: redis-server --requirepass guffsuff_redis_local_pass
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "guffsuff_redis_local_pass", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-18T09-10-02Z
+    container_name: guffsuff-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: guffsuff_minio_local_key
+      MINIO_ROOT_PASSWORD: guffsuff_minio_local_secret
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.119.0
+    container_name: guffsuff-otel-collector
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4317:4317" # OTLP gRPC
+      - "127.0.0.1:4318:4318" # OTLP HTTP
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

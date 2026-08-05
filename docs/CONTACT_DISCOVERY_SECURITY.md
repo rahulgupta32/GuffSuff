@@ -8,6 +8,7 @@
 ## 1. Staged Contact Discovery Strategy
 
 ### Stage A: Privacy-Minimized Salted Hashing (MVP Baseline)
+
 - **Local Normalization**: Phone numbers normalized locally on mobile device to E.164.
 - **Client-Side Salting**: Hashes computed as `HMAC-SHA256(phone_e164, daily_server_salt)`.
 - **Zero Raw Uploads**: Raw address book numbers are NEVER transmitted to the server.
@@ -15,5 +16,6 @@
 - **Anti-Enumeration Rate Limits**: Max 50 contact discovery queries per user per hour (`SEC-API-001`).
 
 ### Stage B: Cryptographic Privacy Evaluation (Post-MVP Candidate)
+
 - **Private Set Intersection (PSI)**: Evaluating PSI protocols (e.g. EC-OPRF / Oblivious Pseudorandom Function) where server learns zero information about non-matching contacts and client learns zero information about non-contact users.
 - **Status**: Stage B is `UNDER EVALUATION` during Phase 2.

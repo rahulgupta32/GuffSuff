@@ -8,6 +8,7 @@
 ## 1. OTP Provider Security Evaluation Framework
 
 Any SMS OTP vendor integrated with GuffSuff MUST satisfy the following criteria:
+
 - Direct local telecom routing coverage in Nepal (+977 Ncell & NTC networks).
 - Support for API authentication via TLS 1.3 with IP allowlisting and HMAC request signatures.
 - Webhook signature verification for delivery receipts (`ACK`).
@@ -33,9 +34,9 @@ Any SMS OTP vendor integrated with GuffSuff MUST satisfy the following criteria:
 
 ## 3. Alternative Authentication Trade-Off Analysis
 
-| Mechanism | Security Strength | Nepal Usability | SIM-Swap Resilience | Recovery Overhead | Recommendation |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **SMS OTP** | Medium | High (Universal 2G/4G SMS) | Low (Vulnerable to SIM swap) | Low | Primary onboarding channel for MVP. |
-| **Registration PIN** | High | High (In-app 6-digit PIN) | High (Prevents SIM-swap login) | Medium | Mandatory secondary lock for re-registration (`AUTH-003`). |
-| **Passkeys / WebAuthn** | Very High | Low (Requires modern OS/hardware) | Immune | High | Under evaluation for Admin Console and post-MVP mobile. |
-| **Voice Call OTP** | Medium | Medium | Low | Medium | Secondary fallback channel for failed SMS delivery. |
+| Mechanism               | Security Strength | Nepal Usability                   | SIM-Swap Resilience            | Recovery Overhead | Recommendation                                             |
+| :---------------------- | :---------------- | :-------------------------------- | :----------------------------- | :---------------- | :--------------------------------------------------------- |
+| **SMS OTP**             | Medium            | High (Universal 2G/4G SMS)        | Low (Vulnerable to SIM swap)   | Low               | Primary onboarding channel for MVP.                        |
+| **Registration PIN**    | High              | High (In-app 6-digit PIN)         | High (Prevents SIM-swap login) | Medium            | Mandatory secondary lock for re-registration (`AUTH-003`). |
+| **Passkeys / WebAuthn** | Very High         | Low (Requires modern OS/hardware) | Immune                         | High              | Under evaluation for Admin Console and post-MVP mobile.    |
+| **Voice Call OTP**      | Medium            | Medium                            | Low                            | Medium            | Secondary fallback channel for failed SMS delivery.        |

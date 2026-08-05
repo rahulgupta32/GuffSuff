@@ -1,0 +1,16 @@
+FROM node:24.15.0-alpine3.21 AS builder
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/ ./packages/
+COPY apps/admin/ ./apps/admin/
+RUN npm install -g pnpm@11.20.0 && pnpm install --frozen-lockfile && pnpm --filter @guffsuff/admin build
+
+FROM node:24.15.0-alpine3.21 AS runner
+WORKDIR /app
+USER node
+ENV NODE_ENV=production
+COPY --from=builder --chown=node:node /app/apps/admin/.next ./.next
+COPY --from=builder --chown=node:node /app/apps/admin/public ./public
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+EXPOSE 3002
+CMD ["pnpm", "--filter", "@guffsuff/admin", "start"]

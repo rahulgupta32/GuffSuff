@@ -8,6 +8,7 @@
 ## 1. Decision Status Vocabulary
 
 All architectural components in this specification utilize the standardized GuffSuff decision-status vocabulary:
+
 - **Proposed**: Initial architectural recommendation submitted for review.
 - **Under evaluation**: Active technical prototyping or security evaluation underway.
 - **Approved by product owner**: Explicitly accepted by `@rahulgupta32` with recorded date and evidence.
