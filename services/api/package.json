@@ -8,12 +8,15 @@
     "dev": "nest start --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test dist/index.test.js"
+    "test": "node --test dist/*.test.js"
   },
   "dependencies": {
     "@guffsuff/contracts": "workspace:*",
+    "@guffsuff/database": "workspace:*",
     "@guffsuff/errors": "workspace:*",
     "@guffsuff/logger": "workspace:*",
+    "@guffsuff/object-storage": "workspace:*",
+    "@guffsuff/queue": "workspace:*",
     "@guffsuff/shared-config": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",

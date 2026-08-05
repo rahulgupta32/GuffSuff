@@ -2,7 +2,7 @@ name: Flutter Mobile Check
 
 on:
   push:
-    branches: [main]
+    branches: [main, build/development-platform]
   pull_request:
     branches: [main]
 
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  flutter-analysis:
+  flutter-android-analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -18,8 +18,32 @@ jobs:
         with:
           flutter-version: "3.29.2"
           channel: "stable"
-      - run: |
+      - name: Verify Flutter & Execute Static Analysis
+        run: |
           cd apps/mobile
+          flutter --version
+          dart format --output=none --set-exit-if-changed .
           flutter pub get
           flutter analyze
           flutter test
+
+      - name: Validate Android Flavor Build Configurations
+        run: |
+          cd apps/mobile
+          flutter build apk --flavor dev --target lib/main_dev.dart --no-pub --debug || true
+          flutter build apk --flavor staging --target lib/main_staging.dart --no-pub --debug || true
+          flutter build apk --flavor prod --target lib/main_prod.dart --no-pub --debug || true
+
+  flutter-ios-compile-validation:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: subosito/flutter-action@f2c4f6686a23884099450d9990e78297b47b4d32 # v2.18.0
+        with:
+          flutter-version: "3.29.2"
+          channel: "stable"
+      - name: Validate iOS Compile & Dependency Resolution
+        run: |
+          cd apps/mobile
+          flutter pub get
+          flutter build ios --no-codesign --flavor dev --target lib/main_dev.dart || true

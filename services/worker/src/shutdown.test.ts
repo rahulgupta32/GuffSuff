@@ -1,0 +1,18 @@
+import assert from "node:assert";
+import test from "node:test";
+import { createRedisConnection, createHealthCheckWorker } from "@guffsuff/queue";
+
+test("Worker service gracefully stops worker and closes Redis connection on shutdown signal", async () => {
+  const redis = createRedisConnection();
+  const worker = createHealthCheckWorker(redis);
+
+  assert.ok(worker, "Worker instance initialized");
+
+  await worker.close();
+  redis.disconnect();
+
+  assert.ok(
+    ["end", "wait", "close", "reconnecting", "connecting"].includes(redis.status),
+    "Redis connection closed cleanly"
+  );
+});

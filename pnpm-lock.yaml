@@ -142,6 +142,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.750.0
         version: 3.1102.0
+      '@guffsuff/id-generation':
+        specifier: workspace:*
+        version: link:../id-generation
     devDependencies:
       typescript:
         specifier: ^5.7.3
@@ -190,12 +193,21 @@ importers:
       '@guffsuff/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@guffsuff/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@guffsuff/errors':
         specifier: workspace:*
         version: link:../../packages/errors
       '@guffsuff/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@guffsuff/object-storage':
+        specifier: workspace:*
+        version: link:../../packages/object-storage
+      '@guffsuff/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@guffsuff/shared-config':
         specifier: workspace:*
         version: link:../../packages/shared-config

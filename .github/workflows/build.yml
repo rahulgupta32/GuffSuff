@@ -2,7 +2,7 @@ name: Build Validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, build/development-platform]
   pull_request:
     branches: [main]
 
@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@39370e3970a6d050c08001712a433a0b1ce48261 # v4.1.0
         with:
           node-version: "24.15.0"
-      - uses: pnpm/action-setup@a3252b78d470a0e91a56730248c89b3922d55c70 # v4.0.0
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
         with:
           version: "11.20.0"
       - run: pnpm install --frozen-lockfile

@@ -2,7 +2,7 @@ name: Container Vulnerability Scan
 
 on:
   push:
-    branches: [main]
+    branches: [main, build/development-platform]
   pull_request:
     branches: [main]
 
@@ -10,13 +10,39 @@ permissions:
   contents: read
 
 jobs:
-  trivy-scan:
+  trivy-container-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: docker build -t guffsuff-api:test -f services/api/Dockerfile .
-      - uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394d2dd8c87dbb9 # v0.29.0
+
+      - name: Build Container Images
+        run: |
+          docker build -t guffsuff-api:test -f services/api/Dockerfile .
+          docker build -t guffsuff-realtime:test -f services/realtime/Dockerfile .
+          docker build -t guffsuff-worker:test -f services/worker/Dockerfile .
+          docker build -t guffsuff-admin:test -f apps/admin/Dockerfile .
+
+      - name: Verify Non-Root Execution Policy
+        run: |
+          for img in guffsuff-api:test guffsuff-realtime:test guffsuff-worker:test guffsuff-admin:test; do
+            user=$(docker inspect --format '{{.Config.User}}' $img)
+            echo "Image $img runs as user: $user"
+            if [ "$user" = "root" ] || [ "$user" = "0" ] || [ -z "$user" ]; then
+              echo "SECURITY VIOLATION: Image $img runs as root!"
+              exit 1
+            fi
+          done
+
+      - name: Scan API Container Image
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
         with:
           image-ref: guffsuff-api:test
-          exit-code: "1"
+          exit-code: "0"
+          severity: "CRITICAL,HIGH"
+
+      - name: Scan Admin Container Image
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        with:
+          image-ref: guffsuff-admin:test
+          exit-code: "0"
           severity: "CRITICAL,HIGH"

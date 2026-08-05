@@ -2,7 +2,7 @@ name: Integration Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, build/development-platform]
   pull_request:
     branches: [main]
 
@@ -10,16 +10,48 @@ permissions:
   contents: read
 
 jobs:
-  integration-tests:
+  docker-compose-integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-node@39370e3970a6d050c08001712a433a0b1ce48261 # v4.1.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: "24.15.0"
-      - uses: pnpm/action-setup@a3252b78d470a0e91a56730248c89b3922d55c70 # v4.0.0
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
         with:
           version: "11.20.0"
       - run: pnpm install --frozen-lockfile
-      - run: docker compose up -d postgres redis minio
-      - run: pnpm test:integration
+
+      - name: Validate Docker Compose Config & Build
+        run: |
+          docker compose config
+          docker compose build
+
+      - name: Start Docker Compose Infrastructure
+        run: docker compose up -d
+
+      - name: Check Container Status & Networks
+        run: |
+          docker compose ps
+          docker inspect $(docker compose ps -q) --format '{{.Name}}: Privileged={{.HostConfig.Privileged}}, Network={{.HostConfig.NetworkMode}}, User={{.Config.User}}'
+
+      - name: Verify Service Health & Readiness
+        run: |
+          docker compose exec -T postgres pg_isready -U guffsuff_user
+          docker compose exec -T redis redis-cli ping
+          curl -f http://localhost:9000/minio/health/live
+          curl -f http://localhost:3000/health
+          curl -f http://localhost:3000/readiness || true
+          curl -f http://localhost:3001/health
+          curl -f http://localhost:3002 || true
+
+      - name: Execute Node Integration Test Suite
+        run: pnpm test:integration
+
+      - name: Collect Container Logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Teardown Compose Environment
+        if: always()
+        run: docker compose down -v

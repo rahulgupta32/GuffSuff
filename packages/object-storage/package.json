@@ -8,10 +8,11 @@
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test dist/index.test.js"
+    "test": "node --test dist/*.test.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.750.0"
+    "@aws-sdk/client-s3": "^3.750.0",
+    "@guffsuff/id-generation": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

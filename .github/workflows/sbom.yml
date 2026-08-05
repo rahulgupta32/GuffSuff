@@ -2,6 +2,8 @@ name: SBOM Generation
 
 on:
   push:
+    branches: [main, build/development-platform]
+  pull_request:
     branches: [main]
 
 permissions:
@@ -12,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: Anchore/sbom-action@f325610c28d51684c19ad484e6a063806c013d7a # v0.17.9
+      - uses: Anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
         with:
-          format: spdx-json
-          output-file: guffsuff-sbom.spdx.json
+          format: cyclonedx-json
+          output-file: docs/sbom/cyclonedx.sbom.json

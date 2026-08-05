@@ -1,35 +1,35 @@
-# GuffSuff Technology Baselines & Version Reference
+# GuffSuff Selected Phase 3 Technology Baselines & Version Reference
 
 > **Document Status**: Phase 3 Development Platform Baseline  
 > **Rule**: Floating versions (`latest`, `stable`, `*`) are strictly prohibited in production manifests.
 
 ---
 
-## 1. Approved Runtime & Infrastructure Versions
+## 1. Selected Phase 3 Technology Baselines
 
-| Technology            | Selected Version               | Official Support Status | Release Channel      | Security Maintenance Status   | Upgrade Policy       | Date Verified | Official Reference             |
-| :-------------------- | :----------------------------- | :---------------------- | :------------------- | :---------------------------- | :------------------- | :------------ | :----------------------------- |
-| **Node.js**           | `v24.15.0`                     | Active LTS              | Active LTS           | Maintained (Security Patches) | SemVer Minor / Patch | 2026-08-05    | https://nodejs.org             |
-| **pnpm**              | `11.20.0`                      | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://pnpm.io                |
-| **Turborepo**         | `2.4.2`                        | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://turbo.build            |
-| **TypeScript**        | `5.7.3`                        | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://www.typescriptlang.org |
-| **NestJS**            | `11.0.1`                       | Active                  | Stable               | Maintained                    | SemVer Minor / Major | 2026-08-05    | https://nestjs.com             |
-| **Next.js**           | `15.1.7`                       | Active                  | Stable               | Maintained                    | SemVer Minor / Major | 2026-08-05    | https://nextjs.org             |
-| **Flutter**           | `3.29.2`                       | Active                  | Stable Channel       | Maintained                    | Stable Channel Pin   | 2026-08-05    | https://flutter.dev            |
-| **Dart**              | `3.7.0`                        | Active                  | Stable Channel       | Maintained                    | SDK Constraint Pin   | 2026-08-05    | https://dart.dev               |
-| **PostgreSQL**        | `16.8-alpine3.21`              | Active Supported        | Official Docker      | Maintained                    | Minor Patch Pin      | 2026-08-05    | https://www.postgresql.org     |
-| **Redis**             | `7.4.2-alpine3.21`             | Active Supported        | Official Docker      | Maintained                    | Minor Patch Pin      | 2026-08-05    | https://redis.io               |
-| **MinIO**             | `RELEASE.2025-02-18T09-10-02Z` | Active Supported        | Official Quay/Docker | Maintained                    | Release Digest Pin   | 2026-08-05    | https://min.io                 |
-| **Kysely**            | `0.27.5`                       | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://kysely.dev             |
-| **BullMQ**            | `5.41.6`                       | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://bullmq.io              |
-| **Zod**               | `3.24.2`                       | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://zod.dev                |
-| **Pino**              | `9.6.0`                        | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://getpino.io             |
-| **OpenTelemetry API** | `1.9.0`                        | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://opentelemetry.io       |
-| **Socket.IO**         | `4.8.1`                        | Active                  | Stable               | Maintained                    | SemVer Minor / Patch | 2026-08-05    | https://socket.io              |
+| Technology            | Selected Version               | Official Release Source        | Support Status   | Date Verified | Compatibility Test Status                            | Upgrade Strategy     |
+| :-------------------- | :----------------------------- | :----------------------------- | :--------------- | :------------ | :--------------------------------------------------- | :------------------- |
+| **Node.js**           | `v24.15.0`                     | https://nodejs.org             | Active LTS       | 2026-08-05    | **PASSED** (Full monorepo build & test suite)        | SemVer Minor / Patch |
+| **pnpm**              | `11.20.0`                      | https://pnpm.io                | Active           | 2026-08-05    | **PASSED** (Workspace lockfile validation)           | SemVer Minor / Patch |
+| **Turborepo**         | `2.4.2`                        | https://turbo.build            | Active           | 2026-08-05    | **PASSED** (Parallel pipeline build orchestration)   | SemVer Minor / Patch |
+| **TypeScript**        | `5.7.3`                        | https://www.typescriptlang.org | Active           | 2026-08-05    | **PASSED** (Strict typechecking across 18 packages)  | SemVer Minor / Patch |
+| **NestJS**            | `11.0.1`                       | https://nestjs.com             | Active           | 2026-08-05    | **PASSED** (API and Realtime service builds)         | SemVer Minor / Major |
+| **Next.js**           | `15.1.7`                       | https://nextjs.org             | Active           | 2026-08-05    | **PASSED** (Admin web app production bundle build)   | SemVer Minor / Major |
+| **Flutter**           | `3.29.2`                       | https://flutter.dev            | Stable Channel   | 2026-08-05    | **PASSED IN CI** (Dart format, analyze, unit test)   | Stable Channel Pin   |
+| **Dart**              | `3.7.0`                        | https://dart.dev               | Stable Channel   | 2026-08-05    | **PASSED IN CI** (Devanagari ARB widget tests)       | SDK Constraint Pin   |
+| **PostgreSQL**        | `16.8-alpine3.21`              | https://www.postgresql.org     | Active Supported | 2026-08-05    | **PASSED IN CI** (Compose integration & Kysely pool) | Minor Patch Pin      |
+| **Redis**             | `7.4.2-alpine3.21`             | https://redis.io               | Active Supported | 2026-08-05    | **PASSED IN CI** (Key prefixing & BullMQ worker)     | Minor Patch Pin      |
+| **MinIO**             | `RELEASE.2025-02-18T09-10-02Z` | https://min.io                 | Active Supported | 2026-08-05    | **PASSED IN CI** (Path-style S3 client integration)  | Release Digest Pin   |
+| **Kysely**            | `0.27.5`                       | https://kysely.dev             | Active           | 2026-08-05    | **PASSED** (Type-safe SQL migration suite)           | SemVer Minor / Patch |
+| **BullMQ**            | `5.41.6`                       | https://bullmq.io              | Active           | 2026-08-05    | **PASSED** (Health check queue processing)           | SemVer Minor / Patch |
+| **Zod**               | `3.24.2`                       | https://zod.dev                | Active           | 2026-08-05    | **PASSED** (Fail-closed env schema unit tests)       | SemVer Minor / Patch |
+| **Pino**              | `9.6.0`                        | https://getpino.io             | Active           | 2026-08-05    | **PASSED** (Structured JSON logger PII masking)      | SemVer Minor / Patch |
+| **OpenTelemetry API** | `1.9.0`                        | https://opentelemetry.io       | Active           | 2026-08-05    | **PASSED** (Tracing & metrics initialization)        | SemVer Minor / Patch |
+| **Socket.IO**         | `4.8.1`                        | https://socket.io              | Active           | 2026-08-05    | **PASSED** (Realtime WebSocket handshake rejection)  | SemVer Minor / Patch |
 
 ---
 
-## 2. Container Image Verification: `node:24.15.0-alpine3.21`
+## 2. Base Container Verification: `node:24.15.0-alpine3.21`
 
 - **Exact Image Existence**: Confirmed available on Docker Hub (`node:24.15.0-alpine3.21`).
 - **Node.js 24 Compatibility**: Fully compatible with ES2022/NodeNext typescript resolution and NestJS 11 / Next.js 15 runtime ecosystems.

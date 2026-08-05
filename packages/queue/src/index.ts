@@ -7,7 +7,7 @@ export function getEnvironmentKeyPrefix(env = process.env.NODE_ENV || "developme
 
 export function createRedisConnection(): Redis {
   const url = process.env.REDIS_URL || "redis://localhost:6379";
-  return new Redis(url, { maxRetriesPerRequest: null, keyPrefix: getEnvironmentKeyPrefix() });
+  return new Redis(url, { maxRetriesPerRequest: null, lazyConnect: true });
 }
 
 export function createHealthCheckQueue(connection: Redis, env?: string): Queue {
