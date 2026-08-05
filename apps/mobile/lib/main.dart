@@ -44,7 +44,7 @@ class DevStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GuffSuff Dev Status')),
+      appBar: AppBar(title: const Text('GuffSuff Transport Dev Mode')),
       body: Stack(
         children: [
           const Center(
@@ -52,12 +52,12 @@ class DevStatusScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'GuffSuff Mobile Application',
+                  'GuffSuff Message Transport',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Phase 3 Development Platform Baseline',
+                  'Phase 5 Opaque Encrypted Envelope Transport',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ],
@@ -68,13 +68,13 @@ class DevStatusScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors.amber,
+              color: Colors.orangeDark,
               padding: const EdgeInsets.all(12),
               child: const Text(
-                'Development build — not for production use',
+                'Message transport test mode — production end-to-end encryption is not yet implemented.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),

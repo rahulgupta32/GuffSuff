@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    actor User as User B
+    participant API as API Gateway
+    participant DB as PostgreSQL
+    participant Worker as BullMQ Worker
+
+    User->>API: POST /api/v1/devices/:id/revoke
+    API->>DB: UPDATE devices SET is_revoked=true
+    Worker->>DB: Query pending recipient device records
+    DB-->>Worker: Excludes revoked device
+    Worker->>Worker: Omit delivery attempt for revoked device

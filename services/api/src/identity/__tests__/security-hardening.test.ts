@@ -13,9 +13,7 @@ describe("Phase 4 Security Hardening & Concurrency Tests", () => {
 
       for (let i = 0; i < sampleCount; i++) {
         const encrypted = phoneService.encryptPhoneNumber(phone);
-        const parts = encrypted.split(":");
-        const ivHex = parts[1];
-        assert.equal(parts[0], "v1");
+        const ivHex = encrypted.subarray(0, 12).toString("hex");
         assert.equal(ivHex.length, 24, "IV must be 12 bytes (24 hex chars)");
         nonces.add(ivHex);
       }
@@ -26,36 +24,35 @@ describe("Phase 4 Security Hardening & Concurrency Tests", () => {
     test("Fails closed on tampered ciphertext", () => {
       const phoneService = new PhoneNumberService();
       const encrypted = phoneService.encryptPhoneNumber("+9779841234567");
-      const parts = encrypted.split(":");
-      // Tamper ciphertext hex
-      const tamperedCiphertext = parts[3].substring(0, parts[3].length - 2) + "00";
-      const tamperedEnvelope = `${parts[0]}:${parts[1]}:${parts[2]}:${tamperedCiphertext}`;
+      // Tamper ciphertext byte
+      const tampered = Buffer.from(encrypted);
+      const lastIndex = tampered.length - 1;
+      tampered[lastIndex] = (tampered[lastIndex] ?? 0) ^ 0xff;
 
       assert.throws(() => {
-        phoneService.decryptPhoneNumber(tamperedEnvelope);
-      }, /decryption failed/i);
+        phoneService.decryptPhoneNumber(tampered);
+      }, /Unsupported state|unable to authenticate|decryption failed/i);
     });
 
     test("Fails closed on tampered authentication tag", () => {
       const phoneService = new PhoneNumberService();
       const encrypted = phoneService.encryptPhoneNumber("+9779841234567");
-      const parts = encrypted.split(":");
-      // Tamper tag hex
-      const tamperedTag = "0".repeat(32);
-      const tamperedEnvelope = `${parts[0]}:${parts[1]}:${tamperedTag}:${parts[3]}`;
+      // Tamper tag byte (bytes 12-27)
+      const tampered = Buffer.from(encrypted);
+      tampered[15] = (tampered[15] ?? 0) ^ 0xff;
 
       assert.throws(() => {
-        phoneService.decryptPhoneNumber(tamperedEnvelope);
-      }, /decryption failed/i);
+        phoneService.decryptPhoneNumber(tampered);
+      }, /Unsupported state|unable to authenticate|decryption failed/i);
     });
 
-    test("Fails closed on unknown envelope key version", () => {
+    test("Fails closed on invalid Buffer length", () => {
       const phoneService = new PhoneNumberService();
-      const unknownVersionEnvelope = "v99:123456789012345678901234:12345678901234567890123456789012:12345678";
+      const invalidBuffer = Buffer.from("short");
 
       assert.throws(() => {
-        phoneService.decryptPhoneNumber(unknownVersionEnvelope);
-      }, /unsupported envelope version/i);
+        phoneService.decryptPhoneNumber(invalidBuffer);
+      });
     });
   });
 

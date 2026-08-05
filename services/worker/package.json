@@ -11,6 +11,7 @@
     "test": "tsc --build && node --test dist/shutdown.test.js"
   },
   "dependencies": {
+    "@guffsuff/database": "workspace:*",
     "@guffsuff/logger": "workspace:*",
     "@guffsuff/queue": "workspace:*"
   },

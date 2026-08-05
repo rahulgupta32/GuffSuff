@@ -328,6 +328,9 @@ importers:
 
   services/worker:
     dependencies:
+      '@guffsuff/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@guffsuff/logger':
         specifier: workspace:*
         version: link:../../packages/logger

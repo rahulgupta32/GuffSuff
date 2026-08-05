@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant API as API Gateway
+    participant Redis as Redis Cache
+    participant DB as PostgreSQL
+    participant Worker as BullMQ Worker
+
+    API->>DB: INSERT Envelope (Durable System of Record)
+    API->>Redis: Publish routing event to active socket node
+    Note over Redis: Redis restarts / crashes
+    API-->>API: Socket routing drops
+    Worker->>DB: Query pending undelivered envelopes from PostgreSQL
+    Worker->>API: Re-trigger delivery fan-out from PostgreSQL state

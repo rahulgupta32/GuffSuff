@@ -1,0 +1,10 @@
+sequenceDiagram
+    autonumber
+    participant API as API Gateway
+    participant Realtime as Realtime Gateway (WebSocket)
+    actor RecipientDevice as Recipient Device
+
+    API->>Realtime: Push server.message.delivery event
+    Realtime->>RecipientDevice: WSS server.message.delivery (EnvelopeID, OpaquePayload)
+    RecipientDevice->>API: POST /api/v1/envelopes/:id/delivered
+    API-->>RecipientDevice: 200 OK (Status: Delivered)
