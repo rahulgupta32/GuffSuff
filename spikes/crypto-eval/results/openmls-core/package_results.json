@@ -1,0 +1,167 @@
+[
+  {
+    "package": "openmls",
+    "command": "cargo test -p openmls",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 2112,
+    "failed": 0,
+    "ignored": 29,
+    "filtered": 0,
+    "durationMs": 1644057
+  },
+  {
+    "package": "openmls_basic_credential",
+    "command": "cargo test -p openmls_basic_credential",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 35320
+  },
+  {
+    "package": "openmls_traits",
+    "command": "cargo test -p openmls_traits",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 1654
+  },
+  {
+    "package": "openmls_libcrux_crypto",
+    "command": "cargo test -p openmls_libcrux_crypto",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 29658
+  },
+  {
+    "package": "openmls_memory_storage",
+    "command": "cargo test -p openmls_memory_storage",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 4972
+  },
+  {
+    "package": "openmls_rust_crypto",
+    "command": "cargo test -p openmls_rust_crypto",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 14713
+  },
+  {
+    "package": "openmls_sqlite_storage",
+    "command": "cargo test -p openmls_sqlite_storage",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 42912
+  },
+  {
+    "package": "openmls_test",
+    "command": "cargo test -p openmls_test",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 40614
+  },
+  {
+    "package": "openmls-fuzz",
+    "command": "cargo test -p openmls-fuzz",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 854
+  },
+  {
+    "package": "cli",
+    "command": "cargo test -p cli",
+    "exitCode": 0,
+    "status": "EXECUTED — ZERO TESTS DEFINED",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 1,
+    "filtered": 0,
+    "durationMs": 163141
+  },
+  {
+    "package": "ds-lib",
+    "command": "cargo test -p ds-lib",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 106804
+  },
+  {
+    "package": "interop_client",
+    "command": "cargo test -p interop_client",
+    "exitCode": 101,
+    "status": "FAILED ON WINDOWS",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 63221
+  },
+  {
+    "package": "openmls_sqlx_storage",
+    "command": "cargo test -p openmls_sqlx_storage",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 102304
+  },
+  {
+    "package": "mls-ds",
+    "command": "cargo test -p mls-ds",
+    "exitCode": 0,
+    "status": "PASSED ON WINDOWS",
+    "passed": 2,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 96508
+  },
+  {
+    "package": "openmls-wasm",
+    "command": "cargo test -p openmls-wasm",
+    "exitCode": 101,
+    "status": "FAILED ON WINDOWS",
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "durationMs": 54112
+  }
+]
