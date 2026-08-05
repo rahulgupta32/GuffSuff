@@ -7,6 +7,10 @@
   "scripts": {
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test dist/index.test.js"
+  },
+  "dependencies": {
+    "zod": "3.24.2"
   }
 }

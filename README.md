@@ -59,7 +59,7 @@ make db-reset-local
 ## 5. Starting Applications & Services
 
 ```bash
-# Start all microservices in development mode
+# Start all backend service applications in development mode
 pnpm dev
 
 # Or start individual services:

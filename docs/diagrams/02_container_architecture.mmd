@@ -8,7 +8,7 @@ graph TB
         LB[WAF & Public Load Balancer]
     end
     
-    subgraph Microservice Cluster NestJS
+    subgraph Backend Services Cluster NestJS
         API[services/api REST Gateway]
         Realtime[services/realtime WebSocket Gateway]
         Worker[services/worker Background Queue]

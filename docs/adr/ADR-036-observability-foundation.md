@@ -7,7 +7,7 @@
 
 ## Context
 
-GuffSuff requires distributed tracing, correlation IDs, and metrics across microservices without emitting sensitive user data or credentials to telemetry streams.
+GuffSuff requires distributed tracing, correlation IDs, and metrics across backend service applications without emitting sensitive user data or credentials to telemetry streams.
 
 ## Decision
 

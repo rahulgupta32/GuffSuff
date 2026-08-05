@@ -7,7 +7,7 @@
 
 ## Context
 
-GuffSuff requires a unified monorepo structure housing backend microservices, administrative web app, mobile app, and shared packages with fast, deterministic builds and single lockfile dependency management.
+GuffSuff requires a unified monorepo structure housing backend service applications, administrative web app, mobile app, and shared packages with fast, deterministic builds and single lockfile dependency management.
 
 ## Decision
 

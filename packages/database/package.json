@@ -8,6 +8,7 @@
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "test": "node --test dist/index.test.js",
     "migrate": "node ./dist/migrate.js",
     "db:reset:local": "node ./dist/reset-local.js"
   },

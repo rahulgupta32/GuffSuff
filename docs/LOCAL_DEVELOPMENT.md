@@ -6,7 +6,7 @@
 
 ## 1. Local Development Architecture
 
-The GuffSuff local environment executes via Docker Compose for infrastructure dependencies (PostgreSQL 16, Redis 7.2, MinIO S3 emulator, OpenTelemetry Collector) while backend microservices (`services/*`) and administrative web apps (`apps/admin`) run in pnpm workspace hot-reload mode.
+The GuffSuff local environment executes via Docker Compose for infrastructure dependencies (PostgreSQL 16, Redis 7.2, MinIO S3 emulator, OpenTelemetry Collector) while backend service applications (`services/*`) and administrative web apps (`apps/admin`) run in pnpm workspace hot-reload mode.
 
 ---
 

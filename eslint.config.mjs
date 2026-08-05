@@ -6,7 +6,14 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["**/dist/**", "**/.next/**", "**/coverage/**", "**/node_modules/**", "**/build/**"]
+    ignores: [
+      "**/dist/**",
+      "**/.next/**",
+      "**/coverage/**",
+      "**/node_modules/**",
+      "**/build/**",
+      "**/*.d.ts"
+    ]
   },
   {
     languageOptions: {
@@ -18,6 +25,7 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/triple-slash-reference": "off",
       "no-console": ["warn", { allow: ["warn", "error", "info", "log"] }],
       "no-debugger": "error"
     }

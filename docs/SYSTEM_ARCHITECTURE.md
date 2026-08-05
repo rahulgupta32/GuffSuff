@@ -21,7 +21,7 @@ All architectural components in this specification utilize the standardized Guff
 
 ## 2. Core Architecture Topology
 
-GuffSuff is architected as a **Modular Monolith with Independently Deployable Microservice Entry Points** (`Proposed` - ADR-013).
+GuffSuff is architected as a **Modular Monolith with Independently Deployable Backend Service Entry Points** (`Proposed` - ADR-013).
 
 ```text
 +-----------------------------------------------------------------------------------+

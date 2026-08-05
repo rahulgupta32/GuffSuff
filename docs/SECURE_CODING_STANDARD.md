@@ -9,7 +9,7 @@
 
 1. **Defense in Depth**: Rely on layered security controls rather than single point-of-failure assumptions.
 2. **Zero-Trust Input Validation**: Treat all client inputs, API payloads, WebSocket frames, and external headers as untrusted. Validate using strict schema schemas (Zod DTOs).
-3. **Least Privilege**: Microservices and database connection pools operate with minimal required SQL privileges.
+3. **Least Privilege**: Backend service applications and database connection pools operate with minimal required SQL privileges.
 4. **Fail Securely**: Systems MUST fail closed. Exceptions must not bypass authentication, rate-limiting, or authorization checks.
 5. **No Custom Cryptography**: Developers MUST NOT implement cryptographic algorithms, custom ratchets, or custom hash schemes. All crypto operations go through `packages/crypto-adapter`.
 
