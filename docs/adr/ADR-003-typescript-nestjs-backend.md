@@ -17,6 +17,7 @@ GuffSuff requires a robust, scalable backend architecture for handling REST APIs
 We select **TypeScript with NestJS** on Node.js (Active LTS release) as the standardized backend framework across `services/api`, `services/realtime`, and `services/worker`.
 
 ### Key Technical Stack
+
 - **Language & Runtime**: TypeScript 5.x on Node.js 20 LTS.
 - **Framework**: NestJS 10.x utilizing modular architecture (`@nestjs/core`, `@nestjs/websockets`, `@nestjs/microservices`).
 - **Validation & Serialization**: `class-validator`, `class-transformer`, Zod / OpenAPI contract validation.
@@ -34,7 +35,7 @@ We select **TypeScript with NestJS** on Node.js (Active LTS release) as the stan
 
 - **Pros**: Unified language (TypeScript) across backend, shared contract packages, and admin frontend; rapid development; mature ecosystem for OpenAPI generation and NestJS dependency injection.
 - **Cons**: Higher memory footprint per pod compared to compiled Go binaries.
-- **Operational**: Node.js microservices will be containerized with lightweight Alpine/Distroless base images and tuned garbage collection options.
+- **Operational**: Node.js backend services will be containerized with lightweight Alpine base images and tuned garbage collection options.
 
 ---
 

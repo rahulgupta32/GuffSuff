@@ -17,7 +17,7 @@ GuffSuff involves multiple execution targets (mobile app, admin web console, bac
 We maintain a single **GuffSuff Monorepo** organized as:
 
 - `apps/`: Target applications (`mobile`, `admin`).
-- `services/`: Backend microservices / entry points (`api`, `realtime`, `worker`).
+- `services/`: Backend service entry points (`api`, `realtime`, `worker`).
 - `packages/`: Shared packages (`contracts`, `crypto-adapter`, `design-system`, `localization`, `shared-config`, `test-utils`).
 - `infrastructure/`: Infrastructure-as-code and container manifests (`docker`, `terraform`, `kubernetes`, `monitoring`).
 - `docs/`: Technical documentation, ADRs, diagrams, and runbooks.
@@ -25,5 +25,6 @@ We maintain a single **GuffSuff Monorepo** organized as:
 ---
 
 ## Tooling Standards
+
 - npm / pnpm workspaces for Node.js services and TypeScript packages.
 - Flutter pub workspace configuration for mobile app and Dart crypto bindings.

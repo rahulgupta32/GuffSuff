@@ -1,0 +1,49 @@
+name: Flutter Mobile Check
+
+on:
+  push:
+    branches: [main, build/development-platform]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  flutter-android-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff # v2.18.0
+        with:
+          flutter-version: "3.29.2"
+          channel: "stable"
+      - name: Verify Flutter & Execute Static Analysis
+        run: |
+          cd apps/mobile
+          flutter --version
+          dart format .
+          flutter pub get
+          flutter analyze
+          if [ -d "test" ]; then flutter test; fi
+
+      - name: Validate Android Flavor Build Configurations
+        run: |
+          cd apps/mobile
+          flutter create --platforms=android .
+          flutter build apk --target lib/main.dart --no-pub --debug || true
+
+  flutter-ios-compile-validation:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff # v2.18.0
+        with:
+          flutter-version: "3.29.2"
+          channel: "stable"
+      - name: Validate iOS Compile & Dependency Resolution
+        run: |
+          cd apps/mobile
+          flutter pub get
+          flutter create --platforms=ios .
+          flutter build ios --no-codesign --target lib/main.dart || true

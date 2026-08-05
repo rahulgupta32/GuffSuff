@@ -9,6 +9,7 @@
 ## 1. Risk Evaluation Methodology
 
 Risk levels are assigned based on qualitative evaluation across five dimensions:
+
 - **Impact**: Damage caused if the threat is successfully exploited (Critical, High, Medium, Low).
 - **Exploitability**: Technical complexity and effort required to execute the attack (Easy, Moderate, Complex).
 - **Exposure**: Attack vector accessibility (Public Internet, Authenticated Session, Local Device Access, Internal Network).
@@ -22,6 +23,7 @@ Risk levels are assigned based on qualitative evaluation across five dimensions:
 ### Identity and Registration
 
 #### `THR-AUTH-001` (Spoofing / Information Disclosure) — Phone-Number Enumeration
+
 - **STRIDE Class**: Information Disclosure
 - **Asset**: User Registration Status & User Graph
 - **Threat Actor**: External Attacker / Automated Botnet
@@ -36,6 +38,7 @@ Risk levels are assigned based on qualitative evaluation across five dimensions:
 - **Residual Risk**: Low | **Owner**: Backend API Team | **Status**: Proposed
 
 #### `THR-AUTH-002` (Tampering / Spoofing) — OTP Brute Force & Replay
+
 - **STRIDE Class**: Spoofing / Tampering
 - **Asset**: User Authentication Session
 - **Threat Actor**: Unauthenticated Attacker
@@ -52,6 +55,7 @@ Risk levels are assigned based on qualitative evaluation across five dimensions:
 ### Sessions and Devices
 
 #### `THR-SESS-001` (Information Disclosure / Tampering) — Access & Refresh Token Theft
+
 - **STRIDE Class**: Information Disclosure / Elevation of Privilege
 - **Asset**: User Session JWT Tokens
 - **Threat Actor**: Network Eavesdropper / Local Device Malware
@@ -67,6 +71,7 @@ Risk levels are assigned based on qualitative evaluation across five dimensions:
 ### Cryptography
 
 #### `THR-CRYP-001` (Tampering / Information Disclosure) — Public Prekey Substitution Attack
+
 - **STRIDE Class**: Tampering / Information Disclosure
 - **Asset**: End-to-End Encrypted Session Keys
 - **Threat Actor**: Malicious Server Operator / Compromised Gateway
@@ -80,4 +85,5 @@ Risk levels are assigned based on qualitative evaluation across five dimensions:
 ---
 
 ### Messaging, Media, Contact Discovery, Administration, Infrastructure
+
 - Comprehensive threat catalog entries covering `THR-MSG-*`, `THR-MED-*`, `THR-CON-*`, `THR-ADM-*`, `THR-INF-*` with full STRIDE classifications, required controls, and validation tests.

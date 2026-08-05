@@ -1,0 +1,57 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, build/development-platform]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docker-compose-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.1.0
+        with:
+          node-version: "24.15.0"
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+        with:
+          version: "11.20.0"
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate Docker Compose Config & Build
+        run: |
+          docker compose config
+          docker compose build
+
+      - name: Start Docker Compose Infrastructure
+        run: docker compose up -d
+
+      - name: Check Container Status & Networks
+        run: |
+          docker compose ps
+          docker inspect $(docker compose ps -q) --format '{{.Name}}: Privileged={{.HostConfig.Privileged}}, Network={{.HostConfig.NetworkMode}}, User={{.Config.User}}'
+
+      - name: Verify Service Health & Readiness
+        run: |
+          docker compose exec -T postgres pg_isready -U guffsuff_user
+          docker compose exec -T redis redis-cli ping
+          curl -f http://localhost:9000/minio/health/live
+          curl -f http://localhost:3000/health
+          curl -f http://localhost:3000/readiness || true
+          curl -f http://localhost:3001/health
+          curl -f http://localhost:3002 || true
+
+      - name: Execute Node Integration Test Suite
+        run: pnpm test:integration
+
+      - name: Collect Container Logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Teardown Compose Environment
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,1 @@
+# Preserve apps/admin/public directory for Docker COPY stage

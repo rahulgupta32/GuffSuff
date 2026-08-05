@@ -6,7 +6,9 @@
 - **Decision Status**: Proposed
 
 ## Context
+
 Private identity keys stored in standard mobile flash storage or shared preferences can be extracted by malware or physical device dumps.
 
 ## Decision
+
 Mobile application private keys MUST be stored strictly in platform hardware enclaves via `flutter_secure_storage` (iOS Keychain / Android Keystore).

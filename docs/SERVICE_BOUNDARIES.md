@@ -42,5 +42,6 @@
 ---
 
 ## 2. Interface Contracts
+
 - **`services/api` $\leftrightarrow$ `services/realtime`**: Share Redis PubSub event channels and shared Zod/DTO contracts from `packages/contracts`.
 - **`services/api` $\leftrightarrow$ `services/worker`**: Shared BullMQ job definitions in `packages/contracts`.

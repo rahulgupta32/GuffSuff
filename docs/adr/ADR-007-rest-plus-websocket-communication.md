@@ -22,5 +22,6 @@ We adopt a **Dual-Protocol Communication Model**:
 ---
 
 ## Fallback & Reliability
+
 - If WebSocket connection drops, client automatically queues outbound message envelopes locally in SQLite and attempts exponential backoff reconnection.
 - Offline undelivered envelopes are held in PostgreSQL and drained immediately upon WebSocket authentication.

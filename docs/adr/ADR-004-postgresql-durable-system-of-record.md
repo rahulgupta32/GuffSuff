@@ -18,6 +18,7 @@ GuffSuff requires a primary transactional database for users, phone identities, 
 We select **PostgreSQL** as the authoritative durable system of record.
 
 ### Versioning & Deployment Policy
+
 - The specified version (e.g., PostgreSQL 16) represents an initial deployment baseline rather than a permanent architectural constraint.
 - Production deployments MUST enforce:
   1. **Supported Release**: Use actively maintained active LTS releases.
@@ -27,5 +28,6 @@ We select **PostgreSQL** as the authoritative durable system of record.
   5. **No Floating Image Tags**: Container deployments MUST pin exact immutable image tags (e.g. `postgres:16.4-alpine3.20`), strictly prohibiting floating tags (`latest`, `16-alpine`).
 
 ### Key Database Conventions
+
 - **Identifiers**: UUIDv7 (time-ordered sequential UUIDs) for primary keys.
 - **Partitioning**: Range partitioning by month on high-volume tables (`message_envelopes`, `security_events`).

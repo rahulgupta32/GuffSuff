@@ -19,6 +19,7 @@ We select **Next.js (TypeScript)** with React 18, Tailwind CSS / custom design t
 ---
 
 ## Rationale
+
 - Excellent server-side rendering (SSR) security defaults for administrative dashboards.
 - Shares TypeScript types directly with `packages/contracts`.
 - Easy integration of admin audit logging middleware.

@@ -1,0 +1,21 @@
+{
+  "name": "@guffsuff/worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "tsc --build && node --test dist/shutdown.test.js"
+  },
+  "dependencies": {
+    "@guffsuff/logger": "workspace:*",
+    "@guffsuff/queue": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3"
+  }
+}

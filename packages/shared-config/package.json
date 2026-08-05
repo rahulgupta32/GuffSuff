@@ -1,0 +1,16 @@
+{
+  "name": "@guffsuff/shared-config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --test dist/index.test.js"
+  },
+  "dependencies": {
+    "zod": "3.24.2"
+  }
+}

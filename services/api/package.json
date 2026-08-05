@@ -1,0 +1,35 @@
+{
+  "name": "@guffsuff/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --test dist/*.test.js"
+  },
+  "dependencies": {
+    "@guffsuff/contracts": "workspace:*",
+    "@guffsuff/database": "workspace:*",
+    "@guffsuff/errors": "workspace:*",
+    "@guffsuff/logger": "workspace:*",
+    "@guffsuff/object-storage": "workspace:*",
+    "@guffsuff/queue": "workspace:*",
+    "@guffsuff/shared-config": "workspace:*",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3"
+  }
+}

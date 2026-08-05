@@ -1,0 +1,20 @@
+{
+  "name": "@guffsuff/queue",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --test dist/index.test.js"
+  },
+  "dependencies": {
+    "bullmq": "^5.41.6",
+    "ioredis": "^5.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

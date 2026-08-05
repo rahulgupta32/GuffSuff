@@ -18,6 +18,7 @@ GuffSuff requires high-performance Android and iOS mobile applications supportin
 We propose **Flutter with Dart** as the primary cross-platform mobile framework for GuffSuff.
 
 ### Key Architecture Components
+
 - **State Management**: Riverpod (`flutter_riverpod`) for compile-safe, testable state management.
 - **Navigation**: `go_router` for declarative routing and deep-link handling.
 - **HTTP Client**: `dio` with custom interceptors for request correlation, automatic token refresh, and compressed payload handling.
@@ -29,6 +30,7 @@ We propose **Flutter with Dart** as the primary cross-platform mobile framework 
 ---
 
 ## Security & Database Boundary Constraints
+
 - Android Keystore and Apple Keychain key derivation require explicit threat modeling in Phase 2.
 - Database key recovery, key rotation, device migration, backup exclusion policy, screenshot suppression, memory exposure, and rooted/jailbroken device limitations remain subject to formal security review before approval.
 

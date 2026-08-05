@@ -1,48 +1,24 @@
 # Contributing to GuffSuff
 
-Thank you for your interest in contributing to GuffSuff! GuffSuff is a secure, privacy-focused, Nepal-first messaging platform.
+> **Developer Guidelines & Security Commit Rules**
 
-## Branch Strategy
+---
 
-We follow a structured branch strategy:
+## Git Workflow & Branch Naming
 
-- `main`: Protected, production-ready release branch. Force pushes and direct commits are strictly prohibited.
-- `develop`: Integration branch for completed feature branches.
-- `feature/<short-description>`: New application features.
-- `fix/<short-description>`: Bug fixes.
-- `security/<short-description>`: Security enhancements or vulnerability patches.
-- `release/<version>`: Release candidate preparation.
+All contributions must follow the branch naming conventions defined in `ADR-001`:
 
-## Commit Message Convention
+- `feature/<name>` — New capabilities or architectural components.
+- `fix/<name>` — Bug fixes or stability patches.
+- `security/<name>` — Security updates, threat models, or runbooks.
+- `build/<name>` — Monorepo tooling, CI/CD, or infrastructure updates.
+- `docs/<name>` — Documentation updates.
 
-All commits MUST follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+---
 
-- `feat:` A new feature
-- `fix:` A bug fix
-- `security:` Security fix, crypto enhancement, or vulnerability patch
-- `test:` Adding or updating tests
-- `docs:` Documentation only changes
-- `refactor:` Code refactoring without behavioral changes
-- `build:` Build system or monorepo dependency changes
-- `ci:` CI pipeline and workflow configuration updates
-- `chore:` Maintenance tasks, repository housekeeping
+## Commit & PR Rules
 
-Example:
-```bash
-git commit -m "feat(api): implement Nepal phone number E.164 normalization"
-```
-
-## Non-Negotiable Security Rules for Developers
-
-1. **Zero Plaintext Server-Side**: Never log, trace, cache, store, or output plaintext message content or media files on backend services.
-2. **No Invented Cryptography**: Crypto primitives must strictly go through `packages/crypto-adapter`.
-3. **No Committed Secrets**: Pre-commit hooks (`gitleaks`) must pass prior to pushing.
-4. **Devanagari Safety**: Ensure all mobile and web UI string processing supports proper Devanagari text shaping and UTF-8 / UTF-16 bounds.
-
-## Pull Request Workflow
-
-1. Create a topic branch from `develop`.
-2. Ensure unit tests, integration tests, and static checks pass locally.
-3. Submit a Pull Request targeting `develop` or `main`.
-4. Ensure all GitHub Action CI checks pass (linting, tests, security scans).
-5. Code review approval from `@rahulgupta32` is required for merge.
+1. **Commit Message Format**: Use Conventional Commits (`type(scope): subject`).
+2. **Never Commit Secrets**: Ensure `gitleaks` passes before pushing commits.
+3. **Commit Lockfiles**: All `pnpm-lock.yaml` changes must be committed.
+4. **Pull Requests**: Submit PRs into `main`. Direct commits to `main` are blocked by branch protection rules.

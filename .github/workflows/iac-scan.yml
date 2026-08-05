@@ -1,0 +1,21 @@
+name: IaC Infrastructure Scan
+
+on:
+  push:
+    branches: [main, build/development-platform]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checkov-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: bridgecrewio/checkov-action@9b70310bcd306d11740313070b940167d6b23085 # v9
+        with:
+          framework: dockerfile
+          output_format: cli
+          soft_fail: true

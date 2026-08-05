@@ -1,134 +1,131 @@
-# GuffSuff (गफगाफ / गफसफ)
+# GuffSuff Monorepo
 
-> **Secure, Privacy-Focused, Nepal-First Messaging & Communication Platform**
-
-[![CI Pipeline](https://github.com/rahulgupta32/GuffSuff/actions/workflows/ci.yml/badge.svg)](https://github.com/rahulgupta32/GuffSuff/actions/workflows/ci.yml)
-[![Security Scan](https://github.com/rahulgupta32/GuffSuff/actions/workflows/security-scan.yml/badge.svg)](https://github.com/rahulgupta32/GuffSuff/actions/workflows/security-scan.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+> **Secure, Privacy-Focused, Nepal-First Messaging & Communication Platform**  
+> Repository Owner: Rahul Gupta (`@rahulgupta32`)  
+> Repository: `git@github.com:rahulgupta32/GuffSuff.git`
 
 ---
 
-## ⚠️ Security Notice & Development Status
+## 1. Prerequisites
 
-**NOTICE**: GuffSuff is currently in active pre-production bootstrap and architecture development. Early dev iterations may utilize non-production crypto adapters until audited end-to-end encryption libraries are integrated and approved. **Do not use in production or for real sensitive communications during development phases.**
-
----
-
-## Product Overview
-
-GuffSuff is an original, production-grade messaging platform designed specifically with a Nepal-first emphasis while adhering to international security, privacy, and performance standards.
-
-### Key Capabilities (MVP Scope)
-- **Phone-Number Registration & Verification**: Nepal phone-number format validation (+977 E.164 normalization) and OTP verification with progressive cooldowns.
-- **Privacy-Preserving Contact Discovery**: Local phone normalization and zero-knowledge hashed lookup with rate limiting.
-- **End-to-End Encrypted Messaging**: 1-to-1 and group text messaging, delivery/read states, reactions, reply/forward/edit/delete.
-- **Encrypted Media Sharing**: Client-side AES-GCM encrypted media transfers (images, videos, audio, voice notes, documents, location preview).
-- **Nepal-First User Experience**: Native Devanagari script support, Asia/Kathmandu timezone alignment, low-bandwidth data saver mode, and sub-$100 Android device optimization.
-- **Trust & Safety / Admin Console**: Role-based administrative dashboard with zero plaintext access to user messages.
+- **Node.js**: `v24.15.0` (LTS)
+- **pnpm**: `v11.20.0`
+- **Docker Desktop / Engine**: Docker 26+ and Docker Compose v2+
+- **Flutter SDK** _(Optional for mobile development)_: `v3.29.2` (Dart `3.7.0`)
 
 ---
 
-## Monorepo Architecture
+## 2. Installation & Setup
 
-```text
-GuffSuff/
-├── .github/              # GitHub Action workflows, issue templates, dependabot
-├── apps/                 # Application frontends
-│   ├── mobile/           # Flutter Android & iOS client
-│   └── admin/            # Administrative & Trust & Safety web console
-├── services/             # Backend microservices / core APIs
-│   ├── api/              # HTTP API (Authentication, Account, Devices, Media metadata)
-│   ├── realtime/         # WebSocket / Realtime delivery engine
-│   └── worker/           # Background jobs & delayed push notifications
-├── packages/             # Shared TypeScript / Dart monorepo modules
-│   ├── contracts/        # Shared OpenAPI & schema definitions
-│   ├── crypto-adapter/   # Cryptographic abstraction interface & drivers
-│   ├── design-system/    # GuffSuff UI theme and component tokens
-│   ├── localization/     # ARB & JSON translation assets (Nepali & English)
-│   ├── shared-config/    # Shared lint, TypeScript, and environment validation
-│   └── test-utils/       # Mock data generators and test helpers
-├── infrastructure/       # Container & IaC manifests
-│   ├── docker/           # Docker Compose local dev stack
-│   ├── terraform/        # Cloud infrastructure definitions
-│   ├── kubernetes/       # Production K8s manifests
-│   └── monitoring/       # Prometheus & Grafana alerts/dashboards
-├── docs/                 # Product requirements, architecture & security specs
-│   ├── adr/              # Architecture Decision Records
-│   ├── diagrams/         # System architecture & flow diagrams
-│   └── runbooks/         # Incident response & operational runbooks
-└── scripts/              # Local setup & administrative scripts
+```bash
+# 1. Clone repository
+git clone git@github.com:rahulgupta32/GuffSuff.git
+cd GuffSuff
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Install monorepo dependencies
+pnpm install
 ```
 
 ---
 
-## Prerequisites
+## 3. Local Services & Docker Infrastructure
 
-- **Flutter**: `>= 3.19.0` (with Dart `>= 3.3.0`)
-- **Node.js**: `>= 20.11.0 LTS`
-- **Docker & Docker Compose**: `>= 25.0`
-- **PostgreSQL**: `>= 16.0` (or via Docker)
-- **Redis**: `>= 7.2` (or via Docker)
+```bash
+# Start PostgreSQL 16, Redis 7.2, MinIO, and OpenTelemetry Collector
+make dev
 
----
-
-## Quick Local Setup
-
-1. **Clone the Repository**:
-   ```bash
-   git clone git@github.com:rahulgupta32/GuffSuff.git
-   cd GuffSuff
-   ```
-
-2. **Environment Configuration**:
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Start Local Development Services**:
-   ```bash
-   docker compose -f infrastructure/docker/docker-compose.yml up -d
-   ```
+# Check container health and logs
+docker compose ps
+make logs
+```
 
 ---
 
-## Development & Test Commands
+## 4. Database Setup & Migration Execution
 
-| Command | Action |
-| :--- | :--- |
-| `make dev` | Launch local API, Realtime service, Worker, and DB containers |
-| `make test` | Run unit & integration test suites across all services & packages |
-| `make lint` | Run pre-commit linter & static code analysis |
-| `make build` | Compile backend services and validate Flutter build constraints |
-| `make db-migrate` | Run database schema migrations |
+```bash
+# Apply initial database migrations
+pnpm --filter @guffsuff/database migrate
 
----
-
-## Documentation Index
-
-- 📋 [Product Requirements Document](docs/PRODUCT_REQUIREMENTS.md)
-- 🏗️ [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
-- 🗄️ [Data Model Specification](docs/DATA_MODEL.md)
-- 🔌 [API Specification](docs/API_SPECIFICATION.md)
-- ⚡ [Realtime Delivery Protocol](docs/REALTIME_PROTOCOL.md)
-- 🔐 [Encryption Architecture](docs/ENCRYPTION_ARCHITECTURE.md)
-- 🛡️ [STRIDE Threat Model](docs/THREAT_MODEL.md)
-- 👁️ [Privacy Model](docs/PRIVACY_MODEL.md)
-- 🛑 [Abuse Prevention Model](docs/ABUSE_PREVENTION.md)
-- 🚀 [Deployment Architecture](docs/DEPLOYMENT_ARCHITECTURE.md)
-- 📊 [Observability & Monitoring](docs/OBSERVABILITY.md)
-- 🧪 [Test Strategy](docs/TEST_STRATEGY.md)
-- 📦 [Release Checklist](docs/RELEASE_CHECKLIST.md)
-- 📜 [Architecture Decision Log](docs/DECISION_LOG.md)
-- 🗺️ [Product Roadmap](docs/ROADMAP.md)
+# Reset local development database (requires confirmation)
+make db-reset-local
+```
 
 ---
 
-## Vulnerability Reporting
+## 5. Starting Applications & Services
 
-Please review [`SECURITY.md`](SECURITY.md) for details on responsible vulnerability disclosure.
+```bash
+# Start all backend service applications in development mode
+pnpm dev
+
+# Or start individual services:
+pnpm --filter @guffsuff/api dev       # API Service (Port 3000)
+pnpm --filter @guffsuff/realtime dev  # Realtime Gateway (Port 3001)
+pnpm --filter @guffsuff/worker dev    # Queue Worker
+pnpm --filter @guffsuff/admin dev     # Admin Web Console (Port 3002)
+```
 
 ---
 
-## License
+## 6. Testing, Quality & Security Commands
 
-This project is licensed under the terms of the MIT License. See [`LICENSE`](LICENSE) for details.
+```bash
+# Run unit and integration tests
+pnpm test
+pnpm test:integration
+
+# Type checking & linting
+pnpm typecheck
+pnpm lint
+
+# Format checking & auto-formatting
+pnpm format:check
+pnpm format:write
+
+# Security & Secret Scanning
+pnpm security:scan
+```
+
+---
+
+## 7. Repository Structure
+
+```text
+GuffSuff/
+├── apps/
+│   ├── admin/             # Next.js 15 Administrative Web Console
+│   └── mobile/            # Flutter 3.29 Mobile Application (Android / iOS)
+├── services/
+│   ├── api/               # NestJS REST Gateway
+│   ├── realtime/          # NestJS WebSocket Gateway
+│   └── worker/            # NestJS BullMQ Queue Worker
+├── packages/
+│   ├── contracts/         # Zod schemas & transport contract types
+│   ├── crypto-adapter/    # Zero-knowledge E2EE interface abstraction
+│   ├── database/          # PostgreSQL Kysely / Prisma client & migrations
+│   ├── design-system/     # Brand tokens & design components
+│   ├── errors/            # Standardized domain error classes
+│   ├── id-generation/     # UUIDv7 identifier generators
+│   ├── localization/      # English & Nepali translation dictionaries
+│   ├── logger/            # Allowlist-based Pino structured JSON logger
+│   ├── observability/     # OpenTelemetry tracing & Prometheus metrics
+│   ├── object-storage/    # MinIO / S3 object storage abstraction
+│   ├── queue/             # BullMQ Redis queue connection factory
+│   ├── shared-config/     # TypeScript, ESLint, & Prettier presets
+│   └── test-utils/        # Fictional test data & mock fixtures
+├── docs/                  # Architecture, ADRs, Threat Models, Runbooks
+├── .github/workflows/     # 16 Least-privilege CI/CD workflows
+└── docker-compose.yml     # Local environment stack definition
+```
+
+---
+
+## 8. Troubleshooting
+
+- **Redis connection rejected**: Ensure `guffsuff-redis` container is healthy (`docker compose ps`).
+- **PostgreSQL authentication failed**: Verify `DATABASE_URL` in `.env` matches credentials in `docker-compose.yml`.
+- **TypeScript workspace build error**: Run `pnpm build` from monorepo root to build shared packages before dependent services.

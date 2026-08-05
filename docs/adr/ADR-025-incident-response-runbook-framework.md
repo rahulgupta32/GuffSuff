@@ -6,7 +6,9 @@
 - **Decision Status**: Proposed
 
 ## Context
+
 Unstructured incident response during security breaches increases downtime and risk of procedural errors.
 
 ## Decision
+
 Maintain 12 dedicated markdown runbooks in `docs/runbooks/` mapped to SEV1-4 severity tiers. Public runbooks use role aliases rather than personal contact information.

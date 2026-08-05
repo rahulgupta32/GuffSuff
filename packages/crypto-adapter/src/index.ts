@@ -1,7 +1,7 @@
 /**
  * @file packages/crypto-adapter/src/index.ts
  * @description Typed Cryptographic Adapter Interfaces for GuffSuff.
- * 
+ *
  * SECURITY WARNING:
  * This package defines typed contracts and interfaces ONLY.
  * It DOES NOT contain cryptographic algorithm implementations, production key generation,
@@ -10,9 +10,19 @@
  */
 
 // Opaque Key & State Handles (Prevents unsafe raw key exposure)
-export type OpaqueIdentityKeyHandle = { readonly __brand: 'OpaqueIdentityKeyHandle'; readonly keyId: string };
-export type OpaqueSessionStateHandle = { readonly __brand: 'OpaqueSessionStateHandle'; readonly sessionId: string };
-export type OpaqueGroupStateHandle = { readonly __brand: 'OpaqueGroupStateHandle'; readonly groupId: string; readonly epoch: number };
+export type OpaqueIdentityKeyHandle = {
+  readonly __brand: "OpaqueIdentityKeyHandle";
+  readonly keyId: string;
+};
+export type OpaqueSessionStateHandle = {
+  readonly __brand: "OpaqueSessionStateHandle";
+  readonly sessionId: string;
+};
+export type OpaqueGroupStateHandle = {
+  readonly __brand: "OpaqueGroupStateHandle";
+  readonly groupId: string;
+  readonly epoch: number;
+};
 
 // Public Prekey Bundle Structure (Non-sensitive public key data)
 export interface PublicPrekeyBundle {
@@ -30,7 +40,7 @@ export interface EncryptedEnvelopePayload {
   protocolVersion: number;
   ephemeralPublicKeyBase64: string;
   ciphertextBase64: string;
-  messageType: 'PREKEY_SIGNAL' | 'WHISPER_SIGNAL' | 'MLS_GROUP';
+  messageType: "PREKEY_SIGNAL" | "WHISPER_SIGNAL" | "MLS_GROUP";
 }
 
 export interface AttachmentEncryptionResult {
@@ -43,22 +53,25 @@ export interface AttachmentEncryptionResult {
 
 // Structured Failure Error Classes
 export type CryptoErrorCode =
-  | 'INVALID_SIGNATURE'
-  | 'UNKNOWN_DEVICE'
-  | 'STALE_KEY_BUNDLE'
-  | 'REPLAY_ATTACK'
-  | 'UNSUPPORTED_VERSION'
-  | 'CORRUPTED_CIPHERTEXT'
-  | 'AUTHENTICATION_FAILURE'
-  | 'REVOKED_DEVICE'
-  | 'GROUP_EPOCH_MISMATCH'
-  | 'MISSING_SESSION'
-  | 'KEY_STORAGE_UNAVAILABLE';
+  | "INVALID_SIGNATURE"
+  | "UNKNOWN_DEVICE"
+  | "STALE_KEY_BUNDLE"
+  | "REPLAY_ATTACK"
+  | "UNSUPPORTED_VERSION"
+  | "CORRUPTED_CIPHERTEXT"
+  | "AUTHENTICATION_FAILURE"
+  | "REVOKED_DEVICE"
+  | "GROUP_EPOCH_MISMATCH"
+  | "MISSING_SESSION"
+  | "KEY_STORAGE_UNAVAILABLE";
 
 export class CryptoAdapterError extends Error {
-  constructor(public readonly code: CryptoErrorCode, message: string) {
+  constructor(
+    public readonly code: CryptoErrorCode,
+    message: string
+  ) {
     super(`[CryptoAdapterError:${code}] ${message}`);
-    this.name = 'CryptoAdapterError';
+    this.name = "CryptoAdapterError";
   }
 }
 
@@ -67,31 +80,59 @@ export class CryptoAdapterError extends Error {
 export interface IdentityKeyManager {
   initializeDeviceIdentity(): Promise<OpaqueIdentityKeyHandle>;
   exportPublicDeviceIdentity(handle: OpaqueIdentityKeyHandle): Promise<string>;
-  generateVerificationCode(localHandle: OpaqueIdentityKeyHandle, recipientPublicKeyBase64: string): Promise<string>;
+  generateVerificationCode(
+    localHandle: OpaqueIdentityKeyHandle,
+    recipientPublicKeyBase64: string
+  ): Promise<string>;
 }
 
 export interface PreKeyManager {
-  publishPublicKeyBundle(handle: OpaqueIdentityKeyHandle, count: number): Promise<PublicPrekeyBundle>;
+  publishPublicKeyBundle(
+    handle: OpaqueIdentityKeyHandle,
+    count: number
+  ): Promise<PublicPrekeyBundle>;
 }
 
 export interface SessionManager {
   establishOutboundSession(recipientBundle: PublicPrekeyBundle): Promise<OpaqueSessionStateHandle>;
-  processInboundPreKeyMessage(inboundMessage: EncryptedEnvelopePayload): Promise<OpaqueSessionStateHandle>;
-  encryptForDevices(sessionHandles: Map<string, OpaqueSessionStateHandle>, plaintext: Uint8Array): Promise<Map<string, EncryptedEnvelopePayload>>;
-  decryptEnvelope(sessionHandle: OpaqueSessionStateHandle, envelope: EncryptedEnvelopePayload): Promise<Uint8Array>;
+  processInboundPreKeyMessage(
+    inboundMessage: EncryptedEnvelopePayload
+  ): Promise<OpaqueSessionStateHandle>;
+  encryptForDevices(
+    sessionHandles: Map<string, OpaqueSessionStateHandle>,
+    plaintext: Uint8Array
+  ): Promise<Map<string, EncryptedEnvelopePayload>>;
+  decryptEnvelope(
+    sessionHandle: OpaqueSessionStateHandle,
+    envelope: EncryptedEnvelopePayload
+  ): Promise<Uint8Array>;
   revokeDevice(deviceId: string): Promise<void>;
 }
 
 export interface GroupSessionManager {
   createGroupState(groupId: string, memberDeviceIds: string[]): Promise<OpaqueGroupStateHandle>;
-  addGroupMember(groupHandle: OpaqueGroupStateHandle, newMemberDeviceId: string, newMemberBundle: PublicPrekeyBundle): Promise<OpaqueGroupStateHandle>;
-  removeGroupMember(groupHandle: OpaqueGroupStateHandle, removedMemberDeviceId: string): Promise<OpaqueGroupStateHandle>;
+  addGroupMember(
+    groupHandle: OpaqueGroupStateHandle,
+    newMemberDeviceId: string,
+    newMemberBundle: PublicPrekeyBundle
+  ): Promise<OpaqueGroupStateHandle>;
+  removeGroupMember(
+    groupHandle: OpaqueGroupStateHandle,
+    removedMemberDeviceId: string
+  ): Promise<OpaqueGroupStateHandle>;
   rotateGroupState(groupHandle: OpaqueGroupStateHandle): Promise<OpaqueGroupStateHandle>;
 }
 
 export interface AttachmentCrypto {
-  encryptAttachmentStream(fileStream: ReadableStream<Uint8Array>): Promise<AttachmentEncryptionResult>;
-  decryptAttachmentStream(ciphertextStream: ReadableStream<Uint8Array>, mediaKeyBase64: string, ivBase64: string, macBase64: string): Promise<ReadableStream<Uint8Array>>;
+  encryptAttachmentStream(
+    fileStream: ReadableStream<Uint8Array>
+  ): Promise<AttachmentEncryptionResult>;
+  decryptAttachmentStream(
+    ciphertextStream: ReadableStream<Uint8Array>,
+    mediaKeyBase64: string,
+    ivBase64: string,
+    macBase64: string
+  ): Promise<ReadableStream<Uint8Array>>;
 }
 
 export interface EnvelopeCodec {
@@ -103,7 +144,10 @@ export interface KeyChangeObserver {
 }
 
 export interface CryptoMigrationManager {
-  migrateSessionState(oldHandle: OpaqueSessionStateHandle, targetVersion: number): Promise<OpaqueSessionStateHandle>;
+  migrateSessionState(
+    oldHandle: OpaqueSessionStateHandle,
+    targetVersion: number
+  ): Promise<OpaqueSessionStateHandle>;
 }
 
 export interface CryptoProvider {

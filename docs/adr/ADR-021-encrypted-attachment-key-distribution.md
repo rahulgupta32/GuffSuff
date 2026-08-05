@@ -6,7 +6,9 @@
 - **Decision Status**: Proposed
 
 ## Context
+
 Storing unencrypted media attachments on cloud object storage (S3) allows cloud operators or unauthorized buckets access to private user media.
 
 ## Decision
+
 All media attachments MUST be encrypted locally on device via AES-256-GCM. The random media key $K_{media}$ is transferred exclusively inside E2EE message envelopes.

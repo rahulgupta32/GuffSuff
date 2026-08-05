@@ -8,6 +8,7 @@
 ## 1. Decision Status Vocabulary
 
 All architectural components in this specification utilize the standardized GuffSuff decision-status vocabulary:
+
 - **Proposed**: Initial architectural recommendation submitted for review.
 - **Under evaluation**: Active technical prototyping or security evaluation underway.
 - **Approved by product owner**: Explicitly accepted by `@rahulgupta32` with recorded date and evidence.
@@ -20,7 +21,7 @@ All architectural components in this specification utilize the standardized Guff
 
 ## 2. Core Architecture Topology
 
-GuffSuff is architected as a **Modular Monolith with Independently Deployable Microservice Entry Points** (`Proposed` - ADR-013).
+GuffSuff is architected as a **Modular Monolith with Independently Deployable Backend Service Entry Points** (`Proposed` - ADR-013).
 
 ```text
 +-----------------------------------------------------------------------------------+
