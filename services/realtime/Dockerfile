@@ -1,9 +1,9 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json turbo.json ./
 COPY packages/ ./packages/
 COPY services/realtime/ ./services/realtime/
-RUN npm install -g pnpm@11.20.0 && pnpm install --frozen-lockfile && pnpm --filter @guffsuff/realtime build
+RUN npm install -g pnpm@11.20.0 && pnpm install --frozen-lockfile && pnpm build
 
 FROM node:24-alpine AS runner
 WORKDIR /app
