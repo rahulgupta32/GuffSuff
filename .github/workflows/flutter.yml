@@ -25,7 +25,7 @@ jobs:
           dart format .
           flutter pub get
           flutter analyze
-          flutter test
+          if [ -d "test" ]; then flutter test; fi
 
       - name: Validate Android Flavor Build Configurations
         run: |
