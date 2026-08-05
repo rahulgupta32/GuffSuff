@@ -1,0 +1,50 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e6712ab-90cd-4eef-8123-56789abcdef0",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-06T01:30:00Z",
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "CycloneDX-CLI",
+        "version": "0.25.0"
+      }
+    ],
+    "component": {
+      "type": "library",
+      "name": "libsignal-android-spike",
+      "version": "0.60.0",
+      "purl": "pkg:maven/org.signal/libsignal-android@0.60.0?type=aar"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "libsignal-android",
+      "group": "org.signal",
+      "version": "0.60.0",
+      "purl": "pkg:maven/org.signal/libsignal-android@0.60.0?type=aar",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "AGPL-3.0-only"
+          }
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:maven/org.signal/libsignal-android@0.60.0?type=aar",
+      "dependsOn": []
+    }
+  ]
+}

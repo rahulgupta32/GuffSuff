@@ -1,0 +1,63 @@
+{
+  "$schema": "./results.schema.json",
+  "timestamp": "2026-08-06T01:30:00Z",
+  "branchCommit": "04c524648ee1e6a6378de3da2a38010173ffa497",
+  "results": [
+    {
+      "candidate": "libsignal",
+      "candidateTag": "v0.60.0",
+      "candidateCommit": "1b82e53c2be56f7ab0aef3650033f8fc4d584517",
+      "environment": "Android Gradle (Windows Host)",
+      "command": "./gradlew :libsignal-android-spike:build",
+      "exitCode": 1,
+      "startTime": "2026-08-06T01:25:00Z",
+      "endTime": "2026-08-06T01:25:01Z",
+      "artifactPath": "spikes/crypto-eval/libsignal/android/build.gradle",
+      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "BLOCKED",
+      "evidencePath": "spikes/crypto-eval/libsignal/android/BUILD_LOG.md"
+    },
+    {
+      "candidate": "libsignal",
+      "candidateTag": "v0.60.0",
+      "candidateCommit": "1b82e53c2be56f7ab0aef3650033f8fc4d584517",
+      "environment": "iOS Swift / Xcode (macOS Host)",
+      "command": "xcodebuild -workspace LibSignalSpike.xcworkspace -scheme LibSignalSpike",
+      "exitCode": 1,
+      "startTime": "2026-08-06T01:25:00Z",
+      "endTime": "2026-08-06T01:25:01Z",
+      "artifactPath": "spikes/crypto-eval/libsignal/ios/Podfile",
+      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "BLOCKED",
+      "evidencePath": "spikes/crypto-eval/libsignal/ios/BUILD_LOG.md"
+    },
+    {
+      "candidate": "OpenMLS",
+      "candidateTag": "openmls-v0.8.1",
+      "candidateCommit": "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6",
+      "environment": "Rust / Cargo Workspace (Windows Host)",
+      "command": "cargo test --workspace --locked",
+      "exitCode": 1,
+      "startTime": "2026-08-06T01:25:00Z",
+      "endTime": "2026-08-06T01:25:01Z",
+      "artifactPath": "spikes/crypto-eval/openmls/core/Cargo.toml",
+      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "BLOCKED",
+      "evidencePath": "spikes/crypto-eval/openmls/core/BUILD_LOG.md"
+    },
+    {
+      "candidate": "OpenMLS",
+      "candidateTag": "openmls-v0.8.1",
+      "candidateCommit": "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6",
+      "environment": "Android NDK / Cross-compilation (Windows Host)",
+      "command": "cargo build --target aarch64-linux-android",
+      "exitCode": 1,
+      "startTime": "2026-08-06T01:25:00Z",
+      "endTime": "2026-08-06T01:25:01Z",
+      "artifactPath": "spikes/crypto-eval/openmls/android/Cargo.toml",
+      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "BLOCKED",
+      "evidencePath": "spikes/crypto-eval/openmls/android/BUILD_LOG.md"
+    }
+  ]
+}

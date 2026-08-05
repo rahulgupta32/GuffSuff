@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CryptoSpikeResults",
+  "type": "object",
+  "required": ["timestamp", "branchCommit", "results"],
+  "properties": {
+    "timestamp": { "type": "string" },
+    "branchCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate",
+          "candidateTag",
+          "candidateCommit",
+          "environment",
+          "command",
+          "exitCode",
+          "status",
+          "evidencePath"
+        ],
+        "properties": {
+          "candidate": { "type": "string" },
+          "candidateTag": { "type": "string" },
+          "candidateCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+          "environment": { "type": "string" },
+          "command": { "type": "string" },
+          "exitCode": { "type": "integer" },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "artifactPath": { "type": "string" },
+          "artifactSha256": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["PASSED", "FAILED", "PARTIAL", "BLOCKED", "NOT EXECUTED", "NOT APPLICABLE"]
+          },
+          "evidencePath": { "type": "string" }
+        }
+      }
+    }
+  }
+}
