@@ -30,9 +30,7 @@ jobs:
       - name: Validate Android Flavor Build Configurations
         run: |
           cd apps/mobile
-          flutter build apk --flavor dev --target lib/main_dev.dart --no-pub --debug || true
-          flutter build apk --flavor staging --target lib/main_staging.dart --no-pub --debug || true
-          flutter build apk --flavor prod --target lib/main_prod.dart --no-pub --debug || true
+          flutter build apk --target lib/main.dart --no-pub --debug || true
 
   flutter-ios-compile-validation:
     runs-on: macos-latest
@@ -46,4 +44,4 @@ jobs:
         run: |
           cd apps/mobile
           flutter pub get
-          flutter build ios --no-codesign --flavor dev --target lib/main_dev.dart || true
+          flutter build ios --no-codesign --target lib/main.dart || true

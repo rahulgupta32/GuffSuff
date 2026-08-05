@@ -15,6 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Install Trivy CLI
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.59.1
+
       - name: Build Container Images
         run: |
           docker build -t guffsuff-api:test -f services/api/Dockerfile .
@@ -34,15 +38,7 @@ jobs:
           done
 
       - name: Scan API Container Image
-        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
-        with:
-          image-ref: guffsuff-api:test
-          exit-code: "0"
-          severity: "CRITICAL,HIGH"
+        run: trivy image --exit-code 0 --severity CRITICAL,HIGH guffsuff-api:test
 
       - name: Scan Admin Container Image
-        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
-        with:
-          image-ref: guffsuff-admin:test
-          exit-code: "0"
-          severity: "CRITICAL,HIGH"
+        run: trivy image --exit-code 0 --severity CRITICAL,HIGH guffsuff-admin:test
