@@ -47,10 +47,10 @@ class DevStatusScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('GuffSuff Dev Status')),
       body: Stack(
         children: [
-          Center(
+          const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   'GuffSuff Mobile Application',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -73,10 +73,13 @@ class DevStatusScreen extends StatelessWidget {
               child: const Text(
                 'Development build — not for production use',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
