@@ -1,6 +1,6 @@
 # GuffSuff Key Management Specification
 
-> **Document Status**: Phase 2 Security Architecture Baseline  
+> **Document Status**: Phase 5 Security Architecture Baseline  
 > **Rule**: No key MAY be used for multiple security purposes. Separation of duties is strictly enforced.
 
 ---
@@ -19,3 +19,28 @@
 | **SMS OTP Hash Salt Key**                    | API Gateway     | Argon2id OTP Salting          | Server Secrets Manager         | API Gateway RAM                      | `services/api` process only     | Rotated every **30 days**                        | Flush active OTP keys in Redis.                          |
 | **TLS Certificates**                         | DevSecOps       | HTTPS / WSS Encryption        | Let's Encrypt / Cloud CA       | WAF / Reverse Proxy                  | Reverse proxy process           | Automated rotation every **60 days**             | Emergency certificate revocation & re-issuance via ACME. |
 | **Code Signing Keys (APK/IPA)**              | Release Manager | Mobile Binary Signing         | Hardware Security Module (HSM) | Encrypted CI HSM Vault               | Release CI pipeline runner only | Rotated upon expiration or compromise            | Revoke provisioning profile & issue app update.          |
+
+---
+
+## 2. Mobile Secure Storage Classification Table
+
+| Item / Value Name | Confidentiality | Required Device Lock State | Backup Eligibility | Migration Behavior | Biometric Requirement | Invalidation Behavior | Deletion Behavior |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Access Token** | High | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Cleared on Logout | Purged on Revocation |
+| **Refresh Token** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Invalidated on Reuse | Purged on Logout |
+| **Device Identifier** | Medium | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Permanent per device | Purged on Account Reset |
+| **Device Private Key Placeholder** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Hardware Locked | Purged on Revocation |
+| **Local Database Key (SQLCipher)** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Lockscreen Reset Invalidates | Purged on Reset |
+| **Registration-Lock State** | High | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Failed Attempts Lock | Purged on Reset |
+| **Biometric Preference** | Low | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Reset on OS Change | Local Reset |
+| **Environment Config (Non-Secret)** | Public | Standard SharedPreferences / NSUserDefaults | Eligible | Allowed | None | None | App Uninstall |
+
+### iOS Accessibility Modes
+- **Access & Refresh Tokens**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
+- **Device Private Key**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
+- **Database Key**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
+
+### Android Hardware KeyStore & StrongBox Configuration
+- `EncryptedSharedPreferences` with Master Key `AES256_GCM`
+- Hardware-backed Keystore preference (`useStrongBox = true` where hardware supported)
+- Backup exclusion (`android:allowBackup="false"`)
