@@ -1,17 +1,12 @@
-# Cryptographic Dependency & Security Patch Update Policy
+# Cryptographic Dependency Update & Governance Policy
 
-> **Document Status**: Supply Chain & Vulnerability Management Standard
-
----
-
-## 1. Monitoring & Patch Cadence
-
-1. **Automated Vulnerability Scans**: Weekly `cargo audit` (Rust), `pnpm audit` (JS/TS), and `pub outdated` (Dart) runs.
-2. **Patch SLA**: Security advisories with CVE rating `>= 7.0` (High/Critical) MUST be remediated within **7 business days**.
-3. **Pinning Requirement**: All native cryptographic dependencies (`libsignal`, `openmls`, `libsodium`) MUST be pinned to exact commit SHAs or release tags. Wildcard or fuzzy version ranges (`^`, `~`) are strictly prohibited.
+> **Document Status**: Strict Production Policy
 
 ---
 
-## 2. Emergency Update Protocol
+## 1. Governance Rules for Cryptographic Dependencies
 
-In the event of a breaking vulnerability in an underlying cryptographic dependency, an emergency hotfix branch must be created, audited against existing state persistence formats, and validated with cross-platform test vectors before deployment.
+1. **Zero Unverified Upgrades**: No cryptographic dependency (including `libsignal` or `openmls`) may be upgraded in production without machine-verified SHA-256 checksums and tag commit SHAs.
+2. **Version Reassessment Requirements**: Versions must be evaluated against public artifact availability, vulnerability history, breaking changes, and legal copyleft implications.
+3. **`libsignal` Baseline Classification**: `v0.60.0` is designated as `Historical comparison baseline — not proposed for production integration`. Any future production upgrade requires custom reproducible build verification and legal approval.
+4. **OpenMLS Baseline Classification**: `openmls-v0.8.1` is designated as the active evaluation candidate for RFC 9420 MLS group messaging.
