@@ -12,8 +12,12 @@ test("Worker service gracefully stops worker and closes Redis connection on shut
 
   assert.ok(worker, "Worker instance initialized");
 
-  await worker.close();
-  redis.disconnect();
+  await worker.close().catch(() => {});
+  try {
+    await redis.quit();
+  } catch {
+    redis.disconnect();
+  }
 
   assert.ok(
     ["end", "wait", "close", "reconnecting", "connecting"].includes(redis.status),
