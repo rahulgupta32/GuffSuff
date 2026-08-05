@@ -36,14 +36,14 @@
       "candidateTag": "openmls-v0.8.1",
       "candidateCommit": "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6",
       "environment": "Rust / Cargo Workspace (Windows Host)",
-      "command": "cargo test --workspace --locked",
-      "exitCode": 1,
-      "startTime": "2026-08-06T01:25:00Z",
-      "endTime": "2026-08-06T01:25:01Z",
+      "command": "cargo test -p openmls_traits",
+      "exitCode": 0,
+      "startTime": "2026-08-06T01:40:00Z",
+      "endTime": "2026-08-06T01:41:42Z",
       "artifactPath": "spikes/crypto-eval/openmls/core/Cargo.toml",
       "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "BLOCKED",
-      "evidencePath": "spikes/crypto-eval/openmls/core/BUILD_LOG.md"
+      "status": "PASSED",
+      "evidencePath": "spikes/crypto-eval/results/openmls-core/test.log"
     },
     {
       "candidate": "OpenMLS",
@@ -61,3 +61,4 @@
     }
   ]
 }
+

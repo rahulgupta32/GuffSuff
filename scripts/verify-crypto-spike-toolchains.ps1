@@ -3,6 +3,11 @@
 $ErrorActionPreference = "Continue"
 $LogFile = Join-Path $PSScriptRoot "..\spikes\crypto-eval\results\toolchain-install.log"
 
+$JdkBin = Join-Path $PSScriptRoot "..\.tools\jdk-21\jdk-21.0.3+9\bin"
+$CargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
+$env:JAVA_HOME = Join-Path $PSScriptRoot "..\.tools\jdk-21\jdk-21.0.3+9"
+$env:PATH = "$JdkBin;$CargoBin;" + $env:PATH
+
 function Test-Binary($cmd, $arg) {
     try {
         $pinfo = New-Object System.Diagnostics.ProcessStartInfo
