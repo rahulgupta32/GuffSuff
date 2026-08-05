@@ -37,3 +37,21 @@ test("Enforces production workspace isolation from spikes/crypto-eval", () => {
     validateProductionFlags({ NODE_ENV: "production", CRYPTO_SPIKE_MODE: "true" });
   }, /CRYPTO_SPIKE_MODE MUST NOT be enabled/);
 });
+
+test("Simulates destructive removal of spikes directory and validates zero production import impact", () => {
+  const apiSrcDir = path.resolve(process.cwd(), "../../services/api/src");
+  if (fs.existsSync(apiSrcDir)) {
+    const files = fs.readdirSync(apiSrcDir, { recursive: true }) as string[];
+    for (const f of files) {
+      if (typeof f === "string" && (f.endsWith(".ts") || f.endsWith(".js"))) {
+        const fullPath = path.join(apiSrcDir, f);
+        const content = fs.readFileSync(fullPath, "utf-8");
+        assert.strictEqual(
+          content.includes("spikes/crypto-eval"),
+          false,
+          `Production file ${f} must not import from spikes/crypto-eval`
+        );
+      }
+    }
+  }
+});

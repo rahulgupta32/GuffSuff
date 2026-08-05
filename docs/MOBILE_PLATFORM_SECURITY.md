@@ -7,8 +7,8 @@
 
 ## 1. Storage & Key Protection Controls
 
-- **Hardware-Backed Storage**: Private keys and SQLite encryption master keys MUST be stored in platform hardware enclaves via `flutter_secure_storage` (iOS Keychain with `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` / Android Keystore with `EncryptedSharedPreferences`).
-- **Database At-Rest Encryption**: Local SQLite database MUST be encrypted using SQLCipher. Drift acts as the Dart ORM query layer over SQLCipher (`ADR-002`, `ADR-010`).
+- **Hardware-Backed Master Key Protection**: Master database encryption keys and access credentials MUST be stored in platform hardware enclaves via `flutter_secure_storage` (iOS Keychain with Secure Enclave hardware protection / Android KeyStore with StrongBox / TEE). **Neither Secure Enclave nor Android KeyStore directly stores arbitrary protocol state.**
+- **Database At-Rest Encryption**: All protocol session state, prekeys, ratchets, and messages MUST be stored inside local SQLite databases encrypted using SQLCipher (`ADR-002`, `ADR-010`). Master SQLCipher keys are protected by KeyStore/Keychain.
 - **Backup Exclusion**: Local SQLite database files and secure storage keys MUST be explicitly excluded from OS cloud backups (`ALLOW_BACKUP=false` in Android Manifest, `NSURLIsExcludedFromBackupKey` on iOS).
 
 ---
