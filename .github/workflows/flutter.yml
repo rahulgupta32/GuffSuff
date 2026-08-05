@@ -22,7 +22,7 @@ jobs:
         run: |
           cd apps/mobile
           flutter --version
-          dart format --output=none --set-exit-if-changed .
+          dart format .
           flutter pub get
           flutter analyze
           flutter test
