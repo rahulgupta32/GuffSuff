@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant MobileApp as Mobile App
+    participant API as API Gateway
+    participant Redis as Redis Store
+    participant SMSVendor as SMS Gateway Vendor
+
+    MobileApp->>API: POST /api/v1/auth/otp/request (+97798XXXXXXXX)
+    API->>Redis: Check Rate Limit (Max 1 req/60s)
+    API->>API: Generate CSPRNG 6-Digit OTP
+    API->>Redis: Store Argon2id(OTP + Salt) [TTL = 300s]
+    API->>SMSVendor: Dispatch SMS OTP Payload
+    API-->>MobileApp: 200 OK {"status": "SENT"}

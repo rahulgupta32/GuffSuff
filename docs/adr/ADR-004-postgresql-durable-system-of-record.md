@@ -1,8 +1,9 @@
 # ADR-004: PostgreSQL as Durable System of Record
 
-- **Status**: Approved
+- **Status**: Proposed Architecture Baseline
 - **Date**: 2026-08-05
-- **Deciders**: Rahul Gupta (`@rahulgupta32`), GuffSuff Lead Architecture Team
+- **Deciders**: Lead Database Architect, GuffSuff Lead Architecture Team
+- **Decision Status**: Proposed
 
 ---
 
@@ -14,30 +15,17 @@ GuffSuff requires a primary transactional database for users, phone identities, 
 
 ## Decision
 
-We select **PostgreSQL 16+** as the authoritative durable system of record.
+We select **PostgreSQL** as the authoritative durable system of record.
+
+### Versioning & Deployment Policy
+- The specified version (e.g., PostgreSQL 16) represents an initial deployment baseline rather than a permanent architectural constraint.
+- Production deployments MUST enforce:
+  1. **Supported Release**: Use actively maintained active LTS releases.
+  2. **Security-Patch Policy**: Timely application of upstream security patches within 14 days of release.
+  3. **Upgrade Policy**: Scheduled major-version upgrade path with pre-release migration testing.
+  4. **Compatibility Testing**: Continuous integration tests executed against target major versions.
+  5. **No Floating Image Tags**: Container deployments MUST pin exact immutable image tags (e.g. `postgres:16.4-alpine3.20`), strictly prohibiting floating tags (`latest`, `16-alpine`).
 
 ### Key Database Conventions
-- **Identifiers**: UUIDv7 (time-ordered sequential UUIDs) for primary keys to preserve index locality while preventing ID enumeration attacks.
-- **Schema Management**: Versioned migration scripts with explicit up/down rollbacks.
-- **Partitioning**: Range partitioning by month on high-volume tables (`message_envelopes`, `security_events`, `admin_audit_events`).
-- **Integrity**: Strict foreign key constraints, unique indexes, and transactional boundaries.
-
----
-
-## Alternatives Considered
-
-- **MongoDB / NoSQL**: Rejected due to lack of strict relational constraints for security RBAC, key bundles, and transactional audit trails.
-- **Firebase Firestore**: Explicitly rejected due to vendor lock-in, unsuited query cost behavior at scale, data residency limitations, and inability to run custom E2EE payload validation.
-
----
-
-## Consequences & Implications
-
-- **Pros**: Proven ACID compliance, rich extension ecosystem (`pgcrypto`, `pg_trgm`), robust backup tooling (`pg_dump`, `WAL-G` for point-in-time recovery).
-- **Cons**: Requires active vacuuming and connection pooling (`PgBouncer`) under high concurrency.
-
----
-
-## Revisit Conditions
-
-Partitioning strategy and archiving schedules will be evaluated if `message_envelopes` table exceeds 100 million active rows.
+- **Identifiers**: UUIDv7 (time-ordered sequential UUIDs) for primary keys.
+- **Partitioning**: Range partitioning by month on high-volume tables (`message_envelopes`, `security_events`).

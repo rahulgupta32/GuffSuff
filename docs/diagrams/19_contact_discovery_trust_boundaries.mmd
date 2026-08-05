@@ -1,0 +1,16 @@
+graph TD
+    subgraph ClientBoundary [Client Device Trust Boundary]
+        AddressBook[Local Address Book] --> Normalizer[Normalize to E.164]
+        Normalizer --> Hasher[Compute HMAC-SHA256 with Daily Salt]
+    end
+
+    subgraph TransportBoundary [TLS 1.3 Transport Boundary]
+        Hasher -->|Post Candidate Hashes| API[API Gateway]
+    end
+
+    subgraph ServerBoundary [Server Infrastructure Trust Boundary]
+        API --> RedisRate[Check 50 Query/Hour Limit]
+        RedisRate --> DB[Match Against phone_identities Hashes]
+        DB --> Filter[Return Pseudonymous Matches]
+        Filter -->|Discard Non-Matching Hashes| API
+    end

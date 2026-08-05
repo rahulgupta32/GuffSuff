@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant Sender as Sender Mobile App
+    participant S3 as S3 Encrypted Bucket
+    participant Realtime as Realtime Gateway
+    participant Recipient as Recipient Mobile App
+
+    Sender->>Sender: Generate Random AES-256 Media Key (K_media) + IV
+    Sender->>Sender: Encrypt Media File with K_media (AES-256-GCM)
+    Sender->>S3: Upload Encrypted Media Ciphertext via Presigned URL
+    Sender->>Sender: Encrypt K_media inside E2EE Message Envelope
+    Sender->>Realtime: Send E2EE Message Envelope (Contains S3 ObjectKey + Encrypted K_media)
+    Realtime->>Recipient: Relay Encrypted Envelope
+    Recipient->>Recipient: Decrypt E2EE Envelope to extract K_media & ObjectKey
+    Recipient->>S3: Download Ciphertext Blob from S3
+    Recipient->>Recipient: Decrypt Media File using K_media

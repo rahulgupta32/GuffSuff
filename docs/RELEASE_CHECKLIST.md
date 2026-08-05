@@ -1,17 +1,13 @@
-# GuffSuff Release Acceptance Gates & Checklist
+# GuffSuff Production Release Security Checklist
 
-> **Status**: Initial Draft (Phase 0 Bootstrap)
+> **Document Status**: Phase 2 Security Architecture Baseline
 
 ---
 
-## Non-Negotiable Launch Gates
+## Pre-Release Verification
 
-- [ ] 1. PRD & Architecture documents approved by repository owner (`@rahulgupta32`).
-- [ ] 2. STRIDE threat model completed and verified.
-- [ ] 3. E2EE Cryptographic design & audited crypto adapter approved.
-- [ ] 4. All secrets externally managed (Zero secrets in repo or environment files).
-- [ ] 5. OWASP MASVS compliance verified for mobile client.
-- [ ] 6. Zero plaintext message content confirmed across logs, database, and telemetry.
-- [ ] 7. Data export and complete account deletion tested and verified.
-- [ ] 8. Disaster recovery & point-in-time database restoration tested.
-- [ ] 9. Final manual release sign-off by release manager.
+- [ ] All 15 Security Acceptance Gates (`GATE-01` to `GATE-15` in `docs/SECURITY_ACCEPTANCE_GATES.md`) passed and signed off.
+- [ ] Clean `gitleaks` commit history scan across all monorepo commits.
+- [ ] Software Bill of Materials (SBOM) scan clean of Critical/High vulnerabilities.
+- [ ] Production release binaries signed with production release keys.
+- [ ] Database backup point-in-time recovery (PITR) verified within 24 hours of launch.

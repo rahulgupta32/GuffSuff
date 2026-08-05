@@ -1,11 +1,22 @@
 # GuffSuff Product Requirements Document (PRD)
 
-> **Document Status**: Complete (Phase 1 Specification)  
-> **Market Target**: Nepal (Primary: Nepali Devanagari, Secondary: English)
+> **Document Status**: Phase 2 Security Architecture Baseline  
+> **Market Target**: Nepal (Primary: Nepali Devanagari, Secondary: English)  
+> **Warning**: GuffSuff does not yet contain production end-to-end encryption and must not be marketed or represented as cryptographically secure until implementation, independent review, and release acceptance gates are completed.
 
 ---
 
-## 1. User Personas
+## 1. Decision Status Vocabulary
+
+Requirements utilize the GuffSuff decision-status vocabulary:
+- **Proposed**: Initial requirement recommendation submitted for review.
+- **Under evaluation**: Active technical prototyping or security analysis underway.
+- **Approved by product owner**: Explicitly accepted by `@rahulgupta32` with recorded date and evidence.
+- **Approved by security review**: Accepted by Lead Security Reviewer following formal review.
+
+---
+
+## 2. User Personas
 
 1. **Prashant (Everyday Nepali Mobile User)**: Uses budget Android phone on Ncell/NTC 3G/4G. Expects fast messaging, simple media sharing, and intuitive UI in Nepali.
 2. **Sarita (Low-Bandwidth / Rural User)**: Lives in remote district with intermittent 2G/Wi-Fi connection. Requires low-data overhead, background message retries, and offline queueing.
@@ -18,33 +29,33 @@
 
 ---
 
-## 2. Functional Requirements Matrix (MoSCoW Prioritization)
+## 3. Functional Requirements Matrix
 
 ### Authentication & Identity
-- **AUTH-001** (Must Have): Nepal Phone E.164 Normalization. Validates +977 mobile numbers (98xxxxxxxx, 97xxxxxxxx) and normalizes to E.164. Prevents invalid numbers from consuming OTP quota.
-- **AUTH-002** (Must Have): Cryptographic OTP Verification. Generates secure 6-digit OTP, stores argon2id/bcrypt hash with 5-minute TTL, enforces max 3 verification attempts and 60s resend cooldown.
-- **AUTH-003** (Must Have): Registration Lock PIN. Optional 6-digit PIN required during account re-registration to prevent SIM-swap account takeover.
+- **AUTH-001** (Proposed): Nepal Phone E.164 Normalization. Validates +977 mobile numbers (98xxxxxxxx, 97xxxxxxxx) and normalizes to E.164. Prevents invalid numbers from consuming OTP quota.
+- **AUTH-002** (Proposed): Cryptographic OTP Verification. Generates secure 6-digit OTP, stores argon2id/bcrypt hash with 5-minute TTL, enforces max 3 verification attempts and 60s resend cooldown.
+- **AUTH-003** (Proposed): Registration Lock PIN. Optional 6-digit PIN required during account re-registration to prevent SIM-swap account takeover.
 
 ### User & Device Management
-- **USER-001** (Must Have): Profile & Unique Username. Users establish a display name and unique `@username` (3-30 chars, alphanumeric + underscore).
-- **DEVICE-001** (Must Have): Device Identity & Revocation. Assigns unique UUIDv7 per registered device with public key bundle. Supports listing active sessions and remote revocation.
+- **USER-001** (Proposed): Profile & Unique Username. Users establish a display name and unique `@username` (3-30 chars, alphanumeric + underscore).
+- **DEVICE-001** (Proposed): Device Identity & Revocation. Assigns unique UUIDv7 per registered device with public key bundle. Supports listing active sessions and remote revocation.
 
 ### Contact Discovery & Privacy
-- **DISCOVERY-001** (Must Have): Privacy-Preserving Contact Matching. Computes local salted HMAC-SHA256 hashes of normalized contact numbers for server lookup. Raw address books are never stored server-side.
-- **PRIVACY-001** (Must Have): Granular Privacy Controls. Configurable visibility for Last Seen (Everyone / Contacts / Nobody), Read Receipts (On / Off), and Profile Photo.
+- **DISCOVERY-001** (Under evaluation): Privacy-Preserving Contact Matching. Staged evaluation of salted HMAC hashing (Stage A) moving toward Private Set Intersection / Oblivious PRF (Stage B).
+- **PRIVACY-001** (Proposed): Granular Privacy Controls. Configurable visibility for Last Seen (Everyone / Contacts / Nobody), Read Receipts (On / Off), and Profile Photo.
 
 ### Encrypted Messaging & Groups
-- **CHAT-001** (Must Have): One-to-One E2EE Text Messaging. Asynchronous end-to-end encrypted direct messaging with delivery & read state receipts.
-- **GROUP-001** (Must Have): Encrypted Group Messaging. Supports group creation (up to 256 members for MVP), member management, and admin role delegation.
-- **MESSAGE-001** (Must Have): Message Lifecycle Actions. Reply, reaction (emoji), message edit (within 15 mins), delete for self, delete for everyone (within 60 mins).
-- **MEDIA-001** (Must Have): Encrypted Attachment Transfer. Client-side AES-256-GCM encryption for images, PDFs, audio notes, and voice recordings uploaded to private S3 buckets.
+- **CHAT-001** (Proposed): One-to-One E2EE Text Messaging. Asynchronous end-to-end encrypted direct messaging with delivery & read state receipts.
+- **GROUP-001** (Proposed): Encrypted Group Messaging. Supports group creation (up to 256 members proposed), member management, and admin role delegation.
+- **MESSAGE-001** (Proposed): Message Lifecycle Actions. Reply, reaction (emoji), message edit (within 15 mins proposed), delete for self, delete for everyone (within 60 mins proposed).
+- **MEDIA-001** (Proposed): Encrypted Attachment Transfer. Client-side AES-256-GCM encryption for images, PDFs, audio notes, and voice recordings uploaded to private S3 buckets.
 
 ### Abuse & Trust
-- **ABUSE-001** (Must Have): One-Tap Block & User Reporting. Allows blocking users and submitting encrypted report envelopes to Trust & Safety analysts.
-- **ADMIN-001** (Must Have): Admin Console RBAC. Role-based web console for support/T&S with immutable audit logging and ZERO message plaintext access.
+- **ABUSE-001** (Proposed): One-Tap Block & User Reporting. Allows blocking users and submitting encrypted report envelopes to Trust & Safety analysts.
+- **ADMIN-001** (Proposed): Admin Console RBAC. Role-based web console for support/T&S with immutable audit logging and ZERO message plaintext access.
 
 ### Compliance & Rights
-- **EXPORT-001** (Must Have): In-App Data Export. Generates encrypted downloadable zip of user profile and account metadata.
-- **DELETE-001** (Must Have): Account Deletion. Permanently purges user account records, device keys, and prekeys from production database within 30 days.
-- **LOCALIZATION-001** (Must Have): Multilingual Nepali/English UI. Complete translation files in ARB format supporting proper Devanagari script shaping.
-- **ACCESSIBILITY-001** (Must Have): Accessibility Baseline. Minimum 4.5:1 contrast ratio, WCAG 2.1 AA compliance, dynamic font scaling support.
+- **EXPORT-001** (Proposed): In-App Data Export. Generates encrypted downloadable zip of user profile and account metadata.
+- **DELETE-001** (Proposed): Account Deletion. Permanently purges user account records, device keys, and prekeys from production database within 30 days.
+- **LOCALIZATION-001** (Proposed): Multilingual Nepali/English UI. Complete translation files in ARB format supporting proper Devanagari script shaping.
+- **ACCESSIBILITY-001** (Proposed): Accessibility Baseline. Minimum 4.5:1 contrast ratio, WCAG 2.1 AA compliance, dynamic font scaling support.

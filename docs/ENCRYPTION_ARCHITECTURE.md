@@ -1,14 +1,14 @@
 # GuffSuff Encryption Architecture & Cryptographic Boundary
 
-> **Document Status**: Complete (Phase 1 Specification)  
+> **Document Status**: Phase 2 Security Architecture Baseline  
 > **Crypto Abstraction Package**: `packages/crypto-adapter`  
-> **Production Crypto Selection**: DEFERRED TO PHASE 2 APPROVAL DECISION
+> **Warning**: GuffSuff does not yet contain production end-to-end encryption and must not be marketed or represented as cryptographically secure until implementation, independent review, and release acceptance gates are completed.
 
 ---
 
-## 1. Crypto Abstraction Boundary (`packages/crypto-adapter`)
+## 1. Cryptographic Isolation Policy
 
-To strictly prevent custom cryptography implementations or tight coupling to a single crypto engine, all GuffSuff application code (Flutter app and NestJS backend) interacts exclusively with the `ICryptoAdapter` interface.
+To strictly prevent custom cryptography implementations or tight coupling to a single crypto engine, all GuffSuff application code interacts exclusively with the `ICryptoAdapter` interface in `packages/crypto-adapter`.
 
 ```typescript
 export interface ICryptoAdapter {
@@ -24,19 +24,17 @@ export interface ICryptoAdapter {
 
 ---
 
-## 2. Mock vs Production Driver Policy
+## 2. Production Crypto Provider Status: UNDER EVALUATION
 
-### `MockCryptoAdapter` (Development Phase 5 Only)
-- Uses simple AES-256-GCM with fixed development keys for early UI and transport pipeline testing.
-- **SECURITY GUARD**: Must display a visible yellow warning banner in app UI ("DEVELOPMENT MOCK ENCRYPTION ACTIVE") and MUST throw a hard build failure if `NODE_ENV=production` or `APP_ENV=production`.
-
-### Production Encryption Candidate Evaluation (Phase 2 Review)
-1. **Option A (Signal Protocol / `libsignal`)**: Proven asynchronous ratchet scheme, pairwise session ratcheting, forward secrecy, post-compromise security. Licensing and mobile binding audit required in Phase 2.
-2. **Option B (Messaging Layer Security - MLS / RFC 9420)**: Efficient tree-based group key agreement for groups, reducing $O(N)$ pairwise message fan-out overhead.
+- **Production Provider Selection**: **UNSELECTED / UNDER EVALUATION**. Signal Protocol (`libsignal`) and Messaging Layer Security (MLS / RFC 9420) are under evaluation during Phase 2.
+- **No Production Crypto Implemented**: No production cryptographic algorithms, primitives, or Double Ratchet implementations exist in the repository currently.
 
 ---
 
-## 3. Attachment & Group Encryption Rules
+## 3. Mock Provider Safeguards
 
-- **Attachment Encryption**: Sender generates unique random 256-bit key $K_{media}$ and 96-bit IV per file. Encrypts file locally via AES-256-GCM. Uploads ciphertext blob. $K_{media}$ is encrypted inside the pairwise E2EE message envelope.
-- **Device Verification**: Safety numbers (fingerprints) derived from identity public keys allow users to visually or QR-scan verify session integrity. Key changes trigger explicit in-chat warnings.
+If a future development mock is created for offline pipeline testing, it MUST enforce:
+- Mandatory exclusion from production compilation.
+- Startup failure if `NODE_ENV=production` or `APP_ENV=production`.
+- Visible UI indicator on mobile app ("DEVELOPMENT MOCK ENCRYPTION ACTIVE").
+- CI rejection rules blocking release builds containing mock symbols.

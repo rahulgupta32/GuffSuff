@@ -1,0 +1,6 @@
+flowchart TD
+    Alert[Security Alert Triggered] --> Triage[Determine Incident Severity Level SEV1-4]
+    Triage --> Runbook[Execute Target Incident Runbook]
+    Runbook --> Containment[Apply Immediate Threat Containment]
+    Containment --> Recovery[Restore System Services & Rotate Secrets]
+    Recovery --> PostMortem[Archive Findings & Conduct 48h Post-Mortem]

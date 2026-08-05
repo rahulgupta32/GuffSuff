@@ -1,12 +1,11 @@
-# GuffSuff Test Strategy & Quality Assurance Plan
+# GuffSuff Quality & Security Testing Strategy
 
-> **Status**: Initial Draft (Phase 0 Bootstrap)
+> **Document Status**: Phase 2 Security Architecture Baseline
 
 ---
 
-## Testing Pyramid
+## Testing Pipeline Integration
 
-1. **Unit Tests**: Domain logic, E.164 Nepal phone normalization, crypto adapter contracts, localization.
-2. **Integration Tests**: Repository layer, PostgreSQL schemas, Redis rate limiters, S3 presigned URL generators.
-3. **End-to-End Tests**: Full flow registration, key package publishing, message delivery, attachment transfer, and device revocation.
-4. **Security Tests**: SAST, dependency vulnerability scanning, secrets scanning (gitleaks), OWASP MASVS verification.
+- **Unit Testing**: 100% coverage target for `packages/crypto-adapter` interfaces and input validation schemas.
+- **Integration Testing**: Automated API integration suite validating REST endpoints, WebSocket frame parsing, and database queries.
+- **Security Automated Scans**: SAST (`eslint`, `dart analyze`), Dependency Audit (`npm audit`), and Secret Scanning (`gitleaks`) on every PR.

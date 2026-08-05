@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    participant MobileApp as Mobile App (Hardware Enclave)
+    participant Keystore as Android Keystore / iOS Keychain
+    participant Backend as Backend API Service
+    participant Database as PostgreSQL DB
+
+    MobileApp->>Keystore: Generate Ed25519 Identity Keypair
+    Keystore-->>MobileApp: Return Public Key (Private Key locked in Enclave)
+    MobileApp->>Keystore: Generate Signed Prekey + Sign with Identity Key
+    MobileApp->>Keystore: Generate 100 One-Time Prekeys (OTPs)
+    MobileApp->>Backend: POST /api/v1/keys/prekey (Public Identity + Signed Prekey + One-Time Public Keys)
+    Backend->>Database: Store Public Key Bundles in device_key_bundles
+    Database-->>Backend: Confirmed Stored
+    Backend-->>MobileApp: 201 Created (Key Bundle Published)

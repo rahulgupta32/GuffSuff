@@ -1,0 +1,6 @@
+graph TD
+    AdminUser[Admin Console User] --> WebAuthn[Mandatory WebAuthn / TOTP MFA]
+    WebAuthn --> RBAC[Role-Based Access Control]
+    RBAC -->|Support Role| ReadOnly[Read Account Status & Audit Logs]
+    RBAC -->|High-Impact Action| FourEyes[Four-Eyes Approval Workflow]
+    FourEyes -->|Requires 2 Admin Signs| PermBan[Permanent Account Ban / Export]
