@@ -1,8 +1,11 @@
-import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
-import { Socket } from "socket.io";
+import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
 
 @WebSocketGateway({ cors: { origin: "*" } })
 export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server!: Server;
+
   handleConnection(client: Socket) {
     const token = client.handshake.auth?.token;
     if (!token) {
@@ -17,5 +20,19 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleDisconnect(client: Socket) {
     console.log(`[REALTIME] Client disconnected ID: ${client.id}`);
+  }
+
+  /**
+   * Realtime revocation events are notifications ONLY.
+   * Server-side session and API token authorization checks remain authoritative.
+   */
+  sendIdentityNotification(userId: string, eventType: "device_revoked" | "session_revoked" | "security_alert", payload: Record<string, unknown>) {
+    if (this.server) {
+      this.server.to(`user_${userId}`).emit("identity_event", {
+        eventType,
+        payload,
+        timestamp: Date.now()
+      });
+    }
   }
 }

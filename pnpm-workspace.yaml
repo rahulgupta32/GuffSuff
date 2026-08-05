@@ -4,5 +4,6 @@ packages:
   - "apps/*"
 allowBuilds:
   "@scarf/scarf": true
+  argon2: true
   msgpackr-extract: true
   sharp: true

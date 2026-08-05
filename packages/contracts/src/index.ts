@@ -57,3 +57,88 @@ export const OpaqueEncryptedPayloadPlaceholderSchema = z.object({
 export type OpaqueEncryptedPayloadPlaceholder = z.infer<
   typeof OpaqueEncryptedPayloadPlaceholderSchema
 >;
+
+/* Phase 4 Identity Schemas */
+
+export const UsernameRegex = /^[a-z0-9_]{3,20}$/;
+
+export const OtpRequestSchema = z.object({
+  phoneNumber: z.string().min(5).max(30),
+  installationId: z.string().min(1).max(128),
+  deviceName: z.string().min(1).max(100),
+  platform: z.enum(["android", "ios", "web", "desktop"]),
+  appVersion: z.string().min(1).max(32),
+  osVersion: z.string().min(1).max(32)
+});
+export type OtpRequest = z.infer<typeof OtpRequestSchema>;
+
+export const OtpVerifySchema = z.object({
+  challengeId: z.string().uuid(),
+  otpCode: z.string().length(6).regex(/^\d{6}$/)
+});
+export type OtpVerify = z.infer<typeof OtpVerifySchema>;
+
+export const RegisterAccountSchema = z.object({
+  challengeId: z.string().uuid(),
+  displayName: z.string().min(2).max(50),
+  username: z.string().regex(UsernameRegex, "Username must be 3-20 lowercase ASCII letters, numbers, or underscore"),
+  locale: z.string().default("ne"),
+  timezone: z.string().default("Asia/Kathmandu"),
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: "Terms must be accepted" })
+  }),
+  privacyAccepted: z.literal(true, {
+    errorMap: () => ({ message: "Privacy policy must be accepted" })
+  })
+});
+export type RegisterAccount = z.infer<typeof RegisterAccountSchema>;
+
+export const TokenRefreshSchema = z.object({
+  refreshToken: z.string().min(1)
+});
+export type TokenRefresh = z.infer<typeof TokenRefreshSchema>;
+
+export const UpdateProfileSchema = z.object({
+  displayName: z.string().min(2).max(50).optional(),
+  bio: z.string().max(255).optional()
+});
+export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
+
+export const CheckUsernameSchema = z.object({
+  username: z.string().regex(UsernameRegex)
+});
+export type CheckUsername = z.infer<typeof CheckUsernameSchema>;
+
+export const UpdateUsernameSchema = z.object({
+  username: z.string().regex(UsernameRegex)
+});
+export type UpdateUsername = z.infer<typeof UpdateUsernameSchema>;
+
+export const PrivacyVisibilityEnum = z.enum(["everyone", "contacts_only", "nobody"]);
+
+export const UpdatePrivacySettingsSchema = z.object({
+  lastSeenVisibility: PrivacyVisibilityEnum.optional(),
+  onlineStatusVisibility: PrivacyVisibilityEnum.optional(),
+  profilePhotoVisibility: PrivacyVisibilityEnum.optional(),
+  phoneNumberVisibility: PrivacyVisibilityEnum.optional(),
+  readReceipts: z.boolean().optional(),
+  phoneDiscoverability: z.boolean().optional(),
+  securityNotifications: z.boolean().optional(),
+  notificationPreviews: z.boolean().optional()
+});
+export type UpdatePrivacySettings = z.infer<typeof UpdatePrivacySettingsSchema>;
+
+export const UpdateDeviceSchema = z.object({
+  deviceName: z.string().min(1).max(100)
+});
+export type UpdateDevice = z.infer<typeof UpdateDeviceSchema>;
+
+export const SetRegistrationLockPinSchema = z.object({
+  pin: z.string().min(6).max(12).regex(/^\d{6,12}$/)
+});
+export type SetRegistrationLockPin = z.infer<typeof SetRegistrationLockPinSchema>;
+
+export const VerifyRegistrationLockPinSchema = z.object({
+  pin: z.string().min(6).max(12).regex(/^\d{6,12}$/)
+});
+export type VerifyRegistrationLockPin = z.infer<typeof VerifyRegistrationLockPinSchema>;
