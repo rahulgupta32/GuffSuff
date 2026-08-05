@@ -6,15 +6,9 @@ test("Worker service gracefully stops worker and closes Redis connection on shut
   const redis = createRedisConnection({ lazyConnect: true });
 
   assert.ok(redis, "Redis connection initialized");
-  assert.ok(
-    ["wait", "connecting"].includes(redis.status),
-    "Redis connection is in initial state"
-  );
+  assert.ok(["wait", "connecting"].includes(redis.status), "Redis connection is in initial state");
 
   redis.disconnect();
 
-  assert.ok(
-    ["end", "wait", "close"].includes(redis.status),
-    "Redis connection closed cleanly"
-  );
+  assert.ok(["end", "wait", "close"].includes(redis.status), "Redis connection closed cleanly");
 });
