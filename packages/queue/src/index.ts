@@ -1,13 +1,13 @@
 import { Queue, Worker, QueueOptions, WorkerOptions } from "bullmq";
-import Redis from "ioredis";
+import Redis, { RedisOptions } from "ioredis";
 
 export function getEnvironmentKeyPrefix(env = process.env.NODE_ENV || "development"): string {
   return `guffsuff:${env}:`;
 }
 
-export function createRedisConnection(): Redis {
+export function createRedisConnection(options?: RedisOptions): Redis {
   const url = process.env.REDIS_URL || "redis://localhost:6379";
-  return new Redis(url, { maxRetriesPerRequest: null, lazyConnect: true });
+  return new Redis(url, { maxRetriesPerRequest: null, lazyConnect: true, ...options });
 }
 
 export function createHealthCheckQueue(connection: Redis, env?: string): Queue {

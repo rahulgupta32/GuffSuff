@@ -1,12 +1,9 @@
 import assert from "node:assert";
 import test from "node:test";
-import Redis from "ioredis";
-import { createHealthCheckWorker } from "@guffsuff/queue";
+import { createRedisConnection, createHealthCheckWorker } from "@guffsuff/queue";
 
 test("Worker service gracefully stops worker and closes Redis connection on shutdown signal", async () => {
-  const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
-    maxRetriesPerRequest: null,
-    lazyConnect: true,
+  const redis = createRedisConnection({
     retryStrategy: () => null,
     enableOfflineQueue: false
   });
