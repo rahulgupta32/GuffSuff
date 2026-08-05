@@ -142,3 +142,31 @@ export const VerifyRegistrationLockPinSchema = z.object({
   pin: z.string().min(6).max(12).regex(/^\d{6,12}$/)
 });
 export type VerifyRegistrationLockPin = z.infer<typeof VerifyRegistrationLockPinSchema>;
+
+/* Phase 5 Opaque Encrypted Envelope Transport Schemas */
+
+export const CreateDirectConversationSchema = z.object({
+  recipientUserId: z.string().uuid()
+});
+export type CreateDirectConversation = z.infer<typeof CreateDirectConversationSchema>;
+
+export const SubmitMessageEnvelopeSchema = z.object({
+  idempotencyKey: z.string().min(1).max(64),
+  conversationId: z.string().uuid(),
+  recipientUserId: z.string().uuid(),
+  protocolVersion: z.number().int().positive().default(1),
+  opaquePayloadBase64: z.string().min(1).max(87382), // Max 64KB base64 encoded
+  clientCreatedAt: z.string().datetime(),
+  expiresAt: z.string().datetime()
+});
+export type SubmitMessageEnvelope = z.infer<typeof SubmitMessageEnvelopeSchema>;
+
+export const AcknowledgeDeliverySchema = z.object({
+  recipientDeviceId: z.string().uuid().optional()
+});
+export type AcknowledgeDelivery = z.infer<typeof AcknowledgeDeliverySchema>;
+
+export const AcknowledgeReadSchema = z.object({
+  lastReadEnvelopeId: z.string().uuid()
+});
+export type AcknowledgeRead = z.infer<typeof AcknowledgeReadSchema>;

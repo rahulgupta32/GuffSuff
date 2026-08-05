@@ -8,7 +8,7 @@
     "dev": "nest start --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test dist/identity/__tests__/*.test.js"
+    "test": "node --test dist/identity/__tests__/*.test.js dist/transport/__tests__/*.test.js"
   },
   "dependencies": {
     "@guffsuff/contracts": "workspace:*",

@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    actor RecipientDevice as Offline Recipient Device
+    participant API as API Gateway
+    participant DB as PostgreSQL
+
+    RecipientDevice->>API: Connect WSS / Reconnect HTTP
+    RecipientDevice->>API: GET /api/v1/conversations/:id/envelopes/pending
+    API->>DB: SELECT pending envelopes for deviceId
+    DB-->>API: Return unexpired pending envelopes
+    API-->>RecipientDevice: 200 OK (List of Envelopes)
+    RecipientDevice->>API: Batch POST /api/v1/envelopes/:id/delivered

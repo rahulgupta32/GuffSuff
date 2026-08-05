@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    actor RecipientDevice as Recipient Device
+    participant API as API Gateway
+    participant DB as PostgreSQL
+
+    RecipientDevice->>API: POST /api/v1/envelopes/:id/delivered
+    API->>DB: UPDATE message_recipient_devices SET delivery_status='delivered'
+    API->>DB: INSERT INTO message_acknowledgements
+    API-->>RecipientDevice: 200 OK
+
+    RecipientDevice->>API: POST /api/v1/envelopes/:id/read
+    API->>DB: UPSERT message_read_states
+    API-->>RecipientDevice: 200 OK

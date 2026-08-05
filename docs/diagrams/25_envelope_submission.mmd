@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    actor SenderDevice as Sender Device
+    participant API as API Gateway (TransportModule)
+    participant DB as PostgreSQL
+    participant Worker as BullMQ Worker
+
+    SenderDevice->>API: POST /api/v1/conversations/:id/envelopes (IdempotencyKey, OpaquePayload)
+    API->>DB: Verify membership & check idempotency key
+    API->>DB: INSERT INTO message_envelopes & message_recipient_devices
+    API-->>SenderDevice: 201 Created (EnvelopeID, ServerAcceptedAt)
+    API->>Worker: Enqueue background delivery task

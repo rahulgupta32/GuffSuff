@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    actor Client as Mobile Client
+    participant API as API Gateway
+    participant DB as PostgreSQL
+
+    Client->>API: POST Envelope (Key: IDEMP-100, Digest: SHA_A)
+    API->>DB: Check idempotency key IDEMP-100
+    DB-->>API: Not found -> Insert envelope & idempotency record
+    API-->>Client: 201 Created (Envelope ID 1)
+
+    Note over Client, API: Network retry due to socket drop
+    Client->>API: Retry POST Envelope (Key: IDEMP-100, Digest: SHA_A)
+    API->>DB: Check idempotency key IDEMP-100
+    DB-->>API: Found (Digest matches)
+    API-->>Client: 201 Created (Return cached Envelope ID 1, idempotentRetry: true)

@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    actor Sender as Sender Device
+    participant API as API Gateway
+    participant DB as PostgreSQL
+    actor Phone as Recipient Phone
+    actor Desktop as Recipient Desktop
+
+    Sender->>API: Submit Envelope for User B
+    API->>DB: Query active devices for User B
+    DB-->>API: Returns [Device_Phone, Device_Desktop]
+    API->>DB: INSERT 2 recipient device records
+    API->>Phone: Deliver envelope via WSS
+    API->>Desktop: Deliver envelope via WSS
