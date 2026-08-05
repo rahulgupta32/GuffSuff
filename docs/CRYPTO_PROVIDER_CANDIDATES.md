@@ -6,10 +6,10 @@
 
 ## 1. Multi-Dimensional `libsignal` Artifact Matrix
 
-| Artifact Dimension | Candidate Version `v0.60.0` | Candidate Version `v0.99.4` | Evaluation Notes |
+| Artifact Dimension | Candidate Version `v0.60.0` | Candidate Version `v0.99.4` | Evaluation Findings |
 | :--- | :--- | :--- | :--- |
 | **GitHub Source Archive** | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | Source `.tar.gz` and `.zip` archives published on GitHub. |
-| **GitHub Release Assets** | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | `.sym` debug-symbol packages uploaded to GitHub release page. |
+| **GitHub Release Assets** | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` | Native debug symbols (`.sym` files) hosted on GitHub releases. |
 | **Java Artifact (Maven Central)** | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` (`org.signal:libsignal-client:0.60.0`, `jar`) | `NOT PUBLISHED` | Maven Central Java client binding missing for v0.99.4. |
 | **Android Artifact (Maven Central)** | `PUBLIC OFFICIAL ARTIFACT AVAILABLE` (`org.signal:libsignal-android:0.60.0`, `aar`) | `NOT PUBLISHED` | Maven Central Android AAR missing for v0.99.4. |
 | **Swift / iOS Build Artifact** | `PUBLIC SOURCE BUILD AVAILABLE` | `PUBLIC SOURCE BUILD AVAILABLE` | SPM package / Swift C-bridge requires local Xcode build. |
@@ -19,8 +19,8 @@
 
 ---
 
-## 2. Selection & Governance Decision
+## 2. Evaluation Candidate Conclusions
 
-- **`libsignal` `v0.60.0`**: Classified as `Historical comparison baseline — not proposed for production integration`. Last version with public Maven Central Android AAR.
-- **`libsignal` `v0.99.4`**: Source build available, but lacks public Maven Central Android binaries. Requires custom CI build pipeline if evaluated for production.
-- **OpenMLS `openmls-v0.8.1`**: Classified as `Proposed Spike Evaluation Candidate` (`PUBLIC OFFICIAL ARTIFACT AVAILABLE` on Crates.io).
+- **Direct Messaging Candidate**: `libsignal remains a direct-message evaluation candidate. No technical recommendation can be made until native builds, upstream tests, persistence tests, licensing review, and mobile bridge tests complete.`
+- **Group Key-Agreement Candidate**: `OpenMLS remains a group key-agreement evaluation candidate. No technical recommendation can be made until upstream tests, state-persistence tests, Android/iOS builds, bridge tests, and external review complete.`
+- **Protocol Terminology Standard**: `libsignal secure-messaging protocol interfaces exposed by the selected version`.

@@ -4,20 +4,12 @@
 
 ---
 
-## 1. Executive Summary & Production Gate Status
+## 1. Executive Summary & Status Corrective Matrix
 
 - **Production Cryptographic Implementation**: `NOT AUTHORIZED`
-- **Candidate Evaluation Status**: All native build and execution gates reset to `NOT EXECUTED` or `BLOCKED`.
-- **`libsignal` `v0.60.0` Classification**: `Historical comparison baseline — not proposed for production integration`.
-- **OpenMLS `openmls-v0.8.1` Classification**: `Proposed Spike Evaluation Candidate` (RFC 9420 compliant).
-
----
-
-## 2. Decision Matrix
-
-| Evaluation Dimension | Candidate A (`libsignal`) | Candidate B (OpenMLS) | Mandatory Production Gate |
-| :--- | :--- | :--- | :--- |
-| **Protocol Compatibility** | 1:1 Double Ratchet / X3DH | Multi-party RFC 9420 TreeKEM | Must support both 1:1 and group messaging |
-| **License Compliance** | AGPL-3.0 Copyleft | MIT / Apache-2.0 Permissive | Requires legal counsel review approval |
-| **Artifact Distribution** | Maven Central (`0.60.0` historical) / Source build | Crates.io (`openmls-v0.8.1`) | Reproducible build required |
-| **External Security Audit** | Pending third-party audit | Pending third-party audit | Mandatory audit gate before production release |
+- **Toolchain Installation Status**: `FAILED — setup scripts executed but installed no required native toolchains`
+- **Built-Artifact SBOM Results**: `PARTIAL — source-manifest dependency SBOMs generated and schema-validated; no native or mobile built-artifact SBOM exists because no candidate build has executed.`
+- **OpenMLS Vectors**: `NOT EXECUTED — upstream vector and interoperability fixture availability has not yet been verified from an executable exact-version checkout.`
+- **Direct-Message Candidate Conclusion**: `libsignal remains a direct-message evaluation candidate. No technical recommendation can be made until native builds, upstream tests, persistence tests, licensing review, and mobile bridge tests complete.`
+- **Group Candidate Conclusion**: `OpenMLS remains a group key-agreement evaluation candidate. No technical recommendation can be made until upstream tests, state-persistence tests, Android/iOS builds, bridge tests, and external review complete.`
+- **Protocol Terminology**: `libsignal secure-messaging protocol interfaces exposed by the selected version`.
