@@ -150,7 +150,22 @@ export interface CryptoMigrationManager {
   ): Promise<OpaqueSessionStateHandle>;
 }
 
-export interface CryptoProvider {
+export type ProviderCapabilityFamily = "DIRECT_MESSAGE_PROVIDER" | "GROUP_MESSAGE_PROVIDER";
+
+export interface ProviderCapabilityMap {
+  supportsDirectMessaging: boolean;
+  supportsGroupMessaging: boolean;
+  supportedProtocolVersions: number[];
+  providerId: string;
+  providerVersion: string;
+  isTestProvider: boolean;
+}
+
+export interface CryptoProviderCapabilityQuery {
+  queryCapabilities(): ProviderCapabilityMap;
+}
+
+export interface CryptoProvider extends CryptoProviderCapabilityQuery {
   identity: IdentityKeyManager;
   prekeys: PreKeyManager;
   sessions: SessionManager;
@@ -159,3 +174,20 @@ export interface CryptoProvider {
   codec: EnvelopeCodec;
   migration: CryptoMigrationManager;
 }
+
+export class ProviderUnavailableError extends CryptoAdapterError {
+  constructor(message: string = "SECURE MESSAGING PROVIDER UNAVAILABLE") {
+    super("KEY_STORAGE_UNAVAILABLE", message);
+    this.name = "ProviderUnavailableError";
+  }
+}
+
+export function assertProductionProviderSafety(capabilities: ProviderCapabilityMap, isProductionEnvironment: boolean): void {
+  if (isProductionEnvironment && capabilities.isTestProvider) {
+    throw new CryptoAdapterError(
+      "AUTHENTICATION_FAILURE",
+      `PROHIBITED: Test provider '${capabilities.providerId}' cannot be loaded in production environment`
+    );
+  }
+}
+
