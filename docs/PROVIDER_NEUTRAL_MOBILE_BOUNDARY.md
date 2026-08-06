@@ -25,13 +25,14 @@ This specification establishes a **provider-neutral, opaque native cryptographic
 
 - **Android Emulator Tooling**: `PASSED — emulator executable and test_disposable_avd verified`
 - **Android Emulator Runtime**: `PASSED — booted API 35 x86_64 AVD, adb connectivity confirmed`
-- **Android Native Cross-Compilation**: `PASSED` (`guffsuff-android-neutral-boundary` compiled for `aarch64` and `x86_64`)
-- **Android Native Runtime**: `PASSED — APK installed and executed on emulator-5554 (com.guffsuff.mobile PID 8417)`
-- **Flutter SDK**: `PASSED — Flutter 3.44.8 (stable) installed & verified via flutter doctor`
-- **Dart SDK**: `PASSED — Dart 3.12.2 installed & verified`
-- **Flutter Build**: `PASSED — flutter build apk --debug assembled app-debug.apk`
-- **Flutter Android Runtime**: `PASSED — Impeller engine & Dart VM initialized on Android 15 emulator`
-- **Flutter Boundary-Contract Tests**: `PASSED — 7/7 Flutter unit & safety contract tests passed`
-- **PR Recommendation**: `Ready for PR review & merger into main.`
+- **Flutter Application Smoke Test**: `PASSED — APK installed & launched on emulator-5554 (com.guffsuff.mobile PID 8417)`
+- **Dart Provider-Neutral Contract Tests**: `PASSED — 7/7 unit & safety tests passed`
+- **Native Android Boundary Runtime**: `NOT EXECUTED — real native boundary library not yet loaded in Android runtime`
+- **Flutter-to-Native Handshake**: `NOT EXECUTED — native API version handshake pending integration test`
+- **Provider-Neutral Runtime Lifecycle**: `NOT EXECUTED — native handle lifecycle pending integration test`
+- **Test-Provider Production Rejection**: `PARTIAL — verified through Dart unit safety assertions`
+- **Release Artifact Exclusion**: `NOT EXECUTED — release APK/AAB symbol scan pending`
+- **PR Status**: `DRAFT — pending native library integration, process restart, and release safety gate execution`
+
 
 
