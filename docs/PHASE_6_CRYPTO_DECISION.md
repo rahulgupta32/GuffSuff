@@ -1,19 +1,24 @@
 # Phase 6 Cryptographic Decision Package
 
-> **Document Status**: Reassessed Decision Package (Post-Incident Verification Reset)
+> **Document Status**: Official Phase 6 Architectural Decision Record (Post-Verification Audit)
 
 ---
 
-## 1. Executive Summary & Status Corrective Matrix
+## 1. Executive Summary & Track Decisions
 
 - **Production Cryptographic Implementation**: `NOT AUTHORIZED`
-- **Toolchain Installation Status**: `PARTIAL — Rust/Cargo, cargo-deny, and Miri host toolchains installed and verified; JDK, Android SDK/NDK, adb, emulator, Flutter, Dart, and iOS cross-compilation remain NOT INSTALLED / BLOCKED.`
-- **Built-Artifact SBOM Results**: `PARTIAL — source-manifest dependency SBOMs generated and schema-validated; no native or mobile built-artifact SBOM exists because no candidate build has executed.`
-- **OpenMLS Vectors**: `PARTIAL — 23 of 25 official vector suites mapped to executed tests and PASSED; 2 suites remain NOT EXECUTED (overall status PARTIAL per execution-map.json).`
-- **OpenMLS Real State-Test Status**: `PASSED — 34-point group lifecycle and state persistence harness executed with zero failures.`
-- **Cargo Deny Security Audit**: `FAILED — Audit flagged RUSTSEC-2024-0370 (unmaintained proc-macro-error2 dependency) and unallowed copyleft licenses in the transitive tree.`
-- **Miri Memory Safety**: `PARTIAL — State serialization unit test PASSED (0.36s); full protocol harness BLOCKED due to unsupported Windows SystemTime FFI call in OpenMLS KeyPackage Lifetime creation.`
-- **Direct-Message Candidate Conclusion**: `libsignal remains a direct-message evaluation candidate. No technical recommendation can be made until native builds, upstream tests, persistence tests, licensing review, and mobile bridge tests complete.`
-- **Group Candidate Conclusion**: `OpenMLS remains a group key-agreement evaluation candidate. No technical recommendation can be made until upstream tests, state-persistence tests, Android/iOS builds, bridge tests, and external review complete.`
-- **Protocol Terminology**: `libsignal secure-messaging protocol interfaces exposed by the selected version`.
+- **Track A — One-to-One Direct Messaging**: `BLOCKED` (libsignal v0.60.0 historical baseline not recommended for production; pending evaluation of a supported direct-messaging provider).
+- **Track B — MLS Group Messaging**: `BLOCKED` (OpenMLS v0.8.1 baseline REJECTED per ADR-061 due to unmitigated transitive advisories; pending official stable OpenMLS v0.9.0 release gate).
+- **Custom Ratchet Implementation**: `PROHIBITED`
 
+---
+
+## 2. Component Status Matrix
+
+- **OpenMLS Host Protocol Compatibility**: `PARTIAL PASS — 34-point group lifecycle and state persistence harness PASSED; 23/25 test vector suites PASSED.`
+- **OpenMLS Dependency Advisory Gate**: `FAILED — Audit flagged RUSTSEC-2026-0173 (proc-macro-error2), RUSTSEC-2026-0212 (libcrux-secrets), RUSTSEC-2026-0207, and RUSTSEC-2026-0208 (libcrux-sha3).`
+- **OpenMLS License-Policy Gate**: `PASSED — 0 license violations under explicit deny.toml allowlist.`
+- **OpenMLS Production Baseline**: `REJECTED (ADR-061)`
+- **Android Mobile Boundary**: `VERIFIED — Provider-neutral native boundary harness (guffsuff-android-neutral-boundary) compiled and verified for aarch64 and x86_64.`
+- **Android Toolchain Status**: `PROVISIONED — Android SDK 35, NDK 26.3.11579264 (r26c), CMake 3.22.1, adb, emulator verified.`
+- **Pull Request #9 Status**: `Draft / Blocked — Prohibited from merging.`

@@ -71,3 +71,5 @@
 | **ADR-058** | Realtime Ordering & Deduplication   | `Approved by product owner` | Phase 5          | WebSocket Realtime Gateway |
 | **ADR-059** | Mobile Local Transport Queue        | `Approved by product owner` | Phase 5          | Flutter Mobile Client      |
 | **ADR-060** | Transport Test Mode Prohibition     | `Approved by product owner` | Phase 5          | Build Flavor Security      |
+| **ADR-061** | Rejection of OpenMLS v0.8.1 Production Baseline | `Accepted (Rejection)` | Phase 6 | Cryptographic Architecture |
+
