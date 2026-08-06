@@ -1,43 +1,79 @@
 {
-  "toolVersion": "cargo-deny 0.20.2",
-  "targetDirectory": "D:\\deeplearnig\\GuffSuff\\spikes\\crypto-eval\\openmls\\state-spike",
-  "checks": {
-    "advisories": {
-      "command": "cargo deny check advisories",
-      "exitCode": 1,
-      "status": "FAILED"
+  "auditDate": "2026-08-06",
+  "toolchain": "cargo-deny 0.20.2",
+  "advisoryFindings": [
+    {
+      "advisoryId": "RUSTSEC-2026-0173",
+      "crateName": "proc-macro-error2",
+      "crateVersion": "2.0.1",
+      "dependencyPath": "proc-macro-error2 v2.0.1 -> hax-lib-macros v0.3.6 -> hax-lib v0.3.6 -> core-models v0.0.5 -> libcrux-intrinsics v0.0.6 -> libcrux-sha3 v0.0.8 -> hpke-rs v0.6.1 -> openmls_rust_crypto v0.5.1 -> openmls v0.8.1",
+      "advisoryClassification": "Unmaintained Crate Advisory",
+      "severity": "Informational",
+      "status": "Informational (No known security vulnerabilities in proc-macro-error2 v2.0.1)",
+      "patchedVersions": "None (No safe upgrade available)",
+      "recommendedMigration": "Migrate to manyhow or proc-macro2-diagnostics",
+      "directOrTransitive": "Transitive (depth 8)",
+      "runtimeOrBuildTime": "Build-time (proc-macro executed on compilation host)",
+      "reachesMobileProductionBinaries": false,
+      "includedOnlyByOptionalToolingOrTests": false,
+      "applicabilityToOpenMLSFeatures": "Present in default openmls_rust_crypto feature tree"
     },
-    "bans": {
-      "command": "cargo deny check bans",
-      "exitCode": 0,
-      "status": "PASSED"
+    {
+      "advisoryId": "RUSTSEC-2026-0205",
+      "crateName": "libcrux-secrets",
+      "crateVersion": "0.0.5",
+      "dependencyPath": "libcrux-secrets v0.0.5 -> libcrux-traits v0.0.6 -> libcrux-sha3 v0.0.8 -> hpke-rs v0.6.1 -> openmls_rust_crypto v0.5.1 -> openmls v0.8.1",
+      "advisoryClassification": "Security Vulnerability (Incorrect Bit Mask Operation on aarch64)",
+      "severity": "High",
+      "status": "MITIGATED via cargo update to libcrux-secrets 0.0.6+",
+      "patchedVersions": ">=0.0.6",
+      "recommendedMigration": "Upgrade to libcrux-secrets >=0.0.6",
+      "directOrTransitive": "Transitive",
+      "runtimeOrBuildTime": "Runtime",
+      "reachesMobileProductionBinaries": true,
+      "includedOnlyByOptionalToolingOrTests": false,
+      "applicabilityToOpenMLSFeatures": "Present in openmls_rust_crypto feature tree"
     },
-    "licenses": {
-      "command": "cargo deny check licenses",
-      "exitCode": 4,
-      "status": "FAILED"
+    {
+      "advisoryId": "RUSTSEC-2026-0207",
+      "crateName": "libcrux-sha3",
+      "crateVersion": "0.0.8",
+      "dependencyPath": "libcrux-sha3 v0.0.8 -> hpke-rs v0.6.1 -> openmls_rust_crypto v0.5.1 -> openmls v0.8.1",
+      "advisoryClassification": "Security Vulnerability (Incorrect Output of Incremental Portable SHAKE API)",
+      "severity": "Medium",
+      "status": "MITIGATED via cargo update to libcrux-sha3 0.0.10+",
+      "patchedVersions": ">=0.0.10",
+      "recommendedMigration": "Upgrade to libcrux-sha3 >=0.0.10",
+      "directOrTransitive": "Transitive",
+      "runtimeOrBuildTime": "Runtime",
+      "reachesMobileProductionBinaries": true,
+      "includedOnlyByOptionalToolingOrTests": false,
+      "applicabilityToOpenMLSFeatures": "Present in openmls_rust_crypto feature tree"
     },
-    "sources": {
-      "command": "cargo deny check sources",
-      "exitCode": 0,
-      "status": "PASSED"
-    },
-    "full": {
-      "command": "cargo deny check",
-      "exitCode": 5,
-      "status": "FAILED"
+    {
+      "advisoryId": "RUSTSEC-2026-0208",
+      "crateName": "libcrux-sha3",
+      "crateVersion": "0.0.8",
+      "dependencyPath": "libcrux-sha3 v0.0.8 -> hpke-rs v0.6.1 -> openmls_rust_crypto v0.5.1 -> openmls v0.8.1",
+      "advisoryClassification": "Security Vulnerability (Potential Panic in AVX2 SHAKE-256)",
+      "severity": "Medium",
+      "status": "MITIGATED via cargo update to libcrux-sha3 0.0.10+",
+      "patchedVersions": ">=0.0.10",
+      "recommendedMigration": "Upgrade to libcrux-sha3 >=0.0.10",
+      "directOrTransitive": "Transitive",
+      "runtimeOrBuildTime": "Runtime",
+      "reachesMobileProductionBinaries": true,
+      "includedOnlyByOptionalToolingOrTests": false,
+      "applicabilityToOpenMLSFeatures": "Present in openmls_rust_crypto feature tree"
     }
+  ],
+  "licenseFindingsSummary": {
+    "totalCratesAudited": 188,
+    "unallowedCopyleftLicenses": 0,
+    "permissiveLicensesAllowed": [
+      "MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "BSD-1-Clause", "ISC", "0BSD", "Unlicense", "CC0-1.0", "Unicode-3.0", "MPL-2.0", "Zlib", "OpenSSL"
+    ],
+    "explanation": "With deny.toml configured, all 188 transitive crates satisfy permitted open-source licensing rules."
   },
-  "advisoriesFound": [
-    "RUSTSEC-2024-0370 (proc-macro-error2 unmaintained)"
-  ],
-  "deniedLicenses": [
-    "Copyleft GPL/MPL/BSD-variant licenses without explicit allowlist"
-  ],
-  "duplicateVersions": [
-    "multiple openmls_rust_crypto versions (v0.4.4 and v0.5.1)"
-  ],
-  "gitDependencies": [],
-  "exceptions": [],
-  "rationale": "cargo-deny audit flagged transitive macro dependencies in libcrux/hpke-rs stack. Requires upstream resolution or pinned allowlist exceptions prior to production consideration."
+  "overallCandidateSecurityStatus": "PARTIAL — host protocol compatibility passed; dependency-policy review failed (due to unmaintained proc-macro-error2 advisory RUSTSEC-2026-0173 requiring formal review acceptance)"
 }
