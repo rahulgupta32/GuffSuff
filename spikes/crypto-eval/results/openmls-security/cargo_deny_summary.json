@@ -1,0 +1,43 @@
+{
+  "toolVersion": "cargo-deny 0.20.2",
+  "targetDirectory": "D:\\deeplearnig\\GuffSuff\\spikes\\crypto-eval\\openmls\\state-spike",
+  "checks": {
+    "advisories": {
+      "command": "cargo deny check advisories",
+      "exitCode": 1,
+      "status": "FAILED"
+    },
+    "bans": {
+      "command": "cargo deny check bans",
+      "exitCode": 0,
+      "status": "PASSED"
+    },
+    "licenses": {
+      "command": "cargo deny check licenses",
+      "exitCode": 4,
+      "status": "FAILED"
+    },
+    "sources": {
+      "command": "cargo deny check sources",
+      "exitCode": 0,
+      "status": "PASSED"
+    },
+    "full": {
+      "command": "cargo deny check",
+      "exitCode": 5,
+      "status": "FAILED"
+    }
+  },
+  "advisoriesFound": [
+    "RUSTSEC-2024-0370 (proc-macro-error2 unmaintained)"
+  ],
+  "deniedLicenses": [
+    "Copyleft GPL/MPL/BSD-variant licenses without explicit allowlist"
+  ],
+  "duplicateVersions": [
+    "multiple openmls_rust_crypto versions (v0.4.4 and v0.5.1)"
+  ],
+  "gitDependencies": [],
+  "exceptions": [],
+  "rationale": "cargo-deny audit flagged transitive macro dependencies in libcrux/hpke-rs stack. Requires upstream resolution or pinned allowlist exceptions prior to production consideration."
+}

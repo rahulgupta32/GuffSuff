@@ -1,0 +1,20 @@
+{
+  "toolchain": "nightly-x86_64-pc-windows-msvc (1.99.0-nightly 2026-08-04)",
+  "miriVersion": "miri 0.1.0",
+  "command": "cargo +nightly miri test",
+  "serializationTest": "PASSED (0.36s)",
+  "fullProtocolMiriTest": "BLOCKED — SystemTime FFI call in OpenMLS KeyPackage Lifetime creation unsupported by Miri interpreter on Windows host target",
+  "sanitizerStatus": "BLOCKED — MSVC target does not support AddressSanitizer/ThreadSanitizer via cargo test on Windows x86_64",
+  "findings": [
+    {
+      "test": "tests::test_state_serialization_miri",
+      "status": "PASSED",
+      "details": "Pure Rust serde serialization of PersistedGroupState verified memory-safe under Miri"
+    },
+    {
+      "test": "tests::test_party_creation_miri",
+      "status": "BLOCKED",
+      "details": "Miri error: unsupported operation: SystemTime::now not supported by Miri interpreter on Windows MSVC target without explicit isolation flags"
+    }
+  ]
+}

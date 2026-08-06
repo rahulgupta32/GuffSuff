@@ -232,3 +232,29 @@ fn run_full_protocol_scenarios(_spike_dir: &Path, out_dir: &Path) {
     let json = serde_json::to_string_pretty(&results).unwrap();
     fs::write(out_dir.join("results.json"), json).unwrap();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_party_creation_miri() {
+        let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519;
+        let (_crypto, _signer, _cred, _kpb) = create_party("tester@guffsuff.local", ciphersuite);
+    }
+
+    #[test]
+    fn test_state_serialization_miri() {
+        let state = PersistedGroupState {
+            schema_version: 1,
+            epoch: 42,
+            group_id: vec![1, 2, 3, 4],
+            checksum: "valid_sha256".into(),
+            raw_state: b"raw_test_bytes".to_vec(),
+        };
+        let encoded = serde_json::to_vec(&state).unwrap();
+        let decoded: PersistedGroupState = serde_json::from_slice(&encoded).unwrap();
+        assert_eq!(decoded.epoch, 42);
+    }
+}
+

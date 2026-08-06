@@ -1,0 +1,132 @@
+[
+  {
+    "component": "Rust compiler (stable)",
+    "target": "x86_64-pc-windows-msvc",
+    "host": "Windows x86_64",
+    "status": "PASSED",
+    "version": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "path": "rustc"
+  },
+  {
+    "component": "Cargo package manager",
+    "target": "x86_64-pc-windows-msvc",
+    "host": "Windows x86_64",
+    "status": "PASSED",
+    "version": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "path": "cargo"
+  },
+  {
+    "component": "Rustup toolchain manager",
+    "target": "x86_64-pc-windows-msvc",
+    "host": "Windows x86_64",
+    "status": "PASSED",
+    "version": "rustup 1.29.0 (28d1352db 2026-03-05)",
+    "path": "rustup"
+  },
+  {
+    "component": "Cargo Deny security auditor",
+    "target": "x86_64-pc-windows-msvc",
+    "host": "Windows x86_64",
+    "status": "PASSED",
+    "version": "cargo-deny 0.20.2",
+    "path": "cargo-deny"
+  },
+  {
+    "component": "Miri memory interpreter",
+    "target": "x86_64-pc-windows-msvc (nightly)",
+    "host": "Windows x86_64",
+    "status": "PASSED",
+    "version": "miri 0.1.0 (1ed2df61a1 2026-08-04)",
+    "path": "cargo"
+  },
+  {
+    "component": "JDK / Java compiler",
+    "target": "JVM / Android Host",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'javac' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Android SDK",
+    "target": "aarch64-linux-android, x86_64-linux-android",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'sdkmanager' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Android NDK",
+    "target": "aarch64-linux-android",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'ndk-build' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Android ADB",
+    "target": "Android Device / Emulator",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'adb' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Android Emulator",
+    "target": "Android Virtual Device",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'emulator' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Flutter SDK",
+    "target": "Android / iOS / Windows",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'flutter' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Dart SDK",
+    "target": "Dart VM",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'dart' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "iOS Cross-compilation (Xcode)",
+    "target": "aarch64-apple-ios",
+    "host": "macOS required (Host: Windows)",
+    "status": "BLOCKED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Apple Xcode toolchain unavailable on Windows host"
+  },
+  {
+    "component": "CMake / Native Build",
+    "target": "C/C++ Native Libraries",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'cmake' not found in PATH or returned non-zero exit code"
+  },
+  {
+    "component": "Ninja Build System",
+    "target": "C/C++ Native Build",
+    "host": "Windows x86_64",
+    "status": "NOT INSTALLED",
+    "version": null,
+    "path": null,
+    "blockingReason": "Command 'ninja' not found in PATH or returned non-zero exit code"
+  }
+]

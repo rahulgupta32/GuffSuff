@@ -1,0 +1,45 @@
+import fs from "fs";
+import path from "path";
+
+const outDir = path.resolve("spikes/crypto-eval/results/openmls-state");
+fs.mkdirSync(outDir, { recursive: true });
+
+const guarantees = [
+    { id: 1, scenario: "Generate Alice credential and signer", classification: "B. OPENMLS API BEHAVIOR", component: "openmls_basic_credential", notes: "Credential construction & signature key handling" },
+    { id: 2, scenario: "Generate Bob credential and signer", classification: "B. OPENMLS API BEHAVIOR", component: "openmls_basic_credential", notes: "Credential construction & signature key handling" },
+    { id: 3, scenario: "Generate Charlie credential and signer", classification: "B. OPENMLS API BEHAVIOR", component: "openmls_basic_credential", notes: "Credential construction & signature key handling" },
+    { id: 4, scenario: "Create required key packages", classification: "B. OPENMLS API BEHAVIOR", component: "openmls::KeyPackageBuilder", notes: "Key package building & storage indexing" },
+    { id: 5, scenario: "Alice creates actual MlsGroup", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "RFC 9420 initial group context creation" },
+    { id: 6, scenario: "Alice adds Bob", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "MLS Add proposal and Welcome generation" },
+    { id: 7, scenario: "Generate and process add commit", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Epoch advancement on add commit merge" },
+    { id: 8, scenario: "Bob processes Welcome", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::StagedWelcome", notes: "Group initialization from StagedWelcome" },
+    { id: 9, scenario: "Confirm Alice and Bob reach expected epoch", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Ratchet tree synchronization across members" },
+    { id: 10, scenario: "Alice creates actual application message", classification: "C. CRYPTO-PROVIDER BEHAVIOR", component: "openmls_rust_crypto", notes: "AEAD message encryption under epoch keys" },
+    { id: 11, scenario: "Bob processes application message", classification: "C. CRYPTO-PROVIDER BEHAVIOR", component: "openmls_rust_crypto", notes: "AEAD message decryption under epoch keys" },
+    { id: 12, scenario: "Bob replies using actual API", classification: "C. CRYPTO-PROVIDER BEHAVIOR", component: "openmls_rust_crypto", notes: "AEAD reply encryption" },
+    { id: 13, scenario: "Alice processes Bob's message", classification: "C. CRYPTO-PROVIDER BEHAVIOR", component: "openmls_rust_crypto", notes: "AEAD reply decryption" },
+    { id: 14, scenario: "Persist actual Alice group state", classification: "D. STORAGE-PROVIDER BEHAVIOR", component: "OpenMlsRustCrypto Storage", notes: "Key package & group state serialization" },
+    { id: 15, scenario: "Persist actual Bob group state", classification: "D. STORAGE-PROVIDER BEHAVIOR", component: "OpenMlsRustCrypto Storage", notes: "Key package & group state serialization" },
+    { id: 16, scenario: "Terminate process", classification: "E. SPIKE APPLICATION GUARANTEE", component: "State Spike Process Manager", notes: "Simulated application lifecycle termination" },
+    { id: 17, scenario: "Start separate process", classification: "E. SPIKE APPLICATION GUARANTEE", component: "State Spike Process Manager", notes: "Process restart isolation" },
+    { id: 18, scenario: "Reload actual OpenMLS states", classification: "D. STORAGE-PROVIDER BEHAVIOR", component: "OpenMlsRustCrypto Storage", notes: "Deserialization of reloaded group state" },
+    { id: 19, scenario: "Continue messaging after reload", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Post-reload epoch ratchet state continuity" },
+    { id: 20, scenario: "Alice removes Bob", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "MLS Remove proposal generation" },
+    { id: 21, scenario: "Process and merge removal commit", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Epoch secret ratcheting to exclude Bob" },
+    { id: 22, scenario: "Verify Bob cannot process later-epoch message", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "FS/PCS post-removal decryption failure" },
+    { id: 23, scenario: "Alice adds Charlie", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "MLS Add proposal for Charlie" },
+    { id: 24, scenario: "Charlie processes Welcome", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::StagedWelcome", notes: "Charlie joins group at current epoch" },
+    { id: 25, scenario: "Verify Charlie cannot process pre-join message", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Pre-join epoch key isolation (No backward secrecy breach)" },
+    { id: 26, scenario: "Submit duplicate commit", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Replay and duplicate commit rejection" },
+    { id: 27, scenario: "Submit stale-epoch message", classification: "A. OPENMLS PROTOCOL GUARANTEE", component: "openmls::MlsGroup", notes: "Stale epoch window rejection" },
+    { id: 28, scenario: "Submit malformed protocol message", classification: "B. OPENMLS API BEHAVIOR", component: "openmls::MlsGroup", notes: "TLS syntax / serde deserialization error handling" },
+    { id: 29, scenario: "Corrupt serialized group state", classification: "E. SPIKE APPLICATION GUARANTEE", component: "Spike Persistence Guard", notes: "JSON payload corruption detection" },
+    { id: 30, scenario: "Use unknown application persistence schema version", classification: "F. GUFFSUFF PRODUCTION RESPONSIBILITY", component: "GuffSuff Database Schema", notes: "Schema versioning migration & rejection boundary" },
+    { id: 31, scenario: "Simulate interrupted write", classification: "F. GUFFSUFF PRODUCTION RESPONSIBILITY", component: "GuffSuff Storage Engine", notes: "Atomic temp-file write-and-rename safety" },
+    { id: 32, scenario: "Simulate storage unavailable", classification: "F. GUFFSUFF PRODUCTION RESPONSIBILITY", component: "GuffSuff Storage Engine", notes: "Storage IO error propagation without memory mutation" },
+    { id: 33, scenario: "Simulate transaction rollback", classification: "F. GUFFSUFF PRODUCTION RESPONSIBILITY", component: "GuffSuff SQLCipher Engine", notes: "ACID transaction rollback on storage write failure" },
+    { id: 34, scenario: "Attempt concurrent mutation of one group state", classification: "F. GUFFSUFF PRODUCTION RESPONSIBILITY", component: "GuffSuff Concurrency Control", notes: "Single-writer queue / lock contention management" }
+];
+
+fs.writeFileSync(path.join(outDir, "guarantee-map.json"), JSON.stringify(guarantees, null, 2));
+console.log("Successfully generated guarantee-map.json!");
