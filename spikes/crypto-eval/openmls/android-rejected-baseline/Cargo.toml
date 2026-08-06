@@ -1,0 +1,14 @@
+[package]
+name = "openmls-android-rejected-baseline"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+openmls = { version = "0.8.1", default-features = false, features = ["test-utils"] }
+openmls_rust_crypto = "0.5.1"
+openmls_traits = "0.5.0"
+openmls_basic_credential = "0.5.0"
