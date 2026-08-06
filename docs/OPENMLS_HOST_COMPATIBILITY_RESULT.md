@@ -31,11 +31,17 @@
 
 ---
 
-## 3. Mandatory Gate Summary
+## 3. Mandatory Gate & Evidence Summary
 
 - **HOST COMPATIBILITY**: `PARTIAL PASS`
 - **DEPENDENCY ADVISORY GATE**: `FAILED`
 - **LICENSE POLICY GATE**: `PASSED` (under explicit `deny.toml` allowlist)
-- **PRODUCTION CANDIDACY**: `BLOCKED`
-- **ANDROID / FLUTTER WORK**: `NOT YET AUTHORIZED TO DETERMINE CANDIDATE SUITABILITY` (toolchain setup pre-authorized)
+- **OPENMLS PRODUCTION BASELINE**: `REJECTED (ADR-061)`
+- **BUILT-ARTIFACT SBOM**: `PARTIAL — source dependency SBOM and native artifact inspection completed; complete built-artifact SBOM not yet generated.`
+- **PROVIDER-NEUTRAL ANDROID CROSS-COMPILATION**: `PASSED`
+- **PROVIDER-NEUTRAL ANDROID RUNTIME**: `NOT EXECUTED — Android runtime instrumentation evidence not provided`
+- **REJECTED OPENMLS V0.8.1 ANDROID CROSS-COMPILATION**: `PASSED — research baseline only`
+- **REJECTED OPENMLS V0.8.1 ANDROID RUNTIME**: `NOT EXECUTED — Android runtime instrumentation evidence not provided`
+- **OPENMLS 0.9.0-RC.2 EVALUATION**: `PRE-RELEASE RESEARCH ONLY — NOT A PRODUCTION CANDIDATE`
 - **PRODUCTION INTEGRATION**: `NOT AUTHORIZED`
+
