@@ -8,17 +8,31 @@ const env = { ...process.env, PATH: `${cargoBin};${process.env.PATH}` };
 
 const targetDir = path.resolve("spikes/crypto-eval/openmls/state-spike");
 
-console.log("Running cargo deny --format json check licenses...");
-const res = spawnSync("cargo", ["deny", "--format", "json", "check", "licenses"], { cwd: targetDir, env, maxBuffer: 50 * 1024 * 1024 });
-const out = (res.stdout ? res.stdout.toString() : "") + "\n" + (res.stderr ? res.stderr.toString() : "");
+console.log("Invoking cargo deny --format json check licenses...");
+const res = spawnSync("cargo", ["deny", "--format", "json", "check", "licenses"], {
+    cwd: targetDir,
+    env,
+    maxBuffer: 50 * 1024 * 1024,
+    encoding: "utf-8"
+});
 
+const stdout = res.stdout || "";
+const stderr = res.stderr || "";
+
+if (res.status === null || res.error) {
+    console.error("FATAL: cargo-deny command failed to execute:", res.error);
+    process.exit(1);
+}
+
+const lines = stdout.split("\n").concat(stderr.split("\n"));
 const findings = [];
-const lines = out.split("\n");
+let parseErrors = 0;
 
 for (const line of lines) {
-    if (!line.trim().startsWith("{")) continue;
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("{")) continue;
     try {
-        const obj = JSON.parse(line);
+        const obj = JSON.parse(trimmed);
         if (obj.type === "diagnostic" && obj.fields && obj.fields.code === "rejected") {
             const graphs = obj.fields.graphs || [];
             for (const g of graphs) {
@@ -26,13 +40,11 @@ for (const line of lines) {
                 const pkgName = krate.name || "unknown";
                 const pkgVer = krate.version || "unknown";
                 
-                // Get license from labels
-                let spdx = "Unknown/Unallowed";
+                let spdx = "Unallowed";
                 if (obj.fields.labels && obj.fields.labels.length > 0) {
                     spdx = obj.fields.labels[0].span || "Unallowed";
                 }
 
-                // Construct primary dependency path
                 let pathStr = `${pkgName} v${pkgVer}`;
                 if (g.parents && g.parents.length > 0 && g.parents[0].Krate) {
                     pathStr += ` -> ${g.parents[0].Krate.name} v${g.parents[0].Krate.version}`;
@@ -48,30 +60,40 @@ for (const line of lines) {
                     directOrTransitive: pkgName === "openmls-state-spike" ? "Direct" : "Transitive",
                     dependencyType: isProcMacro ? "Build-time / Proc-Macro" : "Runtime Library",
                     linkedIntoDistributedArtifacts: !isProcMacro,
-                    cargoDenyRule: "rejected (license not in allowlist of unconfigured deny.toml)",
+                    cargoDenyRule: "rejected (license not explicitly in allowlist)",
                     isGenuinelyIncompatible: false,
                     lacksApprovedLicenseInConfig: true,
                     dualLicensingPermitsAcceptableChoice: true,
                     legalReviewRequired: false,
-                    reasoning: `License '${spdx}' is standard open source terms (MIT/Apache-2.0/BSD). Rejected solely because cargo-deny default config has an empty allowlist.`
+                    reasoning: `License '${spdx}' rejected by cargo-deny configuration.`
                 });
             }
         }
-    } catch (_) {}
-}
-
-console.log(`Parsed ${findings.length} detailed license findings.`);
-
-// Deduplicate findings by crate + version
-const uniqueFindingsMap = new Map();
-for (const f of findings) {
-    const key = `${f.crate}@${f.crateVersion}`;
-    if (!uniqueFindingsMap.has(key)) {
-        uniqueFindingsMap.set(key, f);
+    } catch (e) {
+        parseErrors++;
     }
 }
 
-const uniqueFindings = Array.from(uniqueFindingsMap.values());
-console.log(`Deduplicated to ${uniqueFindings.length} unique crate license findings.`);
+// Fail closed validations
+if (res.status !== 0 && findings.length === 0) {
+    console.error(`FATAL (Fail-Closed): cargo-deny exited with code ${res.status} but 0 findings were parsed! Check command syntax and output format.`);
+    console.error("Stderr output:", stderr);
+    process.exit(1);
+}
 
-fs.writeFileSync(path.resolve("spikes/crypto-eval/results/openmls-security/license_findings.json"), JSON.stringify(uniqueFindings, null, 2));
+// Deduplicate findings by crate + version
+const uniqueMap = new Map();
+for (const f of findings) {
+    const key = `${f.crate}@${f.crateVersion}`;
+    if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, f);
+    }
+}
+
+const uniqueFindings = Array.from(uniqueMap.values());
+console.log(`Parsed ${findings.length} raw findings. Deduplicated to ${uniqueFindings.length} unique crate findings.`);
+
+const outPath = path.resolve("spikes/crypto-eval/results/openmls-security/license_findings.json");
+fs.mkdirSync(path.dirname(outPath), { recursive: true });
+fs.writeFileSync(outPath, JSON.stringify(uniqueFindings, null, 2));
+console.log("Successfully recorded license_findings.json");
