@@ -68,7 +68,7 @@ class DevStatusScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors.orangeDark,
+              color: Colors.deepOrange,
               padding: const EdgeInsets.all(12),
               child: const Text(
                 'Message transport test mode — production end-to-end encryption is not yet implemented.',
