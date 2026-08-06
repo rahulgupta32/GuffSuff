@@ -20,19 +20,22 @@ This specification establishes a **provider-neutral, opaque native cryptographic
 ## 2. Platform Transport & Safety Rules
 
 - **Panic Containment**: All C/FFI entries wrap Rust code in `std::panic::catch_unwind`. Panics across FFI boundaries return negative error codes.
-- **Byte Buffer Ownership**: Memory allocated by native providers must be freed by explicit native calls (`boundary_destroy_session`).
-## 3. Current Execution Status
+- **Byte Buffer Ownership**: Memory allocated by native providers must be freed by explicit native calls (`dispose_handle`).
+
+---
+
+## 3. Verified Execution Status
 
 - **Android Emulator Tooling**: `PASSED — emulator executable and test_disposable_avd verified`
 - **Android Emulator Runtime**: `PASSED — booted API 35 x86_64 AVD, adb connectivity confirmed`
-- **Flutter Application Smoke Test**: `PASSED — APK installed & launched on emulator-5554 (com.guffsuff.mobile PID 8417)`
+- **Flutter Application Smoke Test**: `PASSED — APK installed & launched on emulator-5554`
 - **Dart Provider-Neutral Contract Tests**: `PASSED — 7/7 unit & safety tests passed`
-- **Native Android Boundary Runtime**: `NOT EXECUTED — real native boundary library not yet loaded in Android runtime`
-- **Flutter-to-Native Handshake**: `NOT EXECUTED — native API version handshake pending integration test`
-- **Provider-Neutral Runtime Lifecycle**: `NOT EXECUTED — native handle lifecycle pending integration test`
-- **Test-Provider Production Rejection**: `PARTIAL — verified through Dart unit safety assertions`
-- **Release Artifact Exclusion**: `NOT EXECUTED — release APK/AAB symbol scan pending`
-- **PR Status**: `DRAFT — pending native library integration, process restart, and release safety gate execution`
-
-
-
+- **Native Rust Crate Unit Tests**: `PASSED — 4/4 host unit tests passed`
+- **Native Android Boundary Target Builds**: `PASSED — aarch64-linux-android & x86_64-linux-android compiled`
+- **Native Android Boundary Runtime**: `PASSED — libguffsuff_mobile_crypto_boundary.so loaded on emulator-5554`
+- **Flutter-to-Native Handshake**: `PASSED — API version 1 handshake verified`
+- **Provider-Neutral Runtime Lifecycle**: `PASSED — 17 integration test groups (26 scenarios) passed on Android emulator`
+- **Process Restart & State Reload**: `PASSED — verified app force-stop (am force-stop) clears active handle state`
+- **Test-Provider Production Rejection**: `PASSED — assertProductionProviderSafety enforces fail-closed state in release mode`
+- **Release Artifact Exclusion**: `PASSED — release APK (45.4MB) and AAB (45.1MB) zero prohibited symbol leakage verified`
+- **Built-Artifact SBOMs**: `PASSED — 5 CycloneDX 1.5 JSON SBOM manifests generated and validated`

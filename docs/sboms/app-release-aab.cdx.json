@@ -1,0 +1,45 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:7f3b890a-1122-4455-8899-aabbccdd0005",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-06T15:15:00Z",
+    "tools": [
+      {
+        "vendor": "GuffSuff Security Tooling",
+        "name": "guffsuff-sbom-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "app-release.aab",
+      "version": "0.1.0+1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9976DD7F57B64A94B6D37938B2EA52BBD8ABC0FA89F707463D00D9CE6E8482AF"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "framework",
+      "name": "flutter-engine",
+      "version": "3.44.8"
+    },
+    {
+      "type": "library",
+      "name": "ffi",
+      "version": "2.2.0"
+    },
+    {
+      "type": "library",
+      "name": "libguffsuff_mobile_crypto_boundary.so",
+      "version": "0.1.0"
+    }
+  ]
+}

@@ -63,6 +63,7 @@ void assertProductionProviderSafety(ProviderCapabilityMap capabilities, bool isP
 }
 
 abstract class MobileCryptoProvider {
+  bool get isAvailable;
   ProviderCapabilityMap queryCapabilities();
   Future<OpaqueIdentityHandle> initializeDeviceIdentity();
   Future<OpaqueSessionHandle> establishOutboundSession(String recipientPrekeyBundle);
@@ -75,6 +76,9 @@ abstract class MobileCryptoProvider {
 /// Fallback provider returned when no production provider is registered.
 class UnavailableCryptoProvider implements MobileCryptoProvider {
   const UnavailableCryptoProvider();
+
+  @override
+  bool get isAvailable => false;
 
   @override
   ProviderCapabilityMap queryCapabilities() {
@@ -117,6 +121,10 @@ class UnavailableCryptoProvider implements MobileCryptoProvider {
 class TestBoundaryCryptoProvider implements MobileCryptoProvider {
   int _counter = 100;
   final Set<int> _activeHandles = {};
+
+  @override
+  bool get isAvailable => true;
+
 
   @override
   ProviderCapabilityMap queryCapabilities() {

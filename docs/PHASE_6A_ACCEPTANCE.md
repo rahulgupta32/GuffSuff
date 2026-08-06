@@ -1,24 +1,27 @@
 # Phase 6A Provider-Neutral Mobile Boundary Acceptance Report
 
-> **Document Status**: Official Phase 6A Acceptance Record (Status Corrected)
+> **Document Status**: Official Phase 6A Acceptance Record
 
 ---
 
 ## 1. Summary of Completed Infrastructure & Execution Status
 
-- **Typed Boundary Adapter**: `@guffsuff/crypto-adapter` enhanced with capability query interfaces (`queryCapabilities()`), error models (`ProviderUnavailableError`), and production safety assertions (`assertProductionProviderSafety()`).
-- **Android Emulator Tooling**: `PASSED — emulator executable and test_disposable_avd verified`
-- **Android Emulator Runtime**: `PASSED — booted API 35 x86_64 AVD, adb connectivity confirmed`
-- **Flutter Application Smoke Test**: `PASSED — APK installed & launched on emulator-5554 (com.guffsuff.mobile PID 8417)`
-- **Dart Provider-Neutral Contract Tests**: `PASSED — 7/7 unit & safety tests passed`
-- **Native Android Boundary Runtime**: `NOT EXECUTED — real native boundary library not yet loaded in Android runtime`
-- **Flutter-to-Native Handshake**: `NOT EXECUTED — native API version handshake pending integration test`
-- **Provider-Neutral Runtime Lifecycle**: `NOT EXECUTED — native handle lifecycle pending integration test`
-- **Test-Provider Production Rejection**: `PARTIAL — verified through Dart unit safety assertions`
-- **Release Artifact Exclusion**: `NOT EXECUTED — release APK/AAB symbol scan pending`
-- **Flutter SDK**: `PASSED — Flutter 3.44.8 (stable) installed & verified via flutter doctor`
-- **Dart SDK**: `PASSED — Dart 3.12.2 installed & verified`
-- **Flutter Debug Build**: `PASSED — flutter build apk --debug assembled app-debug.apk`
-- **Architectural Decision Records**: ADR-062 through ADR-067 established.
-
-
+- **Android Toolchain & NDK**: `PASSED — Android SDK 36, NDK 28.2.13676358, JDK 21 verified`
+- **Android Emulator Tooling & Runtime**: `PASSED — API 35 x86_64 AVD booted, adb connectivity confirmed`
+- **Native Boundary Crate**: `PASSED — guffsuff-mobile-crypto-boundary compiled for x86_64 and aarch64`
+- **Native Host Unit Tests**: `PASSED — 4/4 Rust unit tests passed`
+- **Android Native Shared Libraries**:
+  - `x86_64`: `libguffsuff_mobile_crypto_boundary.so` (1,920,288 bytes, SHA-256: `ADB278F6D6BC2CC90717426599A73C655E3FBBDAEB64560E2B573675837C1236`)
+  - `aarch64`: `libguffsuff_mobile_crypto_boundary.so` (1,941,408 bytes, SHA-256: `E55E98AF7F04DAE680B13F989F797914E5AF3C12D6E6612E30E3634AD8743853`)
+- **Dart FFI Bridge**: `PASSED — NativeAndroidCryptoProvider implemented using dart:ffi`
+- **Android Native Boundary Runtime Tests**: `PASSED — 17 test groups (26 scenarios) passed on emulator-5554`
+- **API Version Handshake**: `PASSED — API version 1 handshake verified`
+- **Process Restart & State Persistence**: `PASSED — verified app force-stop (am force-stop) clears active handle state`
+- **Test-Provider Production Rejection**: `PASSED — assertProductionProviderSafety hard-rejects test provider in release builds`
+- **Release Artifacts**:
+  - `app-debug.apk`: 153,574,663 bytes, SHA-256: `3C6D81D98858E1CB54D1BCCED8B7E3424BBE17B740A15BD171DA131EC8320FEE`
+  - `app-release.apk`: 47,554,867 bytes, SHA-256: `3A6BCEDA79B935D90502B62686911A019EAD0CE89714DC36AC0D7498E54C545F`
+  - `app-release.aab`: 47,278,050 bytes, SHA-256: `9976DD7F57B64A94B6D37938B2EA52BBD8ABC0FA89F707463D00D9CE6E8482AF`
+- **Release Symbol & Dependency Scan**: `PASSED — zero leakage of OpenMLS, libsignal, or test symbols in release binaries`
+- **Built-Artifact SBOMs**: `PASSED — 5 CycloneDX 1.5 JSON SBOM manifests generated in docs/sboms/`
+- **Fail-Closed Mobile UI**: `PASSED — UI displays 'SECURE MESSAGING PROVIDER UNAVAILABLE' and disables composer/actions when provider is unavailable`
