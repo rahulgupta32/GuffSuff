@@ -1,64 +1,30 @@
 {
-  "$schema": "./results.schema.json",
-  "timestamp": "2026-08-06T01:30:00Z",
-  "branchCommit": "f3c537007fb0f96398bdee56e62bcda995106648",
-  "results": [
-    {
-      "candidate": "libsignal",
-      "candidateTag": "v0.60.0",
-      "candidateCommit": "1b82e53c2be56f7ab0aef3650033f8fc4d584517",
-      "environment": "Android Gradle (Windows Host)",
-      "command": "./gradlew :libsignal-android-spike:build",
-      "exitCode": 1,
-      "startTime": "2026-08-06T01:25:00Z",
-      "endTime": "2026-08-06T01:25:01Z",
-      "artifactPath": "spikes/crypto-eval/libsignal/android/build.gradle",
-      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "BLOCKED",
-      "evidencePath": "spikes/crypto-eval/libsignal/android/BUILD_LOG.md"
-    },
-    {
-      "candidate": "libsignal",
-      "candidateTag": "v0.60.0",
-      "candidateCommit": "1b82e53c2be56f7ab0aef3650033f8fc4d584517",
-      "environment": "iOS Swift / Xcode (macOS Host)",
-      "command": "xcodebuild -workspace LibSignalSpike.xcworkspace -scheme LibSignalSpike",
-      "exitCode": 1,
-      "startTime": "2026-08-06T01:25:00Z",
-      "endTime": "2026-08-06T01:25:01Z",
-      "artifactPath": "spikes/crypto-eval/libsignal/ios/Podfile",
-      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "BLOCKED",
-      "evidencePath": "spikes/crypto-eval/libsignal/ios/BUILD_LOG.md"
-    },
-    {
-      "candidate": "OpenMLS",
-      "candidateTag": "openmls-v0.8.1",
-      "candidateCommit": "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6",
-      "environment": "Rust / Cargo Workspace (Windows Host)",
-      "command": "cargo test -p openmls_traits",
-      "exitCode": 0,
-      "startTime": "2026-08-06T01:40:00Z",
-      "endTime": "2026-08-06T01:41:42Z",
-      "artifactPath": "spikes/crypto-eval/openmls/core/Cargo.toml",
-      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "PASSED",
-      "evidencePath": "spikes/crypto-eval/results/openmls-core/test.log"
-    },
-    {
-      "candidate": "OpenMLS",
-      "candidateTag": "openmls-v0.8.1",
-      "candidateCommit": "47dbedecad0c1fd8eb5368d582250ebfcc1e1ce6",
-      "environment": "Android NDK / Cross-compilation (Windows Host)",
-      "command": "cargo build --target aarch64-linux-android",
-      "exitCode": 1,
-      "startTime": "2026-08-06T01:25:00Z",
-      "endTime": "2026-08-06T01:25:01Z",
-      "artifactPath": "spikes/crypto-eval/openmls/android/Cargo.toml",
-      "artifactSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "BLOCKED",
-      "evidencePath": "spikes/crypto-eval/openmls/android/BUILD_LOG.md"
-    }
-  ]
+  "evaluationBranch": "spike/crypto-provider-compatibility",
+  "evaluatedCommitSha": "2114e9e51240166d1f971ecdb9a4be298eb9bf08",
+  "openmlsVersion": "0.8.1",
+  "openmlsHostCompatibilityStatus": "PARTIAL PASS",
+  "openmlsDependencyAdvisoryGateStatus": "FAILED",
+  "openmlsLicensePolicyGateStatus": "PASSED",
+  "openmlsProductionCandidacyStatus": "BLOCKED",
+  "androidWorkStatus": "NOT YET AUTHORIZED TO DETERMINE CANDIDATE SUITABILITY",
+  "productionIntegrationStatus": "NOT AUTHORIZED",
+  "pullRequestNum": 9,
+  "pullRequestStatus": "Draft / Blocked",
+  "advisoriesFlagged": [
+    "RUSTSEC-2026-0173",
+    "RUSTSEC-2026-0212",
+    "RUSTSEC-2026-0207",
+    "RUSTSEC-2026-0208",
+    "RUSTSEC-2021-0139"
+  ],
+  "lifecycleHarnessResults": {
+    "totalScenarios": 34,
+    "passedScenarios": 34,
+    "failedScenarios": 0
+  },
+  "vectorResults": {
+    "totalSuites": 25,
+    "passedSuites": 23,
+    "unmappedSuites": 2
+  }
 }
-
