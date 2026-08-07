@@ -48,9 +48,7 @@
   "dependencies": [
     {
       "ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary_x86_64@0.1.0",
-      "dependsOn": [
-        "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"
-      ]
+      "dependsOn": ["pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"]
     }
   ]
 }

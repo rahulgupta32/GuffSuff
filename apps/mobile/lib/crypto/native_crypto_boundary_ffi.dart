@@ -103,7 +103,9 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
     _isInitialized = true;
   }
 
+  @override
   bool get isAvailable => _isInitialized;
+
   int get apiVersion => _apiVersion();
   int get lastErrorCode => _lastErrorCode();
   String get providerLabel => 'TEST PROVIDER — NO CONFIDENTIALITY OR AUTHENTICITY';
