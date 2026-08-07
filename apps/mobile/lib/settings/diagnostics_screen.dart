@@ -13,64 +13,54 @@ class DiagnosticsScreen extends ConsumerWidget {
     const MobileCryptoProvider activeProvider = UnavailableCryptoProvider();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Internal Diagnostics')),
+      appBar: AppBar(
+        title: const Text('Internal Diagnostics'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildSectionHeader('BUILD & ENVIRONMENT'),
           _buildInfoRow(
-            'Environment',
-            AppConfig.environment.name.toUpperCase(),
-          ),
+              'Environment', AppConfig.environment.name.toUpperCase()),
           _buildInfoRow('API Endpoint', AppConfig.apiBaseUrl),
           _buildInfoRow('WebSocket Endpoint', AppConfig.wsBaseUrl),
           _buildInfoRow(
-            'App Version',
-            '${AppConfig.appVersion}+${AppConfig.buildNumber}',
-          ),
+              'App Version', '${AppConfig.appVersion}+${AppConfig.buildNumber}'),
           _buildInfoRow('Git Commit SHA', AppConfig.commitSha),
           _buildInfoRow(
-            'Build Mode',
-            AppConfig.isInternalDemo ? 'INTERNAL DEMO' : 'PRODUCTION',
+              'Build Mode', AppConfig.isInternalDemo ? 'INTERNAL DEMO' : 'PRODUCTION'),
+          _buildInfoRow(
+            'Development OTP Mode',
+            AppConfig.allowDevelopmentOtp
+                ? 'ENABLED (${AppConfig.developmentOtpCode})'
+                : 'DISABLED (PROHIBITED)',
           ),
 
           const SizedBox(height: 24),
           _buildSectionHeader('CRYPTOGRAPHIC PROVIDER BOUNDARY'),
+          _buildInfoRow('Provider Available',
+              activeProvider.isAvailable ? 'YES' : 'NO (FAIL-CLOSED)'),
           _buildInfoRow(
-            'Provider Available',
-            activeProvider.isAvailable ? 'YES' : 'NO (FAIL-CLOSED)',
-          ),
+              'Provider ID', activeProvider.queryCapabilities().providerId),
           _buildInfoRow(
-            'Provider ID',
-            activeProvider.queryCapabilities().providerId,
-          ),
+              'Direct Messaging',
+              activeProvider.queryCapabilities().supportsDirectMessaging
+                  ? 'SUPPORTED'
+                  : 'DISABLED'),
           _buildInfoRow(
-            'Direct Messaging',
-            activeProvider.queryCapabilities().supportsDirectMessaging
-                ? 'SUPPORTED'
-                : 'DISABLED',
-          ),
-          _buildInfoRow(
-            'Group Messaging',
-            activeProvider.queryCapabilities().supportsGroupMessaging
-                ? 'SUPPORTED'
-                : 'DISABLED',
-          ),
+              'Group Messaging',
+              activeProvider.queryCapabilities().supportsGroupMessaging
+                  ? 'SUPPORTED'
+                  : 'DISABLED'),
 
           const SizedBox(height: 24),
           _buildSectionHeader('AUTHENTICATION & SESSION STATE'),
           _buildInfoRow(
-            'Authenticated',
-            authState.isAuthenticated ? 'TRUE' : 'FALSE',
-          ),
+              'Authenticated', authState.isAuthenticated ? 'TRUE' : 'FALSE'),
           _buildInfoRow(
-            'User ID',
-            authState.profile?.userId ?? 'Not authenticated',
-          ),
+              'User ID', authState.profile?.userId ?? 'Not authenticated'),
           _buildInfoRow(
-            'Device ID',
-            authState.deviceId ?? 'dev_android_emulator',
-          ),
+              'Device ID', authState.deviceId ?? 'dev_android_emulator'),
           _buildInfoRow('Push Token Status', 'SIMULATED_PUSH_TOKEN_ACTIVE'),
         ],
       ),
@@ -83,11 +73,10 @@ class DiagnosticsScreen extends ConsumerWidget {
       child: Text(
         title,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-          color: Colors.grey,
-          letterSpacing: 1,
-        ),
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: Colors.grey,
+            letterSpacing: 1),
       ),
     );
   }
@@ -105,10 +94,9 @@ class DiagnosticsScreen extends ConsumerWidget {
               child: Text(
                 value,
                 style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

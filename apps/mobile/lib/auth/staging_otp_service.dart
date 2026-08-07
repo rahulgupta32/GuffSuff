@@ -34,9 +34,38 @@ class OtpVerifyResult {
 }
 
 class StagingOtpService {
-  final http.Client _client = http.Client();
+  final http.Client _client;
+
+  StagingOtpService({http.Client? client}) : _client = client ?? http.Client();
 
   Future<OtpRequestResult> requestOtp(String phoneNumber) async {
+    if (AppConfig.environment == AppEnvironment.production) {
+      try {
+        final url = Uri.parse('${AppConfig.apiBaseUrl}/auth/otp/request');
+        final response = await _client
+            .post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({'phoneNumber': phoneNumber}),
+            )
+            .timeout(const Duration(seconds: 4));
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final data = jsonDecode(response.body);
+          return OtpRequestResult(
+            success: true,
+            challengeId: data['challengeId'],
+            message: 'OTP sent successfully',
+          );
+        }
+      } catch (_) {}
+      return OtpRequestResult(
+        success: false,
+        message: 'Failed to request OTP from server',
+      );
+    }
+
+    // Development / Staging / Internal Mode
     try {
       final url = Uri.parse('${AppConfig.apiBaseUrl}/auth/otp/request');
       final response = await _client
@@ -58,15 +87,21 @@ class StagingOtpService {
         );
       }
     } catch (_) {
-      // Fallback to Development OTP Mode when offline or staging API unreachable
+      // Offline fallback in non-production environments
     }
 
-    return OtpRequestResult(
-      success: true,
-      challengeId: 'dev-challenge-${DateTime.now().millisecondsSinceEpoch}',
-      message: 'DEVELOPMENT OTP MODE — Use code: 123456',
-      isDevelopmentMode: true,
-    );
+    if (AppConfig.allowDevelopmentOtp &&
+        AppConfig.developmentOtpCode != null) {
+      return OtpRequestResult(
+        success: true,
+        challengeId: 'dev-challenge-${DateTime.now().millisecondsSinceEpoch}',
+        message:
+            'DEVELOPMENT OTP MODE — Use code: ${AppConfig.developmentOtpCode}',
+        isDevelopmentMode: true,
+      );
+    }
+
+    return OtpRequestResult(success: false, message: 'Failed to request OTP');
   }
 
   Future<OtpVerifyResult> verifyOtp(
@@ -74,6 +109,38 @@ class StagingOtpService {
     String challengeId,
     String otpCode,
   ) async {
+    if (AppConfig.environment == AppEnvironment.production) {
+      try {
+        final url = Uri.parse('${AppConfig.apiBaseUrl}/auth/otp/verify');
+        final response = await _client
+            .post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'phoneNumber': phoneNumber,
+                'challengeId': challengeId,
+                'otpCode': otpCode,
+              }),
+            )
+            .timeout(const Duration(seconds: 4));
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final data = jsonDecode(response.body);
+          return OtpVerifyResult(
+            success: true,
+            accessToken: data['accessToken'],
+            userId: data['userId'],
+            deviceId: data['deviceId'],
+          );
+        }
+      } catch (_) {}
+      return OtpVerifyResult(
+        success: false,
+        message: 'OTP verification failed',
+      );
+    }
+
+    // Development / Staging / Internal Mode
     try {
       final url = Uri.parse('${AppConfig.apiBaseUrl}/auth/otp/verify');
       final response = await _client
@@ -97,11 +164,11 @@ class StagingOtpService {
           deviceId: data['deviceId'] ?? 'dev_android_emulator',
         );
       }
-    } catch (_) {
-      // Fallback to Development OTP Mode verification
-    }
+    } catch (_) {}
 
-    if (otpCode == '123456' || otpCode == '000000') {
+    if (AppConfig.allowDevelopmentOtp &&
+        AppConfig.developmentOtpCode != null &&
+        otpCode == AppConfig.developmentOtpCode) {
       return OtpVerifyResult(
         success: true,
         accessToken:
@@ -113,7 +180,7 @@ class StagingOtpService {
 
     return OtpVerifyResult(
       success: false,
-      message: 'Invalid verification code. Use 123456 for internal demo.',
+      message: 'Invalid verification code.',
     );
   }
 }
