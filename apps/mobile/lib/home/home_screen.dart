@@ -1,5 +1,6 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../chats/chat_list_screen.dart';
 import '../contacts/people_screen.dart';
 import '../settings/settings_screen.dart';

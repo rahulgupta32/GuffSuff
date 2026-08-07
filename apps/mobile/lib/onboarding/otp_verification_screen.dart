@@ -1,11 +1,12 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import '../auth/staging_otp_service.dart';
-import '../core/branding/app_theme.dart';
 import '../core/l10n/app_strings.dart';
+
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   const OtpVerificationScreen({super.key});

@@ -77,7 +77,10 @@ const registrationLockServiceProvider = {
     "SESSION_SERVICE",
     "ACCOUNT_SERVICE",
     "DEVICE_SERVICE",
-    "REGISTRATION_LOCK_SERVICE"
+    "REGISTRATION_LOCK_SERVICE",
+    "DATABASE_POOL",
+    JwtAuthGuard
   ]
 })
 export class IdentityModule {}
+

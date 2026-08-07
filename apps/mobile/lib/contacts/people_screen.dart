@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'package:flutter/material.dart';
+
 import '../core/branding/app_theme.dart';
 
 class PeopleScreen extends StatefulWidget {

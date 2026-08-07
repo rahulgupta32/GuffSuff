@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'package:flutter/material.dart';
+
 import '../core/branding/app_theme.dart';
 import '../core/l10n/app_strings.dart';
 
@@ -23,6 +25,30 @@ class ConversationScreen extends StatelessWidget {
     required this.chatId,
     required this.chatName,
   });
+
+  void _showProviderUnavailableSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade900,
+        content: const Row(
+          children: [
+            Icon(Icons.lock_clock_outlined, color: Colors.white, size: 20),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'SECURE MESSAGING PROVIDER UNAVAILABLE',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +112,6 @@ class ConversationScreen extends StatelessWidget {
                     'Secure Messaging Unavailable (Internal Demo)',
                     style: TextStyle(fontSize: 11, color: Colors.amber),
                   ),
-
                 ],
               ),
             ),
@@ -95,10 +120,16 @@ class ConversationScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam_outlined),
-            onPressed: () {},
+            onPressed: () => _showProviderUnavailableSnackBar(context),
           ),
-          IconButton(icon: const Icon(Icons.call_outlined), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.call_outlined),
+            onPressed: () => _showProviderUnavailableSnackBar(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () => _showProviderUnavailableSnackBar(context),
+          ),
         ],
       ),
       body: Column(
@@ -135,49 +166,56 @@ class ConversationScreen extends StatelessWidget {
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final msg = messages[index];
-                return Align(
-                  alignment:
-                      msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          msg.isMe
-                              ? AppTheme.primaryNavy
-                              : Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(16).copyWith(
-                        bottomRight:
-                            msg.isMe ? Radius.zero : const Radius.circular(16),
-                        bottomLeft:
-                            !msg.isMe ? Radius.zero : const Radius.circular(16),
+                return GestureDetector(
+                  onLongPress: () => _showProviderUnavailableSnackBar(context),
+                  child: Align(
+                    alignment:
+                        msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          msg.text,
-                          style: TextStyle(
-                            color: msg.isMe ? Colors.white : null,
-                            fontSize: 15,
-                          ),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            msg.isMe
+                                ? AppTheme.primaryNavy
+                                : Theme.of(context).cardTheme.color,
+                        borderRadius: BorderRadius.circular(16).copyWith(
+                          bottomRight:
+                              msg.isMe
+                                  ? Radius.zero
+                                  : const Radius.circular(16),
+                          bottomLeft:
+                              !msg.isMe
+                                  ? Radius.zero
+                                  : const Radius.circular(16),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          msg.timestamp,
-                          style: TextStyle(
-                            color: msg.isMe ? Colors.white70 : Colors.grey,
-                            fontSize: 10,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            msg.text,
+                            style: TextStyle(
+                              color: msg.isMe ? Colors.white : null,
+                              fontSize: 15,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            msg.timestamp,
+                            style: TextStyle(
+                              color: msg.isMe ? Colors.white70 : Colors.grey,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -199,20 +237,33 @@ class ConversationScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.attach_file, color: Colors.grey),
-                    onPressed: null, // Disabled
+                    onPressed: () => _showProviderUnavailableSnackBar(context),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.mic_none_rounded,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () => _showProviderUnavailableSnackBar(context),
                   ),
                   Expanded(
-                    child: TextField(
-                      enabled: false, // Disabled composer
-                      decoration: InputDecoration(
-                        hintText: 'Message sending disabled in demo build...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                    child: GestureDetector(
+                      onTap: () => _showProviderUnavailableSnackBar(context),
+                      child: AbsorbPointer(
+                        child: TextField(
+                          enabled: false,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Message sending disabled in demo build...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 13,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -220,7 +271,7 @@ class ConversationScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.send_rounded, color: Colors.grey),
-                    onPressed: null, // Disabled
+                    onPressed: () => _showProviderUnavailableSnackBar(context),
                   ),
                 ],
               ),

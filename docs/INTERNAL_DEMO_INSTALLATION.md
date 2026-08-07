@@ -6,10 +6,11 @@
 - **Package Name**: `com.guffsuff.mobile`
 - **Target OS**: Android 8.0+ (API Level 26+)
 - **APK Filename**: `guffsuff-internal-demo.apk`
-- **APK SHA-256**: `559601416FD123D78EAF4C2DBDADF6BA03188ACDFEE6835318F66183754E4A34`
-- **APK Size**: `53,647,431 bytes` (~51.2 MB)
+- **APK SHA-256**: `51F317F79857C0736B83581812F57317B954D96AA2A55F0C1F623A8584B78D3D`
+- **APK Size**: `53,781,671 bytes` (~51.3 MB)
 - **Branch**: `feature/internal-demo-mobile-app`
-- **Commit SHA**: `0d231685`
+- **Commit SHA**: `c348155492298e31ad3e4fe7f83bd1a89ca34ca3`
+- **Build Timestamp**: `2026-08-07T05:18:00Z`
 
 ---
 
@@ -23,6 +24,13 @@
 > - **Production Cryptography**: **NOT AUTHORIZED** (Zero production cryptographic providers integrated).
 > - **Plaintext Fallback**: **PROHIBITED** (Zero fallback to unencrypted messaging).
 > - **OTP Mode**: Connects to staging API or falls back to **DEVELOPMENT OTP MODE** (Code: `123456`).
+
+---
+
+## Validation Environment Status
+
+- **Android Emulator Execution**: `PASSED — Android API 35 x86_64 AVD (emulator-5554)`
+- **Physical Android Device Execution**: `NOT EXECUTED — PHYSICAL ANDROID DEVICE REQUIRED`
 
 ---
 
@@ -55,7 +63,7 @@ adb shell am start -n com.guffsuff.mobile/.MainActivity
 
 ## Testing & Demonstration Walkthrough
 
-1. **Welcome & Privacy Intro**: Tap **Get Started** to view the zero-knowledge privacy overview.
+1. **Welcome & Privacy Intro**: Tap **Get Started** to view the privacy-first architecture overview.
 2. **Phone Number Entry**: Select country (default **Nepal `+977`**) and enter phone number (e.g. `9800000000`).
 3. **OTP Verification**: Enter 6-digit OTP. When offline or on local development backend, use **`123456`**.
 4. **Profile Setup**: Set display name, username, and status bio.

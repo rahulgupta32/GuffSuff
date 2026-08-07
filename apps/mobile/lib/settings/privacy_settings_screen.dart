@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class PrivacySettingsScreen extends StatelessWidget {
   const PrivacySettingsScreen({super.key});
 
@@ -12,7 +11,7 @@ class PrivacySettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: Colors.amber.shade900.withOpacity(0.1),
+            color: Colors.amber.shade900.withValues(alpha: 0.1),
             child: const Padding(
               padding: EdgeInsets.all(16.0),
               child: Row(
@@ -33,23 +32,23 @@ class PrivacySettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          SwitchListTile(
+          const SwitchListTile(
             value: true,
             onChanged: null,
-            title: const Text('Read Receipts'),
-            subtitle: const Text(
+            title: Text('Read Receipts'),
+            subtitle: Text(
               'Send read receipts when messages are viewed (Requires E2EE)',
             ),
           ),
-          SwitchListTile(
+          const SwitchListTile(
             value: false,
             onChanged: null,
-            title: const Text('Last Seen & Online Status'),
-            subtitle: const Text('Control who can see your online state'),
+            title: Text('Last Seen & Online Status'),
+            subtitle: Text('Control who can see your online state'),
           ),
-          ListTile(
-            title: const Text('Disappearing Messages'),
-            subtitle: const Text('Off (Requires E2EE state enforcement)'),
+          const ListTile(
+            title: Text('Disappearing Messages'),
+            subtitle: Text('Off (Requires E2EE state enforcement)'),
             enabled: false,
           ),
           ListTile(

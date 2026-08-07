@@ -33,7 +33,7 @@ class AppStrings {
           : 'GuffSuff is being built with a privacy-first architecture. Secure messaging is not available in this internal build.';
 
   String get getStarted => isNepali ? 'शुरु गर्नुहोस्' : 'Get Started';
-  String get continueButton => isNepali ? 'आगे बढ्नुहोस्' : 'Continue';
+  String get continueButton => isNepali ? 'अगाडि बढ्नुहोस्' : 'Continue';
 
   // Phone Entry
   String get enterPhoneNumber =>
@@ -64,14 +64,14 @@ class AppStrings {
   String get setupProfile =>
       isNepali ? 'प्रोफाइल तयार गर्नुहोस्' : 'Set Up Your Profile';
   String get displayName => isNepali ? 'प्रदर्शन नाम' : 'Display Name';
-  String get bioStatus => isNepali ? 'स्ट्याटस / बायो' : 'Status / Bio';
+  String get bioStatus => isNepali ? 'बायो / स्ट्याटस' : 'Status / Bio';
   String get username => isNepali ? 'प्रयोगकर्ता नाम' : 'Username';
   String get completeProfile =>
       isNepali ? 'सम्पन्न गर्नुहोस्' : 'Complete Setup';
 
   // Navigation
-  String get tabChats => isNepali ? 'गफफफ (Chats)' : 'Chats';
-  String get tabPeople => isNepali ? 'मानिसहरू (People)' : 'People';
+  String get tabChats => isNepali ? 'गफगाफ' : 'Chats';
+  String get tabPeople => isNepali ? 'सम्पर्क' : 'People';
   String get tabUpdates => isNepali ? 'अपडेट्स' : 'Updates';
   String get tabSettings => isNepali ? 'सेटिङहरू' : 'Settings';
 

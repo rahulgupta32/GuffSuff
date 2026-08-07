@@ -90,8 +90,7 @@ class StagingOtpService {
       // Offline fallback in non-production environments
     }
 
-    if (AppConfig.allowDevelopmentOtp &&
-        AppConfig.developmentOtpCode != null) {
+    if (AppConfig.allowDevelopmentOtp && AppConfig.developmentOtpCode != null) {
       return OtpRequestResult(
         success: true,
         challengeId: 'dev-challenge-${DateTime.now().millisecondsSinceEpoch}',

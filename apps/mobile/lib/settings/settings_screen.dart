@@ -27,7 +27,8 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: AppTheme.primaryNavy.withOpacity(0.2),
+                    backgroundColor: AppTheme.primaryNavy.withValues(alpha: 0.2),
+
                     child: Text(
                       profile?.displayName.isNotEmpty == true
                           ? profile!.displayName[0]

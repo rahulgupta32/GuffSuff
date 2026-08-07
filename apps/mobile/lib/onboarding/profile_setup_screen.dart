@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';

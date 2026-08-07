@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../onboarding/welcome_screen.dart';
 import '../../onboarding/privacy_explain_screen.dart';
 import '../../onboarding/phone_entry_screen.dart';

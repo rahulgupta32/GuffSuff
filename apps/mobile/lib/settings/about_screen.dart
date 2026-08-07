@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 import 'package:flutter/material.dart';
+
 import '../core/branding/app_theme.dart';
 import '../core/config/app_config.dart';
 
@@ -34,7 +36,7 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Nepal-First Secure Messaging',
+                'Nepal-First Messaging Platform',
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
@@ -56,7 +58,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Card(
                 child: Column(
                   children: [
@@ -67,14 +69,51 @@ class AboutScreen extends StatelessWidget {
                     const Divider(height: 1),
                     ListTile(
                       title: const Text('Build Number'),
-                      trailing: Text('${AppConfig.buildNumber}'),
+                      trailing: Text(AppConfig.buildNumber.toString()),
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      title: const Text('Commit SHA'),
+                      title: const Text('Git Commit'),
                       trailing: Text(
                         AppConfig.commitSha,
                         style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      title: const Text('Environment'),
+                      trailing: Text(AppConfig.environment.name.toUpperCase()),
+                    ),
+                    const Divider(height: 1),
+                    const ListTile(
+                      title: Text('Crypto Provider'),
+                      trailing: Text(
+                        'UNAVAILABLE',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      title: const Text('OTP Mode'),
+                      trailing: Text(
+                        AppConfig.allowDevelopmentOtp
+                            ? 'DEVELOPMENT (${AppConfig.developmentOtpCode})'
+                            : 'PRODUCTION',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      title: const Text('Backend API'),
+                      trailing: Text(
+                        AppConfig.apiBaseUrl,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],
