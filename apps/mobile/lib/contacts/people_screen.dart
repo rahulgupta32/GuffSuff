@@ -41,9 +41,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'GuffSuff respects your privacy. Contacts are matched locally using zero-knowledge hashing when enabled.',
+                      'GuffSuff respects your privacy. Contacts are matched locally using privacy-preserving phone numbers when enabled.',
                       style: TextStyle(color: Colors.grey, fontSize: 13),
                     ),
+
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () {

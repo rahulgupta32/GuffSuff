@@ -55,8 +55,9 @@ class NewChatSheet extends StatelessWidget {
               backgroundColor: AppTheme.primaryNavy,
               child: Icon(Icons.group_add, color: Colors.white),
             ),
-            title: const Text('New Encrypted Group'),
-            subtitle: const Text('Create E2EE group conversation'),
+            title: const Text('New Group Chat'),
+            subtitle: const Text('Create group conversation'),
+
             onTap: () {
               Navigator.pop(context);
               _showDisabledDialog(context, 'Group Creation Disabled');

@@ -25,12 +25,13 @@ class AppStrings {
       isNepali ? 'GuffSuff मा स्वागत छ' : 'Welcome to GuffSuff';
   String get welcomeSubTitle =>
       isNepali
-          ? 'सुरक्षित, निजी र नेपाल-केन्द्रित सञ्चार प्रणाली।'
-          : 'Private, secure, and Nepal-first communication platform.';
+          ? 'नेपाल-केन्द्रित सञ्चार प्रणाली।'
+          : 'Nepal-first messaging platform.';
   String get privacyPolicyNotice =>
       isNepali
-          ? 'हामी तपाईंका सन्देशहरू सर्वोच्च गोपनीयताका साथ सुरक्षित राख्छौँ।'
-          : 'Your privacy is paramount. Zero surveillance and end-to-end architecture.';
+          ? 'GuffSuff गोपनीयता-केन्द्रित आर्किटेक्चरको साथ निर्माण गरिँदैछ। यो आन्तरिक बिल्डमा सुरक्षित सन्देश उपलब्ध छैन।'
+          : 'GuffSuff is being built with a privacy-first architecture. Secure messaging is not available in this internal build.';
+
   String get getStarted => isNepali ? 'शुरु गर्नुहोस्' : 'Get Started';
   String get continueButton => isNepali ? 'आगे बढ्नुहोस्' : 'Continue';
 

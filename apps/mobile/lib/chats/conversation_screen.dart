@@ -83,9 +83,10 @@ class ConversationScreen extends StatelessWidget {
                     ),
                   ),
                   const Text(
-                    'End-to-End Encrypted (Unavailable in demo)',
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                    'Secure Messaging Unavailable (Internal Demo)',
+                    style: TextStyle(fontSize: 11, color: Colors.amber),
                   ),
+
                 ],
               ),
             ),
