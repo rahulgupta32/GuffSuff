@@ -6,6 +6,10 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "staticlib"]
 
+[features]
+default = ["test-provider"]
+test-provider = []
+
 [dependencies]
 
 [profile.release]
@@ -13,4 +17,4 @@ opt-level = "s"
 lto = true
 codegen-units = 1
 panic = "unwind"
-strip = false
+strip = true

@@ -56,15 +56,26 @@ void main() {
     });
 
     testWidgets('10 & 13. Opaque state exports and imports successfully', (WidgetTester tester) async {
-      final handle = await provider.initializeDeviceIdentity();
+      final handle = await provider.establishOutboundSession('test_state_bundle');
       final exportedState = await provider.exportOpaqueState();
       expect(exportedState.length, greaterThan(8));
 
+      final parsed = provider.parseExportedState(exportedState);
+      final sessionEntry = parsed.firstWhere((h) => h.handleId == handle.handleId);
+      expect(sessionEntry.handleType, equals(2)); // 2 = Session handle
+      expect(sessionEntry.isActive, isTrue);
+
       await provider.importOpaqueState(exportedState);
+      final restoredSession = OpaqueSessionHandle(handle.handleId);
       final input = Uint8List.fromList('Post Import Test'.codeUnits);
-      final session = OpaqueSessionHandle(handle.handleId);
-      final output = await provider.encryptPayload(session, input);
+      final output = await provider.encryptPayload(restoredSession, input);
       expect(output, equals(input));
+
+      await provider.disposeHandle(restoredSession);
+      expect(
+        () async => await provider.encryptPayload(restoredSession, input),
+        throwsA(predicate((e) => e.toString().contains('STALE_OR_DOUBLE_FREE'))),
+      );
     });
 
     testWidgets('14 & 15. Handle is disposed and reuse fails with STALE_OR_DOUBLE_FREE', (WidgetTester tester) async {
@@ -147,6 +158,37 @@ void main() {
         () => fallback.queryCapabilities(),
         throwsA(isA<ProviderUnavailableException>()),
       );
+    });
+
+    testWidgets('27. Canary payload is processed without being logged', (WidgetTester tester) async {
+      final handle = await provider.establishOutboundSession('canary_bundle');
+      final canaryString = 'CANARY_SECRET_PAYLOAD_998877_DO_NOT_LOG';
+      final input = Uint8List.fromList(canaryString.codeUnits);
+      final output = await provider.encryptPayload(handle, input);
+      expect(String.fromCharCodes(output), equals(canaryString));
+      await provider.disposeHandle(handle);
+    });
+
+    testWidgets('28. Identity handle cannot be used as session handle (returns ERR_HANDLE_TYPE_MISMATCH)', (WidgetTester tester) async {
+      final idHandle = await provider.initializeDeviceIdentity();
+      final sessionFromId = OpaqueSessionHandle(idHandle.handleId);
+      final input = Uint8List.fromList('Type Mismatch Test'.codeUnits);
+      expect(
+        () async => await provider.encryptPayload(sessionFromId, input),
+        throwsA(predicate((e) => e.toString().contains('ERR_HANDLE_TYPE_MISMATCH'))),
+      );
+      await provider.disposeHandle(idHandle);
+    });
+
+    testWidgets('29. Group handle cannot be used as session handle (returns ERR_HANDLE_TYPE_MISMATCH)', (WidgetTester tester) async {
+      final groupHandle = await provider.createGroupState('g1', ['d1']);
+      final sessionFromGroup = OpaqueSessionHandle(groupHandle.handleId);
+      final input = Uint8List.fromList('Type Mismatch Test'.codeUnits);
+      expect(
+        () async => await provider.encryptPayload(sessionFromGroup, input),
+        throwsA(predicate((e) => e.toString().contains('ERR_HANDLE_TYPE_MISMATCH'))),
+      );
+      await provider.disposeHandle(groupHandle);
     });
   });
 }

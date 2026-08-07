@@ -200,6 +200,7 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
         if (res == -3) throw Exception('STALE_OR_DOUBLE_FREE');
         if (res == -5) throw Exception('BUFFER_TOO_SMALL');
         if (res == -6) throw ArgumentError('OVERSIZED_BUFFER');
+        if (res == -9) throw Exception('ERR_HANDLE_TYPE_MISMATCH');
         throw Exception('Native transformPayload failed: $res');
       }
 
@@ -246,6 +247,27 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
     }
   }
 
+  List<RestoredOpaqueHandle> parseExportedState(Uint8List stateData) {
+    if (stateData.length < 8) return [];
+    final byteData = ByteData.sublistView(stateData);
+    final count = byteData.getUint32(4, Endian.little);
+    final list = <RestoredOpaqueHandle>[];
+    var offset = 8;
+    for (var i = 0; i < count; i++) {
+      if (offset + 10 > stateData.length) break;
+      final handleId = byteData.getUint64(offset, Endian.little);
+      final handleType = stateData[offset + 8];
+      final isActive = stateData[offset + 9] != 0;
+      offset += 10;
+      list.add(RestoredOpaqueHandle(
+        handleId: handleId,
+        handleType: handleType,
+        isActive: isActive,
+      ));
+    }
+    return list;
+  }
+
   Future<void> importOpaqueState(Uint8List stateData) async {
     final inPtr = calloc<Uint8>(stateData.length);
     try {
@@ -265,3 +287,16 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
     return _triggerPanic();
   }
 }
+
+class RestoredOpaqueHandle {
+  final int handleId;
+  final int handleType; // 1 = Identity, 2 = Session, 3 = Group
+  final bool isActive;
+
+  const RestoredOpaqueHandle({
+    required this.handleId,
+    required this.handleType,
+    required this.isActive,
+  });
+}
+

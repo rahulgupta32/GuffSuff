@@ -15,6 +15,7 @@
     ],
     "component": {
       "type": "application",
+      "bom-ref": "pkg:aab/guffsuff-mobile-release@0.1.0+1",
       "name": "app-release.aab",
       "version": "0.1.0+1",
       "hashes": [
@@ -28,18 +29,31 @@
   "components": [
     {
       "type": "framework",
+      "bom-ref": "pkg:pub/flutter_engine@3.44.8",
       "name": "flutter-engine",
       "version": "3.44.8"
     },
     {
       "type": "library",
+      "bom-ref": "pkg:pub/ffi@2.2.0",
       "name": "ffi",
       "version": "2.2.0"
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary@0.1.0",
       "name": "libguffsuff_mobile_crypto_boundary.so",
       "version": "0.1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:aab/guffsuff-mobile-release@0.1.0+1",
+      "dependsOn": [
+        "pkg:pub/flutter_engine@3.44.8",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:cargo/libguffsuff_mobile_crypto_boundary@0.1.0"
+      ]
     }
   ]
 }

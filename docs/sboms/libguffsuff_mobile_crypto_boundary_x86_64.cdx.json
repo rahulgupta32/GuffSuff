@@ -15,6 +15,7 @@
     ],
     "component": {
       "type": "library",
+      "bom-ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary_x86_64@0.1.0",
       "name": "libguffsuff_mobile_crypto_boundary.so",
       "version": "0.1.0",
       "hashes": [
@@ -38,9 +39,18 @@
   "components": [
     {
       "type": "library",
-      "name": "guffsuff-mobile-crypto-boundary-crate",
+      "bom-ref": "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0",
+      "name": "guffsuff-mobile-crypto-boundary",
       "version": "0.1.0",
       "purl": "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary_x86_64@0.1.0",
+      "dependsOn": [
+        "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"
+      ]
     }
   ]
 }
