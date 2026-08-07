@@ -9,7 +9,8 @@
 - **APK SHA-256**: `51F317F79857C0736B83581812F57317B954D96AA2A55F0C1F623A8584B78D3D`
 - **APK Size**: `53,781,671 bytes` (~51.3 MB)
 - **Branch**: `feature/internal-demo-mobile-app`
-- **Commit SHA**: `c348155492298e31ad3e4fe7f83bd1a89ca34ca3`
+- **Commit SHA**: `0b062864b13c181ea8f434025c8c4aaad4f38a84`
+
 - **Build Timestamp**: `2026-08-07T05:18:00Z`
 
 ---
