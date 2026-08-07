@@ -182,7 +182,10 @@ export class ProviderUnavailableError extends CryptoAdapterError {
   }
 }
 
-export function assertProductionProviderSafety(capabilities: ProviderCapabilityMap, isProductionEnvironment: boolean): void {
+export function assertProductionProviderSafety(
+  capabilities: ProviderCapabilityMap,
+  isProductionEnvironment: boolean
+): void {
   if (isProductionEnvironment && capabilities.isTestProvider) {
     throw new CryptoAdapterError(
       "AUTHENTICATION_FAILURE",
@@ -190,4 +193,3 @@ export function assertProductionProviderSafety(capabilities: ProviderCapabilityM
     );
   }
 }
-

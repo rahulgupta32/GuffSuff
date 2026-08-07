@@ -74,14 +74,19 @@ export type OtpRequest = z.infer<typeof OtpRequestSchema>;
 
 export const OtpVerifySchema = z.object({
   challengeId: z.string().uuid(),
-  otpCode: z.string().length(6).regex(/^\d{6}$/)
+  otpCode: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/)
 });
 export type OtpVerify = z.infer<typeof OtpVerifySchema>;
 
 export const RegisterAccountSchema = z.object({
   challengeId: z.string().uuid(),
   displayName: z.string().min(2).max(50),
-  username: z.string().regex(UsernameRegex, "Username must be 3-20 lowercase ASCII letters, numbers, or underscore"),
+  username: z
+    .string()
+    .regex(UsernameRegex, "Username must be 3-20 lowercase ASCII letters, numbers, or underscore"),
   locale: z.string().default("ne"),
   timezone: z.string().default("Asia/Kathmandu"),
   termsAccepted: z.literal(true, {
@@ -134,12 +139,20 @@ export const UpdateDeviceSchema = z.object({
 export type UpdateDevice = z.infer<typeof UpdateDeviceSchema>;
 
 export const SetRegistrationLockPinSchema = z.object({
-  pin: z.string().min(6).max(12).regex(/^\d{6,12}$/)
+  pin: z
+    .string()
+    .min(6)
+    .max(12)
+    .regex(/^\d{6,12}$/)
 });
 export type SetRegistrationLockPin = z.infer<typeof SetRegistrationLockPinSchema>;
 
 export const VerifyRegistrationLockPinSchema = z.object({
-  pin: z.string().min(6).max(12).regex(/^\d{6,12}$/)
+  pin: z
+    .string()
+    .min(6)
+    .max(12)
+    .regex(/^\d{6,12}$/)
 });
 export type VerifyRegistrationLockPin = z.infer<typeof VerifyRegistrationLockPinSchema>;
 

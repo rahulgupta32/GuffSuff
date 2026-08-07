@@ -1,4 +1,13 @@
-import { Controller, Post, Body, UseGuards, Req, HttpCode, HttpStatus, Inject } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Inject
+} from "@nestjs/common";
 import { OtpService } from "./otp.service.js";
 import { AccountService } from "./account.service.js";
 import { SessionService } from "./session.service.js";
@@ -38,7 +47,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async verifyOtp(@Body() body: any) {
     const validated = OtpVerifySchema.parse(body);
-    const isSuccess = await this.otpService.verifyOtpChallenge(validated.challengeId, validated.otpCode);
+    const isSuccess = await this.otpService.verifyOtpChallenge(
+      validated.challengeId,
+      validated.otpCode
+    );
     if (!isSuccess) {
       return { success: false, message: "Invalid OTP code" };
     }

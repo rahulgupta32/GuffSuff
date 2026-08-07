@@ -17,6 +17,3 @@
 - **Rejected OpenMLS v0.8.1 Android Runtime**: `NOT EXECUTED — Android runtime instrumentation evidence not provided`
 - **OpenMLS 0.9.0-rc.2 Evaluation**: `PRE-RELEASE RESEARCH ONLY — NOT A PRODUCTION CANDIDATE`
 - **Production Cryptographic Integration**: `NOT AUTHORIZED`
-
-
-

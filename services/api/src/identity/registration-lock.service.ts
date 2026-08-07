@@ -6,7 +6,8 @@ export class RegistrationLockService {
   private readonly pinPepper: string;
 
   constructor(private readonly pool: Pool) {
-    this.pinPepper = process.env.REGISTRATION_LOCK_PEPPER || "default_guffsuff_pin_pepper_v1_32chars!!";
+    this.pinPepper =
+      process.env.REGISTRATION_LOCK_PEPPER || "default_guffsuff_pin_pepper_v1_32chars!!";
   }
 
   private getPepperedPin(pin: string): string {
@@ -43,7 +44,11 @@ export class RegistrationLockService {
     );
   }
 
-  public async verifyPin(userId: string, candidatePin: string, ipAddress?: string): Promise<boolean> {
+  public async verifyPin(
+    userId: string,
+    candidatePin: string,
+    ipAddress?: string
+  ): Promise<boolean> {
     // 1. Check attempt lockout window (5 failed attempts in last 30 minutes)
     const attemptsRes = await this.pool.query(
       `SELECT is_successful FROM registration_lock_attempts 
@@ -52,9 +57,13 @@ export class RegistrationLockService {
       [userId]
     );
 
-    const consecutiveFailures = attemptsRes.rows.filter((r: { is_successful: boolean }) => !r.is_successful).length;
+    const consecutiveFailures = attemptsRes.rows.filter(
+      (r: { is_successful: boolean }) => !r.is_successful
+    ).length;
     if (consecutiveFailures >= 5) {
-      throw new Error("Too many failed registration-lock PIN attempts. Account locked for 30 minutes.");
+      throw new Error(
+        "Too many failed registration-lock PIN attempts. Account locked for 30 minutes."
+      );
     }
 
     // 2. Fetch Credential Hash
@@ -85,10 +94,7 @@ export class RegistrationLockService {
       throw new Error("Incorrect registration lock PIN");
     }
 
-    await this.pool.query(
-      `DELETE FROM registration_lock_credentials WHERE user_id = $1`,
-      [userId]
-    );
+    await this.pool.query(`DELETE FROM registration_lock_credentials WHERE user_id = $1`, [userId]);
 
     await this.pool.query(
       `INSERT INTO security_events 

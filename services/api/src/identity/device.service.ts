@@ -65,10 +65,9 @@ export class DeviceService {
       }
 
       // 2. Revoke Sessions & Refresh Token Families for this device
-      await client.query(
-        `UPDATE sessions SET revoked_at = NOW() WHERE device_id = $1`,
-        [deviceIdToRevoke]
-      );
+      await client.query(`UPDATE sessions SET revoked_at = NOW() WHERE device_id = $1`, [
+        deviceIdToRevoke
+      ]);
       await client.query(
         `UPDATE refresh_token_families SET is_compromised = true, updated_at = NOW() WHERE device_id = $1`,
         [deviceIdToRevoke]

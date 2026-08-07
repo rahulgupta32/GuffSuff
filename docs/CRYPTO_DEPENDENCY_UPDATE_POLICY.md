@@ -9,6 +9,7 @@
 This document defines the security advisory monitoring, classification, exception approval, and dependency updating rules for cryptographic dependencies in GuffSuff.
 
 ### Principles:
+
 1. **Zero Unvetted Vulnerabilities**: No dependency with a high or critical CVE / RustSec advisory is allowed in production binaries.
 2. **Exact Advisory Attribution**: Adversarial security reports must use exact RustSec advisory IDs. Distinguish between original unmaintained crates and maintained/unmaintained forks.
 3. **Spike Exceptions Are Non-Production**: Broad exceptions or spike-only allowances in `deny.toml` do NOT grant production clearance.
@@ -17,13 +18,13 @@ This document defines the security advisory monitoring, classification, exceptio
 
 ## 2. Verified RustSec Advisory Inventory
 
-| Advisory ID | Crate Name | Crate Version | Dependency Path | Status / Severity | Runtime / Build-time | Production Impact | Mitigation / Migration Plan |
-|-------------|------------|---------------|-----------------|-------------------|----------------------|-------------------|-----------------------------|
-| **RUSTSEC-2026-0173** | `proc-macro-error2` | `v2.0.1` | `proc-macro-error2` -> `hax-lib-macros` -> `hax-lib` -> `core-models` -> `libcrux` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls` | Unmaintained (Informational) | Build-time (proc-macro) | **NONE** (host-only build dependency stripped from native mobile binaries) | Monitor upstream `libcrux` and OpenMLS for migration to `manyhow` or `proc-macro2-diagnostics`. |
-| **RUSTSEC-2024-0370** | `proc-macro-error` | N/A | Not in tree | Unmaintained (Informational) | N/A | **NONE** (not used) | N/A. `proc-macro-error` is the original unmaintained crate. |
-| **RUSTSEC-2026-0205** | `libcrux-secrets` | `v0.0.5` | `libcrux-secrets` -> `libcrux-traits` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls` | Vulnerability (High) | Runtime | **MITIGATED** in spike | Transitive update available. Upgrade to `libcrux-secrets >=0.0.6`. |
-| **RUSTSEC-2026-0207** | `libcrux-sha3` | `v0.0.8` | `libcrux-sha3` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls` | Vulnerability (Medium) | Runtime | **MITIGATED** in spike | Transitive update available. Upgrade to `libcrux-sha3 >=0.0.10`. |
-| **RUSTSEC-2026-0208** | `libcrux-sha3` | `v0.0.8` | `libcrux-sha3` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls` | Vulnerability (Medium) | Runtime | **MITIGATED** in spike | Transitive update available. Upgrade to `libcrux-sha3 >=0.0.10`. |
+| Advisory ID           | Crate Name          | Crate Version | Dependency Path                                                                                                                       | Status / Severity            | Runtime / Build-time    | Production Impact                                                          | Mitigation / Migration Plan                                                                     |
+| --------------------- | ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **RUSTSEC-2026-0173** | `proc-macro-error2` | `v2.0.1`      | `proc-macro-error2` -> `hax-lib-macros` -> `hax-lib` -> `core-models` -> `libcrux` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls` | Unmaintained (Informational) | Build-time (proc-macro) | **NONE** (host-only build dependency stripped from native mobile binaries) | Monitor upstream `libcrux` and OpenMLS for migration to `manyhow` or `proc-macro2-diagnostics`. |
+| **RUSTSEC-2024-0370** | `proc-macro-error`  | N/A           | Not in tree                                                                                                                           | Unmaintained (Informational) | N/A                     | **NONE** (not used)                                                        | N/A. `proc-macro-error` is the original unmaintained crate.                                     |
+| **RUSTSEC-2026-0205** | `libcrux-secrets`   | `v0.0.5`      | `libcrux-secrets` -> `libcrux-traits` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls`                                              | Vulnerability (High)         | Runtime                 | **MITIGATED** in spike                                                     | Transitive update available. Upgrade to `libcrux-secrets >=0.0.6`.                              |
+| **RUSTSEC-2026-0207** | `libcrux-sha3`      | `v0.0.8`      | `libcrux-sha3` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls`                                                                     | Vulnerability (Medium)       | Runtime                 | **MITIGATED** in spike                                                     | Transitive update available. Upgrade to `libcrux-sha3 >=0.0.10`.                                |
+| **RUSTSEC-2026-0208** | `libcrux-sha3`      | `v0.0.8`      | `libcrux-sha3` -> `hpke-rs` -> `openmls_rust_crypto` -> `openmls`                                                                     | Vulnerability (Medium)       | Runtime                 | **MITIGATED** in spike                                                     | Transitive update available. Upgrade to `libcrux-sha3 >=0.0.10`.                                |
 
 ---
 

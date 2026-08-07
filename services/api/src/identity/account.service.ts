@@ -101,7 +101,16 @@ export class AccountService {
       await client.query(
         `INSERT INTO devices (id, user_id, installation_id, device_name, platform, app_version, os_version, notification_token_status, is_revoked, created_at, last_seen_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'disabled', false, $8, $8)`,
-        [deviceId, userId, params.installationId, params.deviceName, params.platform, params.appVersion, params.osVersion, now]
+        [
+          deviceId,
+          userId,
+          params.installationId,
+          params.deviceName,
+          params.platform,
+          params.appVersion,
+          params.osVersion,
+          now
+        ]
       );
 
       // 7. Initialize Privacy Settings (Defaults)

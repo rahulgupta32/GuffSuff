@@ -21,7 +21,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     const userId = client.handshake.auth?.userId;
 
     if (!token || !deviceId || !userId) {
-      console.warn(`[REALTIME-SECURITY] Rejected unauthenticated connection attempt ID: ${client.id}`);
+      console.warn(
+        `[REALTIME-SECURITY] Rejected unauthenticated connection attempt ID: ${client.id}`
+      );
       client.disconnect(true);
       return;
     }
@@ -35,7 +37,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     console.log(`[REALTIME] Client disconnected ID: ${client.id}`);
   }
 
-  sendIdentityNotification(userId: string, eventType: "device_revoked" | "session_revoked" | "security_alert", payload: Record<string, unknown>) {
+  sendIdentityNotification(
+    userId: string,
+    eventType: "device_revoked" | "session_revoked" | "security_alert",
+    payload: Record<string, unknown>
+  ) {
     if (this.server) {
       this.server.to(`user_${userId}`).emit("identity_event", {
         eventType,
@@ -69,7 +75,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleClientMessageSubmit(@ConnectedSocket() client: Socket, @MessageBody() data: unknown) {
     const parsed = RealtimeEventEnvelopeSchema.safeParse(data);
     if (!parsed.success) {
-      client.emit("server.protocol.error", { errorCode: "INVALID_EVENT_FORMAT", message: "Schema validation failed" });
+      client.emit("server.protocol.error", {
+        errorCode: "INVALID_EVENT_FORMAT",
+        message: "Schema validation failed"
+      });
       return;
     }
     client.emit("server.message.accepted", {
@@ -84,7 +93,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleClientMessageDelivered(@ConnectedSocket() client: Socket, @MessageBody() data: unknown) {
     const parsed = RealtimeEventEnvelopeSchema.safeParse(data);
     if (!parsed.success) {
-      client.emit("server.protocol.error", { errorCode: "INVALID_EVENT_FORMAT", message: "Schema validation failed" });
+      client.emit("server.protocol.error", {
+        errorCode: "INVALID_EVENT_FORMAT",
+        message: "Schema validation failed"
+      });
       return;
     }
     client.emit("server.message.status", {
@@ -98,7 +110,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleClientMessageRead(@ConnectedSocket() client: Socket, @MessageBody() data: unknown) {
     const parsed = RealtimeEventEnvelopeSchema.safeParse(data);
     if (!parsed.success) {
-      client.emit("server.protocol.error", { errorCode: "INVALID_EVENT_FORMAT", message: "Schema validation failed" });
+      client.emit("server.protocol.error", {
+        errorCode: "INVALID_EVENT_FORMAT",
+        message: "Schema validation failed"
+      });
       return;
     }
     client.emit("server.message.status", {

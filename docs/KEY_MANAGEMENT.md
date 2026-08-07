@@ -24,23 +24,25 @@
 
 ## 2. Mobile Secure Storage Classification Table
 
-| Item / Value Name | Confidentiality | Required Device Lock State | Backup Eligibility | Migration Behavior | Biometric Requirement | Invalidation Behavior | Deletion Behavior |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Access Token** | High | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Cleared on Logout | Purged on Revocation |
-| **Refresh Token** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Invalidated on Reuse | Purged on Logout |
-| **Device Identifier** | Medium | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Permanent per device | Purged on Account Reset |
-| **Device Private Key Placeholder** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Hardware Locked | Purged on Revocation |
-| **Local Database Key (SQLCipher)** | Critical | First Unlock | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only | Optional | Lockscreen Reset Invalidates | Purged on Reset |
-| **Registration-Lock State** | High | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Failed Attempts Lock | Purged on Reset |
-| **Biometric Preference** | Low | Unlocked | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) | Device Only | None | Reset on OS Change | Local Reset |
-| **Environment Config (Non-Secret)** | Public | Standard SharedPreferences / NSUserDefaults | Eligible | Allowed | None | None | App Uninstall |
+| Item / Value Name                   | Confidentiality | Required Device Lock State                  | Backup Eligibility                                            | Migration Behavior | Biometric Requirement | Invalidation Behavior        | Deletion Behavior       |
+| :---------------------------------- | :-------------- | :------------------------------------------ | :------------------------------------------------------------ | :----------------- | :-------------------- | :--------------------------- | :---------------------- |
+| **Access Token**                    | High            | First Unlock                                | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only        | Optional              | Cleared on Logout            | Purged on Revocation    |
+| **Refresh Token**                   | Critical        | First Unlock                                | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only        | Optional              | Invalidated on Reuse         | Purged on Logout        |
+| **Device Identifier**               | Medium          | Unlocked                                    | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`)     | Device Only        | None                  | Permanent per device         | Purged on Account Reset |
+| **Device Private Key Placeholder**  | Critical        | First Unlock                                | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only        | Optional              | Hardware Locked              | Purged on Revocation    |
+| **Local Database Key (SQLCipher)**  | Critical        | First Unlock                                | Excluded (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) | Device Only        | Optional              | Lockscreen Reset Invalidates | Purged on Reset         |
+| **Registration-Lock State**         | High            | Unlocked                                    | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`)     | Device Only        | None                  | Failed Attempts Lock         | Purged on Reset         |
+| **Biometric Preference**            | Low             | Unlocked                                    | Excluded (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`)     | Device Only        | None                  | Reset on OS Change           | Local Reset             |
+| **Environment Config (Non-Secret)** | Public          | Standard SharedPreferences / NSUserDefaults | Eligible                                                      | Allowed            | None                  | None                         | App Uninstall           |
 
 ### iOS Accessibility Modes
+
 - **Access & Refresh Tokens**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
 - **Device Private Key**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
 - **Database Key**: `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`
 
 ### Android Hardware KeyStore & StrongBox Configuration
+
 - `EncryptedSharedPreferences` with Master Key `AES256_GCM`
 - Hardware-backed Keystore preference (`useStrongBox = true` where hardware supported)
 - Backup exclusion (`android:allowBackup="false"`)

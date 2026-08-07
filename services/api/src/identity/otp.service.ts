@@ -8,7 +8,8 @@ export class OtpService {
   private readonly provider: OtpProvider;
 
   constructor(private readonly pool: Pool) {
-    this.pepperV1 = process.env.OTP_VERIFIER_PEPPER_V1 || "default_guffsuff_otp_pepper_v1_secure_key";
+    this.pepperV1 =
+      process.env.OTP_VERIFIER_PEPPER_V1 || "default_guffsuff_otp_pepper_v1_secure_key";
     const env = process.env.NODE_ENV || "development";
     if (env === "production" || env === "staging") {
       this.provider = new ProductionOtpProvider();

@@ -6,19 +6,20 @@
 
 ## 1. Summary of Evaluated RustSec Advisories
 
-| Advisory ID | CVSS / Severity | Crate | Current Version | Fixed Version | Role | Host Build | Android ARM64 | Android x86_64 | iOS ARM64 | Production Reachability |
-|-------------|-----------------|-------|-----------------|---------------|------|------------|---------------|----------------|-----------|-------------------------|
-| **RUSTSEC-2026-0212** | High | `libcrux-secrets` | `0.0.5` | `>=0.0.6` | Runtime | Present | **APPLICABLE** | Present | **APPLICABLE** | **Vulnerable API reachable on ARM64** |
-| **RUSTSEC-2026-0207** | Medium | `libcrux-sha3` | `0.0.8` | `>=0.0.10` | Runtime | **APPLICABLE** | **APPLICABLE** | **APPLICABLE** | **APPLICABLE** | **Incremental squeeze API reachable** |
-| **RUSTSEC-2026-0208** | Medium | `libcrux-sha3` | `0.0.8` | `>=0.0.10` | Runtime | **APPLICABLE** | Present | **APPLICABLE** | Present | **AVX2 SHAKE-256 routine reachable on x86_64** |
-| **RUSTSEC-2026-0173** | Informational | `proc-macro-error2` | `2.0.1` | None | Build (proc-macro) | **APPLICABLE** | Stripped | Stripped | Stripped | Host build macro only |
-| **RUSTSEC-2021-0139** | Informational | `ansi_term` | `0.12.1` | None | Test-only | **APPLICABLE** | Stripped | Stripped | Stripped | Test harness runner only |
+| Advisory ID           | CVSS / Severity | Crate               | Current Version | Fixed Version | Role               | Host Build     | Android ARM64  | Android x86_64 | iOS ARM64      | Production Reachability                        |
+| --------------------- | --------------- | ------------------- | --------------- | ------------- | ------------------ | -------------- | -------------- | -------------- | -------------- | ---------------------------------------------- |
+| **RUSTSEC-2026-0212** | High            | `libcrux-secrets`   | `0.0.5`         | `>=0.0.6`     | Runtime            | Present        | **APPLICABLE** | Present        | **APPLICABLE** | **Vulnerable API reachable on ARM64**          |
+| **RUSTSEC-2026-0207** | Medium          | `libcrux-sha3`      | `0.0.8`         | `>=0.0.10`    | Runtime            | **APPLICABLE** | **APPLICABLE** | **APPLICABLE** | **APPLICABLE** | **Incremental squeeze API reachable**          |
+| **RUSTSEC-2026-0208** | Medium          | `libcrux-sha3`      | `0.0.8`         | `>=0.0.10`    | Runtime            | **APPLICABLE** | Present        | **APPLICABLE** | Present        | **AVX2 SHAKE-256 routine reachable on x86_64** |
+| **RUSTSEC-2026-0173** | Informational   | `proc-macro-error2` | `2.0.1`         | None          | Build (proc-macro) | **APPLICABLE** | Stripped       | Stripped       | Stripped       | Host build macro only                          |
+| **RUSTSEC-2021-0139** | Informational   | `ansi_term`         | `0.12.1`        | None          | Test-only          | **APPLICABLE** | Stripped       | Stripped       | Stripped       | Test harness runner only                       |
 
 ---
 
 ## 2. Detailed Advisory Records (16-Field System)
 
 ### Record 1: RUSTSEC-2026-0212 (`libcrux-secrets`)
+
 1. **Advisory ID**: `RUSTSEC-2026-0212`
 2. **CVSS / Severity**: High
 3. **Crate and Version**: `libcrux-secrets v0.0.5`
@@ -39,6 +40,7 @@
 ---
 
 ### Record 2: RUSTSEC-2026-0207 (`libcrux-sha3`)
+
 1. **Advisory ID**: `RUSTSEC-2026-0207`
 2. **CVSS / Severity**: Medium
 3. **Crate and Version**: `libcrux-sha3 v0.0.8`
@@ -59,6 +61,7 @@
 ---
 
 ### Record 3: RUSTSEC-2026-0208 (`libcrux-sha3`)
+
 1. **Advisory ID**: `RUSTSEC-2026-0208`
 2. **CVSS / Severity**: Medium
 3. **Crate and Version**: `libcrux-sha3 v0.0.8`
@@ -79,6 +82,7 @@
 ---
 
 ### Record 4: RUSTSEC-2026-0173 (`proc-macro-error2`)
+
 1. **Advisory ID**: `RUSTSEC-2026-0173`
 2. **CVSS / Severity**: Informational / Unmaintained Crate
 3. **Crate and Version**: `proc-macro-error2 v2.0.1`
@@ -99,6 +103,7 @@
 ---
 
 ### Record 5: RUSTSEC-2021-0139 (`ansi_term`)
+
 1. **Advisory ID**: `RUSTSEC-2021-0139`
 2. **CVSS / Severity**: Informational / Deprecated Crate
 3. **Crate and Version**: `ansi_term v0.12.1`

@@ -13,12 +13,16 @@ export async function runMigrations() {
       );
     `);
 
-    const migrationsDir = typeof __dirname !== "undefined"
-      ? path.resolve(__dirname, "../migrations")
-      : path.resolve(process.cwd(), "packages/database/migrations");
+    const migrationsDir =
+      typeof __dirname !== "undefined"
+        ? path.resolve(__dirname, "../migrations")
+        : path.resolve(process.cwd(), "packages/database/migrations");
 
     if (fs.existsSync(migrationsDir)) {
-      const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort();
+      const files = fs
+        .readdirSync(migrationsDir)
+        .filter((f) => f.endsWith(".sql"))
+        .sort();
       for (const file of files) {
         const { rows } = await pool.query(
           "SELECT version FROM schema_migrations WHERE version = $1",
@@ -28,10 +32,7 @@ export async function runMigrations() {
           console.log(`[MIGRATIONS] Applying ${file}...`);
           const sql = fs.readFileSync(path.join(migrationsDir, file), "utf-8");
           await pool.query(sql);
-          await pool.query(
-            "INSERT INTO schema_migrations (version) VALUES ($1)",
-            [file]
-          );
+          await pool.query("INSERT INTO schema_migrations (version) VALUES ($1)", [file]);
           console.log(`[MIGRATIONS] Applied ${file}.`);
         }
       }
@@ -42,7 +43,10 @@ export async function runMigrations() {
   }
 }
 
-if (process.argv[1] && (process.argv[1].endsWith("migrate.js") || process.argv[1].endsWith("migrate.ts"))) {
+if (
+  process.argv[1] &&
+  (process.argv[1].endsWith("migrate.js") || process.argv[1].endsWith("migrate.ts"))
+) {
   runMigrations().catch((err) => {
     console.error("[MIGRATIONS-ERROR]", err);
     process.exit(1);

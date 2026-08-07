@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus
+} from "@nestjs/common";
 import { JwtAuthGuard } from "../identity/jwt-auth.guard.js";
 import { MessageEnvelopeService } from "./message-envelope.service.js";
 import { SubmitMessageEnvelopeSchema, AcknowledgeReadSchema } from "@guffsuff/contracts";
@@ -41,7 +51,11 @@ export class EnvelopesController {
     @Body() body: any
   ) {
     const validated = AcknowledgeReadSchema.parse(body);
-    return this.envelopeService.acknowledgeRead(req.user.sub, validated.lastReadEnvelopeId, envelopeId);
+    return this.envelopeService.acknowledgeRead(
+      req.user.sub,
+      validated.lastReadEnvelopeId,
+      envelopeId
+    );
   }
 
   @Get("envelopes/:envelopeId/status")

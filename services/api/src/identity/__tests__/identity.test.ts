@@ -63,8 +63,14 @@ describe("Phase 4 Identity Core Unit Tests", () => {
       const pepper = "test_pepper_32_bytes_long_secret!";
       const challengeId = "018f3a2b-1234-7000-8000-000000000002";
       const code = "123456";
-      const hash1 = crypto.createHmac("sha256", pepper).update(`${challengeId}:${code}`).digest("hex");
-      const hash2 = crypto.createHmac("sha256", pepper).update(`${challengeId}:${code}`).digest("hex");
+      const hash1 = crypto
+        .createHmac("sha256", pepper)
+        .update(`${challengeId}:${code}`)
+        .digest("hex");
+      const hash2 = crypto
+        .createHmac("sha256", pepper)
+        .update(`${challengeId}:${code}`)
+        .digest("hex");
 
       const buf1 = Buffer.from(hash1, "hex");
       const buf2 = Buffer.from(hash2, "hex");
@@ -74,8 +80,14 @@ describe("Phase 4 Identity Core Unit Tests", () => {
     test("Constant-time timingSafeEqual fails for mismatched verifiers", () => {
       const pepper = "test_pepper_32_bytes_long_secret!";
       const challengeId = "018f3a2b-1234-7000-8000-000000000002";
-      const hash1 = crypto.createHmac("sha256", pepper).update(`${challengeId}:123456`).digest("hex");
-      const hash2 = crypto.createHmac("sha256", pepper).update(`${challengeId}:654321`).digest("hex");
+      const hash1 = crypto
+        .createHmac("sha256", pepper)
+        .update(`${challengeId}:123456`)
+        .digest("hex");
+      const hash2 = crypto
+        .createHmac("sha256", pepper)
+        .update(`${challengeId}:654321`)
+        .digest("hex");
 
       const buf1 = Buffer.from(hash1, "hex");
       const buf2 = Buffer.from(hash2, "hex");
@@ -90,7 +102,11 @@ describe("Phase 4 Identity Core Unit Tests", () => {
       assert.ok(regex.test("user123"));
       assert.equal(regex.test("Rahul_G"), false, "Uppercase letters must be rejected");
       assert.equal(regex.test("ab"), false, "Fewer than 3 chars must be rejected");
-      assert.equal(regex.test("user@name"), false, "Special chars other than underscore must be rejected");
+      assert.equal(
+        regex.test("user@name"),
+        false,
+        "Special chars other than underscore must be rejected"
+      );
     });
   });
 

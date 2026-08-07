@@ -1,4 +1,9 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+  BadRequestException
+} from "@nestjs/common";
 import { createDatabasePool } from "@guffsuff/database";
 import { generateUUIDv7 } from "@guffsuff/id-generation";
 

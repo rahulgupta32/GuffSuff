@@ -6,8 +6,12 @@
 
 use std::collections::HashMap;
 use std::panic::catch_unwind;
-use std::sync::atomic::{AtomicI32, AtomicU64, Ordering};
+use std::sync::atomic::AtomicI32;
+#[cfg(feature = "test-provider")]
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
 use std::sync::{OnceLock, RwLock};
+
 
 pub const BOUNDARY_API_VERSION: u32 = 1;
 pub const MAX_BUFFER_SIZE: usize = 10 * 1024 * 1024; // 10 MB limit

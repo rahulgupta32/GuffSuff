@@ -4,7 +4,7 @@ import {
   CryptoAdapterError,
   ProviderUnavailableError,
   assertProductionProviderSafety,
-  ProviderCapabilityMap,
+  ProviderCapabilityMap
 } from "./index.js";
 
 describe("CryptoAdapter Boundary Safety Test", () => {
@@ -21,7 +21,7 @@ describe("CryptoAdapter Boundary Safety Test", () => {
       supportedProtocolVersions: [1],
       providerId: "production-native-provider",
       providerVersion: "1.0.0",
-      isTestProvider: false,
+      isTestProvider: false
     };
     assert.doesNotThrow(() => assertProductionProviderSafety(caps, true));
   });
@@ -33,12 +33,14 @@ describe("CryptoAdapter Boundary Safety Test", () => {
       supportedProtocolVersions: [1],
       providerId: "test-boundary-provider",
       providerVersion: "0.1.0",
-      isTestProvider: true,
+      isTestProvider: true
     };
     assert.throws(
       () => assertProductionProviderSafety(caps, true),
       (err: unknown) => {
-        return err instanceof CryptoAdapterError && err.message.includes("PROHIBITED: Test provider");
+        return (
+          err instanceof CryptoAdapterError && err.message.includes("PROHIBITED: Test provider")
+        );
       }
     );
   });
