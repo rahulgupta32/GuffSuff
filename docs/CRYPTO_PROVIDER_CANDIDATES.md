@@ -5,6 +5,7 @@
 ---
 
 ## Candidate 1: `libsignal` (Signal Protocol)
+
 - **Primary Use Case**: 1:1 Pairwise messaging (X3DH + Double Ratchet) and small group Sender Keys.
 - **Language & Binding**: Rust core with C-FFI / Java / Swift / Dart bindings.
 - **Licensing**: AGPL-3.0 (Client/Server dependency implications).
@@ -14,6 +15,7 @@
 ---
 
 ## Candidate 2: OpenMLS (IETF MLS RFC 9420)
+
 - **Primary Use Case**: Dynamic multi-party group key establishment and messaging (TreeKEM).
 - **Language & Binding**: Rust core (`openmls`), standard C-FFI wrappers available.
 - **Licensing**: MIT License.
@@ -23,6 +25,7 @@
 ---
 
 ## Candidate 3: `libsodium` / Custom Double Ratchet Wrapper
+
 - **Primary Use Case**: Pairwise Double Ratchet implementation over standard primitives (Curve25519, Ed25519, AES-256-GCM, HMAC-SHA256).
 - **Language & Binding**: C library (`libsodium`), official Dart bindings (`flutter_libsodium` / `sodium_libs`).
 - **Licensing**: ISC License.

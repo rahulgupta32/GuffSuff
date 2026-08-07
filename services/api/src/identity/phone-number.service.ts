@@ -2,8 +2,16 @@ import { parsePhoneNumberWithError, CountryCode } from "libphonenumber-js";
 import * as crypto from "crypto";
 
 const NEPALI_NUMERAL_MAP: Record<string, string> = {
-  "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
-  "५": "5", "६": "6", "७": "7", "८": "8", "९": "9"
+  "०": "0",
+  "१": "1",
+  "२": "2",
+  "३": "3",
+  "४": "4",
+  "५": "5",
+  "६": "6",
+  "७": "7",
+  "८": "8",
+  "९": "9"
 };
 
 export function convertNepaliNumeralsToAscii(input: string): string {
@@ -22,8 +30,10 @@ export class PhoneNumberService {
   private readonly aesKey: Buffer;
 
   constructor() {
-    this.phonePepper = process.env.PHONE_HMAC_PEPPER || "default_guffsuff_phone_pepper_v1_32chars_len";
-    const secret = process.env.PHONE_ENCRYPTION_SECRET || "default_guffsuff_phone_aes_key_32bytes!!";
+    this.phonePepper =
+      process.env.PHONE_HMAC_PEPPER || "default_guffsuff_phone_pepper_v1_32chars_len";
+    const secret =
+      process.env.PHONE_ENCRYPTION_SECRET || "default_guffsuff_phone_aes_key_32bytes!!";
     this.aesKey = crypto.createHash("sha256").update(secret).digest();
   }
 
@@ -41,10 +51,7 @@ export class PhoneNumberService {
   }
 
   public generateBlindIndex(e164Phone: string): string {
-    return crypto
-      .createHmac("sha256", this.phonePepper)
-      .update(e164Phone)
-      .digest("hex");
+    return crypto.createHmac("sha256", this.phonePepper).update(e164Phone).digest("hex");
   }
 
   public encryptPhoneNumber(e164Phone: string): Buffer {

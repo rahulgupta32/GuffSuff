@@ -103,3 +103,8 @@ logs/
 *.sqlite3
 *.dump
 *.sql.gz
+
+# Toolchains & Research Spikes
+.tools/
+spikes/
+

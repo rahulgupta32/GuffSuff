@@ -10,7 +10,11 @@ export interface OtpDeliveryResult {
 }
 
 export interface OtpProvider {
-  sendOtp(challengeId: string, phoneBlindIndex: string, otpCode: string): Promise<OtpDeliveryResult>;
+  sendOtp(
+    challengeId: string,
+    phoneBlindIndex: string,
+    otpCode: string
+  ): Promise<OtpDeliveryResult>;
 }
 
 export class DevelopmentOtpProvider implements OtpProvider {

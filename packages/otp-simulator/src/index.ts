@@ -1,7 +1,7 @@
 /**
  * @file packages/otp-simulator/src/index.ts
  * @description Isolated Development OTP Simulator for GuffSuff.
- * 
+ *
  * SECURITY NOTICE:
  * This package MUST ONLY be imported and bundled in local development and test environments.
  * Attempts to initialize this simulator in staging or production will throw an unrecoverable Error.

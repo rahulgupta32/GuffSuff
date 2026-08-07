@@ -15,17 +15,22 @@ export async function processOfflineMessageRetries() {
     `);
 
     for (const row of res.rows) {
-      await pool.query(`
+      await pool.query(
+        `
         UPDATE message_recipient_devices
         SET delivery_status = 'queued',
             delivery_attempts_count = delivery_attempts_count + 1,
             last_attempted_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = $1
-      `, [row.recipient_device_record_id]);
+      `,
+        [row.recipient_device_record_id]
+      );
 
       // Simulate push wake-up event (contains ONLY opaque metadata)
-      console.log(`[WORKER-PUSH-SIMULATOR] Sent opaque wake-up ping to device: ${row.recipient_device_id} for envelope: ${row.envelope_id}`);
+      console.log(
+        `[WORKER-PUSH-SIMULATOR] Sent opaque wake-up ping to device: ${row.recipient_device_id} for envelope: ${row.envelope_id}`
+      );
     }
   } catch (err) {
     console.error("[WORKER-TRANSPORT-ERROR]", err);
@@ -48,7 +53,9 @@ export async function processExpiredEnvelopeCleanup() {
     `);
 
     if (res.rowCount && res.rowCount > 0) {
-      console.log(`[WORKER-EXPIRATION] Expired ${res.rowCount} undelivered message recipient device records`);
+      console.log(
+        `[WORKER-EXPIRATION] Expired ${res.rowCount} undelivered message recipient device records`
+      );
     }
   } catch (err) {
     console.error("[WORKER-EXPIRATION-ERROR]", err);

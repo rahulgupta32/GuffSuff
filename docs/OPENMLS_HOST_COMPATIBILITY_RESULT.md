@@ -15,19 +15,19 @@
 
 ## 2. Host Verification Results
 
-| Metric / Evaluation Area | Result | Status Details |
-|--------------------------|--------|----------------|
-| **Workspace Test Counts** | 1,732 unit tests, 386 integration tests passed | All core OpenMLS workspace tests passed on Windows host. |
-| **Failed Environment Packages** | `interop_client`, `openmls-wasm` | Expected environment failures (gRPC server / WASM browser runners missing). |
-| **Vector Suite Coverage** | 23/25 Suites PASSED, 2 Unmapped | 23 mapped vector suites passed. `deserialization.json` & `kat_tree_kem_openmls.json` lack upstream host runners. |
-| **34-Point Lifecycle Harness** | 34 / 34 Scenarios PASSED | Ephemeral state persistence, Welcome processing, message protection, restart, and history isolation verified. |
-| **Storage Provider Used** | Ephemeral File Persistence & In-Memory | EPhemeral JSON file persistence with atomic write-and-rename semantics verified. |
-| **Concurrency Strategy** | Single-Writer Mutex Locking | Multi-process / multi-thread locking enforced by application wrapper. |
-| **Corruption Handling** | Error Handled / Rejection | Malformed JSON and tampered checksum state reloads cleanly rejected. |
-| **Cargo Audit Result** | FAILED | Flagged RUSTSEC-2026-0173, RUSTSEC-2026-0212, RUSTSEC-2026-0207, RUSTSEC-2026-0208. |
-| **Cargo Deny Advisory Result** | FAILED | Unmitigated security vulnerabilities in `libcrux-sha3`, `libcrux-secrets`, and unmaintained `proc-macro-error2`. |
-| **Cargo Deny License Result** | PASSED | All 188 transitive dependencies satisfy explicit permissive allowlist (`deny.toml`). |
-| **Miri Scope & Limitations** | PARTIAL | State serialization unit test PASSED (0.36s); full protocol harness BLOCKED by `SystemTime::now` Windows FFI call in KeyPackage lifetime creation. |
+| Metric / Evaluation Area        | Result                                         | Status Details                                                                                                                                     |
+| ------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workspace Test Counts**       | 1,732 unit tests, 386 integration tests passed | All core OpenMLS workspace tests passed on Windows host.                                                                                           |
+| **Failed Environment Packages** | `interop_client`, `openmls-wasm`               | Expected environment failures (gRPC server / WASM browser runners missing).                                                                        |
+| **Vector Suite Coverage**       | 23/25 Suites PASSED, 2 Unmapped                | 23 mapped vector suites passed. `deserialization.json` & `kat_tree_kem_openmls.json` lack upstream host runners.                                   |
+| **34-Point Lifecycle Harness**  | 34 / 34 Scenarios PASSED                       | Ephemeral state persistence, Welcome processing, message protection, restart, and history isolation verified.                                      |
+| **Storage Provider Used**       | Ephemeral File Persistence & In-Memory         | EPhemeral JSON file persistence with atomic write-and-rename semantics verified.                                                                   |
+| **Concurrency Strategy**        | Single-Writer Mutex Locking                    | Multi-process / multi-thread locking enforced by application wrapper.                                                                              |
+| **Corruption Handling**         | Error Handled / Rejection                      | Malformed JSON and tampered checksum state reloads cleanly rejected.                                                                               |
+| **Cargo Audit Result**          | FAILED                                         | Flagged RUSTSEC-2026-0173, RUSTSEC-2026-0212, RUSTSEC-2026-0207, RUSTSEC-2026-0208.                                                                |
+| **Cargo Deny Advisory Result**  | FAILED                                         | Unmitigated security vulnerabilities in `libcrux-sha3`, `libcrux-secrets`, and unmaintained `proc-macro-error2`.                                   |
+| **Cargo Deny License Result**   | PASSED                                         | All 188 transitive dependencies satisfy explicit permissive allowlist (`deny.toml`).                                                               |
+| **Miri Scope & Limitations**    | PARTIAL                                        | State serialization unit test PASSED (0.36s); full protocol harness BLOCKED by `SystemTime::now` Windows FFI call in KeyPackage lifetime creation. |
 
 ---
 
@@ -44,4 +44,3 @@
 - **REJECTED OPENMLS V0.8.1 ANDROID RUNTIME**: `NOT EXECUTED — Android runtime instrumentation evidence not provided`
 - **OPENMLS 0.9.0-RC.2 EVALUATION**: `PRE-RELEASE RESEARCH ONLY — NOT A PRODUCTION CANDIDATE`
 - **PRODUCTION INTEGRATION**: `NOT AUTHORIZED`
-

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Flutter Mobile Transport Service Unit & Safety Tests', () => {
-    test('Enforces compile-time prohibition on transport test mode in product builds', () => {
+  group('Flutter Mobile Transport Service Unit & Safety Tests', () {
+    test('Enforces compile-time prohibition on transport test mode in product builds', () {
       const isProduct = bool.fromEnvironment('dart.vm.product');
       const isTransportTestModeEnabled = true; // Simulated dev flag
 
@@ -14,7 +14,7 @@ void main() {
     });
 
     test('Local outbound transport queue manages message state transitions', () {
-      final queue = <Map<string, dynamic>>[];
+      final queue = <Map<String, dynamic>>[];
 
       // Enqueue message
       final envelope = {
@@ -38,10 +38,10 @@ void main() {
     });
 
     test('Deduplicates outbound queue submissions by idempotencyKey', () {
-      final queue = <Map<string, dynamic>>[];
+      final queue = <Map<String, dynamic>>[];
       const key = 'idemp_dup_100';
 
-      void enqueue(Map<string, dynamic> env) {
+      void enqueue(Map<String, dynamic> env) {
         final existingIndex = queue.indexWhere((e) => e['idempotencyKey'] == env['idempotencyKey']);
         if (existingIndex == -1) {
           queue.add(env);

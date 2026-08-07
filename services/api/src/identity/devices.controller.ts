@@ -1,4 +1,16 @@
-import { Controller, Get, Patch, Delete, Param, Body, UseGuards, Req, HttpCode, HttpStatus, Inject } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Inject
+} from "@nestjs/common";
 import { DeviceService } from "./device.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
 
@@ -13,7 +25,11 @@ export class DevicesController {
   }
 
   @Patch(":id")
-  async renameDevice(@Req() req: any, @Param("id") deviceId: string, @Body("deviceName") deviceName: string) {
+  async renameDevice(
+    @Req() req: any,
+    @Param("id") deviceId: string,
+    @Body("deviceName") deviceName: string
+  ) {
     return this.deviceService.renameDevice(req.user.userId, deviceId, deviceName);
   }
 

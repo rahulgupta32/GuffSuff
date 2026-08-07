@@ -1,0 +1,54 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:7f3b890a-1122-4455-8899-aabbccdd0001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-06T15:15:00Z",
+    "tools": [
+      {
+        "vendor": "GuffSuff Security Tooling",
+        "name": "guffsuff-sbom-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary_aarch64@0.1.0",
+      "name": "libguffsuff_mobile_crypto_boundary.so",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "E55E98AF7F04DAE680B13F989F797914E5AF3C12D6E6612E30E3634AD8743853"
+        }
+      ],
+      "properties": [
+        {
+          "name": "target_architecture",
+          "value": "aarch64-linux-android"
+        },
+        {
+          "name": "compiler",
+          "value": "rustc 1.84.0 / NDK Clang 28.2"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0",
+      "name": "guffsuff-mobile-crypto-boundary",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary_aarch64@0.1.0",
+      "dependsOn": ["pkg:cargo/guffsuff-mobile-crypto-boundary@0.1.0"]
+    }
+  ]
+}

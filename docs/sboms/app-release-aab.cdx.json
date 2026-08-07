@@ -1,0 +1,60 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:7f3b890a-1122-4455-8899-aabbccdd0005",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-06T15:15:00Z",
+    "tools": [
+      {
+        "vendor": "GuffSuff Security Tooling",
+        "name": "guffsuff-sbom-generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:aab/guffsuff-mobile-release@0.1.0+1",
+      "name": "app-release.aab",
+      "version": "0.1.0+1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "554D7D422FE3B4C6CC7A43450CFAC097340793BD890003B90DD796CD2D3AA84B"
+
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "framework",
+      "bom-ref": "pkg:pub/flutter_engine@3.44.8",
+      "name": "flutter-engine",
+      "version": "3.44.8"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pub/ffi@2.2.0",
+      "name": "ffi",
+      "version": "2.2.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/libguffsuff_mobile_crypto_boundary@0.1.0",
+      "name": "libguffsuff_mobile_crypto_boundary.so",
+      "version": "0.1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:aab/guffsuff-mobile-release@0.1.0+1",
+      "dependsOn": [
+        "pkg:pub/flutter_engine@3.44.8",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:cargo/libguffsuff_mobile_crypto_boundary@0.1.0"
+      ]
+    }
+  ]
+}

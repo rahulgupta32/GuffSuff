@@ -16,6 +16,7 @@
 Each Phase 4 validation gate is documented below with its exact evidence status:
 
 ### A. Database Migrations & Identity Schema
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `packages/database/migrations/001_create_identity_schema.sql`, `packages/database/src/migrate.ts`
@@ -23,6 +24,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Migrated against empty local PostgreSQL instance cleanly; validated partial unique index `idx_phone_identities_verified_blind` and UUIDv7 PK constraints.
 
 ### B. Phone Normalization & Crypto Adapter
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `services/api/src/identity/phone-number.service.ts`
@@ -30,6 +32,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Devanagari digit conversion (`०-९` -> `0-9`), E.164 normalization, AES-256-GCM encryption, HMAC blind indexing, and operational masking (`+97798****1234`) validated cleanly.
 
 ### C. Development OTP Simulator Exclusion
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `packages/otp-simulator/src/index.ts`, `services/api/src/identity/otp.provider.ts`
@@ -37,6 +40,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Zero prohibited mock crypto / simulator symbols detected in production package boundaries. Simulator strictly throws exceptions in non-development environments.
 
 ### D. Accounts, Usernames, Profiles & Privacy Defaults
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `services/api/src/identity/account.service.ts`, `services/api/src/identity/usernames.controller.ts`
@@ -44,6 +48,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Strict username regex `^[a-z0-9_]{3,20}$` and default privacy settings (Phone: Nobody, Last Seen: Contacts Only) verified.
 
 ### E. Sessions & Refresh Token Rotation
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `services/api/src/identity/session.service.ts`, `services/api/src/identity/jwt-auth.guard.ts`
@@ -51,6 +56,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Refresh token family rotation, parent/replacement tracking, 10-second concurrency grace period, and immediate family revocation upon reuse detection verified.
 
 ### F. Server-Authoritative Device Management & Revocation
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `services/api/src/identity/device.service.ts`, `services/api/src/identity/devices.controller.ts`
@@ -58,6 +64,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Server DB session invalidation upon device revocation verified.
 
 ### G. Registration-Lock Argon2id PIN
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - File: `services/api/src/identity/registration-lock.service.ts`
@@ -65,6 +72,7 @@ Each Phase 4 validation gate is documented below with its exact evidence status:
   - Result: Argon2id peppered hashing (`m=65536, t=3, p=4`), atomic attempt audit trail, and 30-minute lockout after 5 failed attempts verified.
 
 ### H. Mobile Secure Storage & Flutter Foundations
+
 - **Status**: `PASSED LOCALLY`
 - **Evidence**:
   - Files: `apps/mobile/lib/services/secure_storage.dart`, `apps/mobile/lib/l10n/app_en.arb`, `apps/mobile/lib/l10n/app_ne.arb`

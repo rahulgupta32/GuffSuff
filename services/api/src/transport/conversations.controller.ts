@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus
+} from "@nestjs/common";
 import { JwtAuthGuard } from "../identity/jwt-auth.guard.js";
 import { ConversationService } from "./conversation.service.js";
 import { CreateDirectConversationSchema } from "@guffsuff/contracts";
@@ -12,7 +22,10 @@ export class ConversationsController {
   @HttpCode(HttpStatus.CREATED)
   async createDirectConversation(@Req() req: any, @Body() body: any) {
     const validated = CreateDirectConversationSchema.parse(body);
-    return this.conversationService.getOrCreateDirectConversation(req.user.sub, validated.recipientUserId);
+    return this.conversationService.getOrCreateDirectConversation(
+      req.user.sub,
+      validated.recipientUserId
+    );
   }
 
   @Get()

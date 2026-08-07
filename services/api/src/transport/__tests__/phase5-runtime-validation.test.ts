@@ -53,7 +53,11 @@ describe("Phase 5 Runtime Validation Suite (A through R)", () => {
 
       const results = await Promise.all(requests);
       for (const r of results) {
-        assert.equal(r, "conv_canonical_100", "All 10 concurrent requests must yield identical conversation ID");
+        assert.equal(
+          r,
+          "conv_canonical_100",
+          "All 10 concurrent requests must yield identical conversation ID"
+        );
       }
     });
   });
@@ -106,7 +110,10 @@ describe("Phase 5 Runtime Validation Suite (A through R)", () => {
 
       const activeDevices = recipientDevices.filter((d) => !d.isRevoked);
       assert.equal(activeDevices.length, 2);
-      assert.deepEqual(activeDevices.map((d) => d.id), ["dev_active_1", "dev_active_3"]);
+      assert.deepEqual(
+        activeDevices.map((d) => d.id),
+        ["dev_active_1", "dev_active_3"]
+      );
     });
   });
 
@@ -132,9 +139,21 @@ describe("Phase 5 Runtime Validation Suite (A through R)", () => {
       assert.ok(isValidTransition("queued", "delivered"));
       assert.ok(isValidTransition("delivered", "read"));
 
-      assert.equal(isValidTransition("delivered", "queued"), false, "Cannot transition delivered back to queued");
-      assert.equal(isValidTransition("expired", "delivered"), false, "Expired envelopes cannot become delivered");
-      assert.equal(isValidTransition("revoked_recipient", "queued"), false, "Revoked recipient records cannot be retried");
+      assert.equal(
+        isValidTransition("delivered", "queued"),
+        false,
+        "Cannot transition delivered back to queued"
+      );
+      assert.equal(
+        isValidTransition("expired", "delivered"),
+        false,
+        "Expired envelopes cannot become delivered"
+      );
+      assert.equal(
+        isValidTransition("revoked_recipient", "queued"),
+        false,
+        "Revoked recipient records cannot be retried"
+      );
     });
 
     test("Rejects delivery acknowledgement from non-target recipient user", () => {
@@ -154,14 +173,22 @@ describe("Phase 5 Runtime Validation Suite (A through R)", () => {
     test("Enforces opaque push payload allowlist snapshot (Zero sender/preview data)", () => {
       const pushPayload = {
         notificationType: "background_wakeup",
-        timestamp: Date.now(),
+        timestamp: Date.now()
         // MUST NOT contain senderName, phoneNumber, preview, ciphertext, etc.
       };
 
       const keys = Object.keys(pushPayload);
       assert.equal(keys.includes("senderName"), false, "Push payload must not contain senderName");
-      assert.equal(keys.includes("phoneNumber"), false, "Push payload must not contain phoneNumber");
-      assert.equal(keys.includes("messageText"), false, "Push payload must not contain messageText");
+      assert.equal(
+        keys.includes("phoneNumber"),
+        false,
+        "Push payload must not contain phoneNumber"
+      );
+      assert.equal(
+        keys.includes("messageText"),
+        false,
+        "Push payload must not contain messageText"
+      );
       assert.equal(keys.includes("ciphertext"), false, "Push payload must not contain ciphertext");
     });
 
@@ -181,7 +208,11 @@ describe("Phase 5 Runtime Validation Suite (A through R)", () => {
       });
 
       const fullLogs = logOutput.join("\n");
-      assert.equal(fullLogs.includes(canarySecret), false, "Canary secret bytes must NOT appear in logs");
+      assert.equal(
+        fullLogs.includes(canarySecret),
+        false,
+        "Canary secret bytes must NOT appear in logs"
+      );
     });
   });
 });

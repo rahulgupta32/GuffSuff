@@ -18,7 +18,8 @@ export class SessionService {
   private readonly concurrentGraceMs = 10 * 1000; // 10 seconds grace window
 
   constructor(private readonly pool: Pool) {
-    this.jwtSecret = process.env.JWT_ACCESS_SECRET || "default_guffsuff_jwt_secret_v1_secure_32bytes!!";
+    this.jwtSecret =
+      process.env.JWT_ACCESS_SECRET || "default_guffsuff_jwt_secret_v1_secure_32bytes!!";
   }
 
   public hashRefreshToken(token: string): string {
@@ -59,7 +60,9 @@ export class SessionService {
       const familyId = generateUUIDv7();
       const sessionVersion = 1;
       const now = new Date();
-      const sessionExpiresAt = new Date(now.getTime() + this.refreshTokenTtlDays * 24 * 60 * 60 * 1000);
+      const sessionExpiresAt = new Date(
+        now.getTime() + this.refreshTokenTtlDays * 24 * 60 * 60 * 1000
+      );
 
       // 1. Create Session
       await client.query(
@@ -137,7 +140,11 @@ export class SessionService {
       const tokenRecord = rows[0];
 
       // 2. Check if family is compromised or token is revoked or expired
-      if (tokenRecord.is_compromised || tokenRecord.is_revoked || new Date(tokenRecord.expires_at) < new Date()) {
+      if (
+        tokenRecord.is_compromised ||
+        tokenRecord.is_revoked ||
+        new Date(tokenRecord.expires_at) < new Date()
+      ) {
         throw new Error("Refresh token is invalid or revoked");
       }
 
@@ -193,7 +200,10 @@ export class SessionService {
             generateUUIDv7(),
             tokenRecord.user_id,
             tokenRecord.device_id,
-            JSON.stringify({ familyId: tokenRecord.family_id, attemptedTokenId: tokenRecord.token_id })
+            JSON.stringify({
+              familyId: tokenRecord.family_id,
+              attemptedTokenId: tokenRecord.token_id
+            })
           ]
         );
 
@@ -221,7 +231,14 @@ export class SessionService {
         `INSERT INTO refresh_tokens 
          (id, family_id, token_verifier_hash, parent_token_id, replacement_token_id, expires_at, is_rotated, is_revoked, created_at)
          VALUES ($1, $2, $3, $4, NULL, $5, false, false, $6)`,
-        [newTokenInstanceId, tokenRecord.family_id, newVerifierHash, tokenRecord.token_id, expiresAt, now]
+        [
+          newTokenInstanceId,
+          tokenRecord.family_id,
+          newVerifierHash,
+          tokenRecord.token_id,
+          expiresAt,
+          now
+        ]
       );
 
       await client.query("COMMIT");
@@ -249,17 +266,11 @@ export class SessionService {
   }
 
   public async revokeSession(sessionId: string): Promise<void> {
-    await this.pool.query(
-      `UPDATE sessions SET revoked_at = NOW() WHERE id = $1`,
-      [sessionId]
-    );
+    await this.pool.query(`UPDATE sessions SET revoked_at = NOW() WHERE id = $1`, [sessionId]);
   }
 
   public async revokeAllSessionsForUser(userId: string): Promise<void> {
-    await this.pool.query(
-      `UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1`,
-      [userId]
-    );
+    await this.pool.query(`UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1`, [userId]);
     await this.pool.query(
       `UPDATE refresh_token_families SET is_compromised = true, updated_at = NOW() WHERE user_id = $1`,
       [userId]

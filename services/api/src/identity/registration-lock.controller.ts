@@ -1,4 +1,14 @@
-import { Controller, Post, Delete, Body, UseGuards, Req, HttpCode, HttpStatus, Inject } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Delete,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Inject
+} from "@nestjs/common";
 import { RegistrationLockService } from "./registration-lock.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
 import { SetRegistrationLockPinSchema, VerifyRegistrationLockPinSchema } from "@guffsuff/contracts";
