@@ -7,8 +7,9 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [features]
-default = ["test-provider"]
+default = []
 test-provider = []
+
 
 [dependencies]
 
