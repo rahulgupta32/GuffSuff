@@ -2,47 +2,55 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Flutter Mobile Transport Service Unit & Safety Tests', () {
-    test('Enforces compile-time prohibition on transport test mode in product builds', () {
-      const isProduct = bool.fromEnvironment('dart.vm.product');
-      const isTransportTestModeEnabled = true; // Simulated dev flag
+    test(
+      'Enforces compile-time prohibition on transport test mode in product builds',
+      () {
+        const isProduct = bool.fromEnvironment('dart.vm.product');
+        const isTransportTestModeEnabled = true; // Simulated dev flag
 
-      if (isProduct && isTransportTestModeEnabled) {
-        fail('Transport test mode MUST NOT be enabled in product builds');
-      }
+        if (isProduct && isTransportTestModeEnabled) {
+          fail('Transport test mode MUST NOT be enabled in product builds');
+        }
 
-      expect(true, isTrue);
-    });
+        expect(true, isTrue);
+      },
+    );
 
-    test('Local outbound transport queue manages message state transitions', () {
-      final queue = <Map<String, dynamic>>[];
+    test(
+      'Local outbound transport queue manages message state transitions',
+      () {
+        final queue = <Map<String, dynamic>>[];
 
-      // Enqueue message
-      final envelope = {
-        'id': 'env_mob_001',
-        'idempotencyKey': 'idemp_mob_001',
-        'status': 'queued',
-        'createdAt': DateTime.now().toIso8601String(),
-      };
-      queue.add(envelope);
+        // Enqueue message
+        final envelope = {
+          'id': 'env_mob_001',
+          'idempotencyKey': 'idemp_mob_001',
+          'status': 'queued',
+          'createdAt': DateTime.now().toIso8601String(),
+        };
+        queue.add(envelope);
 
-      expect(queue.length, equals(1));
-      expect(queue.first['status'], equals('queued'));
+        expect(queue.length, equals(1));
+        expect(queue.first['status'], equals('queued'));
 
-      // Transition to accepted
-      queue.first['status'] = 'accepted';
-      expect(queue.first['status'], equals('accepted'));
+        // Transition to accepted
+        queue.first['status'] = 'accepted';
+        expect(queue.first['status'], equals('accepted'));
 
-      // Transition to delivered
-      queue.first['status'] = 'delivered';
-      expect(queue.first['status'], equals('delivered'));
-    });
+        // Transition to delivered
+        queue.first['status'] = 'delivered';
+        expect(queue.first['status'], equals('delivered'));
+      },
+    );
 
     test('Deduplicates outbound queue submissions by idempotencyKey', () {
       final queue = <Map<String, dynamic>>[];
       const key = 'idemp_dup_100';
 
       void enqueue(Map<String, dynamic> env) {
-        final existingIndex = queue.indexWhere((e) => e['idempotencyKey'] == env['idempotencyKey']);
+        final existingIndex = queue.indexWhere(
+          (e) => e['idempotencyKey'] == env['idempotencyKey'],
+        );
         if (existingIndex == -1) {
           queue.add(env);
         }

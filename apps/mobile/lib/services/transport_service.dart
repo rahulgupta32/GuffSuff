@@ -23,14 +23,14 @@ class TransportMessage {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'conversationId': conversationId,
-        'senderUserId': senderUserId,
-        'recipientUserId': recipientUserId,
-        'opaquePayloadBase64': opaquePayloadBase64,
-        'state': state.name,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'conversationId': conversationId,
+    'senderUserId': senderUserId,
+    'recipientUserId': recipientUserId,
+    'opaquePayloadBase64': opaquePayloadBase64,
+    'state': state.name,
+    'createdAt': createdAt.toIso8601String(),
+  };
 }
 
 class TransportService {
