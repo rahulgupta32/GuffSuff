@@ -23,9 +23,12 @@ class SecureStorageService {
     await _storage.write(key: _keyDeviceId, value: deviceId);
   }
 
-  Future<String?> getAccessToken() async => await _storage.read(key: _keyAccessToken);
-  Future<String?> getRefreshToken() async => await _storage.read(key: _keyRefreshToken);
-  Future<String?> getSessionId() async => await _storage.read(key: _keySessionId);
+  Future<String?> getAccessToken() async =>
+      await _storage.read(key: _keyAccessToken);
+  Future<String?> getRefreshToken() async =>
+      await _storage.read(key: _keyRefreshToken);
+  Future<String?> getSessionId() async =>
+      await _storage.read(key: _keySessionId);
   Future<String?> getDeviceId() async => await _storage.read(key: _keyDeviceId);
 
   Future<void> clearAll() async {

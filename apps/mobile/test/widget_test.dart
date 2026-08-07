@@ -3,10 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guffsuff_mobile/main.dart';
 
 void main() {
-  testWidgets('DevStatusScreen renders baseline title smoke test', (WidgetTester tester) async {
+  testWidgets('GuffSuffApp renders production 3-tab navigation smoke test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: GuffSuffApp()));
-    expect(find.text('GuffSuff Secure Messaging'), findsOneWidget);
-    expect(find.text('SECURE MESSAGING PROVIDER UNAVAILABLE'), findsOneWidget);
-  });
+    await tester.pumpAndSettle();
 
+    expect(find.text('GuffSuff'), findsOneWidget);
+    expect(find.text('Chats'), findsWidgets);
+    expect(find.text('People'), findsWidgets);
+    expect(find.text('Settings'), findsWidgets);
+  });
 }
