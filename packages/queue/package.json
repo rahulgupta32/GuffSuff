@@ -11,7 +11,7 @@
     "test": "node --test dist/index.test.js"
   },
   "dependencies": {
-    "bullmq": "^5.41.6",
+    "bullmq": "^6.0.9",
     "ioredis": "^5.5.0"
   },
   "devDependencies": {
