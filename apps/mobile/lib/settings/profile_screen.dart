@@ -64,7 +64,7 @@ class ProfileScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: const Text('About / Bio'),
-            subtitle: const Text('Building GuffSuff for Nepal 🇳🇵'),
+            subtitle: const Text('Building गफसफ for Nepal 🇳🇵'),
             trailing: const Icon(Icons.edit_outlined, size: 18),
             onTap: () {},
           ),

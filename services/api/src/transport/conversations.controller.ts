@@ -23,18 +23,18 @@ export class ConversationsController {
   async createDirectConversation(@Req() req: any, @Body() body: any) {
     const validated = CreateDirectConversationSchema.parse(body);
     return this.conversationService.getOrCreateDirectConversation(
-      req.user.sub,
+      req.user.userId,
       validated.recipientUserId
     );
   }
 
   @Get()
   async listConversations(@Req() req: any) {
-    return this.conversationService.listConversations(req.user.sub);
+    return this.conversationService.listConversations(req.user.userId);
   }
 
   @Get(":conversationId")
   async getConversation(@Req() req: any, @Param("conversationId") conversationId: string) {
-    return this.conversationService.getConversationById(req.user.sub, conversationId);
+    return this.conversationService.getConversationById(req.user.userId, conversationId);
   }
 }

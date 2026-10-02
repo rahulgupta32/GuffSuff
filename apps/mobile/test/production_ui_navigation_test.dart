@@ -20,12 +20,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Default tab: Chats
-        expect(find.text('GuffSuff'), findsOneWidget);
+        expect(find.text('गफसफ'), findsOneWidget);
 
         // Tap People tab
         await tester.tap(find.text('People').last);
         await tester.pumpAndSettle();
-        expect(find.text('Contacts on GuffSuff'), findsOneWidget);
+        expect(find.text('Contacts on गफसफ'), findsOneWidget);
 
         // Tap Settings tab
         await tester.tap(find.text('Settings').last);
@@ -65,8 +65,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Contacts on GuffSuff'), findsOneWidget);
-        expect(find.text('Invite to GuffSuff'), findsOneWidget);
+        expect(find.text('Contacts on गफसफ'), findsOneWidget);
+        expect(find.text('Invite to गफसफ'), findsOneWidget);
       },
     );
 
@@ -80,7 +80,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('GuffSuff'), findsOneWidget);
+      expect(find.text('गफसफ'), findsOneWidget);
     });
 
     testWidgets(

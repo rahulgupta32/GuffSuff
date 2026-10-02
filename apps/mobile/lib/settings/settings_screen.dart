@@ -50,7 +50,7 @@ class SettingsScreen extends StatelessWidget {
                         Text('Rahul Gupta', style: AppTypography.titleMedium),
                         const SizedBox(height: 2),
                         Text(
-                          'Building GuffSuff for Nepal 🇳🇵',
+                          'Building गफसफ for Nepal 🇳🇵',
                           style: AppTypography.bodySmall.copyWith(
                             color: mutedColor,
                           ),

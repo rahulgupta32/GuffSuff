@@ -1,3 +1,4 @@
+import { identitySecret } from "./identity-secret.js";
 import * as crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { Pool } from "pg";
@@ -15,11 +16,12 @@ export class SessionService {
   private readonly jwtSecret: string;
   private readonly accessTokenTtl = 15 * 60; // 15 minutes
   private readonly refreshTokenTtlDays = 30; // 30 days
-  private readonly concurrentGraceMs = 10 * 1000; // 10 seconds grace window
 
   constructor(private readonly pool: Pool) {
-    this.jwtSecret =
-      process.env.JWT_ACCESS_SECRET || "default_guffsuff_jwt_secret_v1_secure_32bytes!!";
+    this.jwtSecret = identitySecret(
+      "JWT_ACCESS_SECRET",
+      "default_guffsuff_jwt_secret_v1_secure_32bytes!!"
+    );
   }
 
   public hashRefreshToken(token: string): string {
@@ -73,9 +75,9 @@ export class SessionService {
 
       // 2. Create Refresh Token Family
       await client.query(
-        `INSERT INTO refresh_token_families (id, user_id, device_id, is_compromised, created_at, updated_at)
-         VALUES ($1, $2, $3, false, $4, $4)`,
-        [familyId, userId, deviceId, now]
+        `INSERT INTO refresh_token_families (id, user_id, device_id, is_compromised, created_at, updated_at, session_id)
+         VALUES ($1, $2, $3, false, $4, $4, $5)`,
+        [familyId, userId, deviceId, now, sessionId]
       );
 
       // 3. Issue First Refresh Token Instance
@@ -125,11 +127,14 @@ export class SessionService {
       // 1. Query token instance & family
       const { rows } = await client.query(
         `SELECT rt.id as token_id, rt.family_id, rt.is_rotated, rt.rotated_at, rt.is_revoked, rt.expires_at, rt.replacement_token_id,
-                rf.user_id, rf.device_id, rf.is_compromised
+                rf.user_id, rf.device_id, rf.is_compromised, s.id AS session_id, s.session_version,
+                s.revoked_at AS session_revoked_at, s.expires_at AS session_expires_at, d.is_revoked AS device_revoked
          FROM refresh_tokens rt
          JOIN refresh_token_families rf ON rt.family_id = rf.id
+         JOIN sessions s ON rf.session_id = s.id
+         JOIN devices d ON s.device_id = d.id
          WHERE rt.token_verifier_hash = $1
-         FOR UPDATE OF rt, rf`,
+         FOR UPDATE OF rt, rf, s, d`,
         [verifierHash]
       );
 
@@ -142,6 +147,9 @@ export class SessionService {
       // 2. Check if family is compromised or token is revoked or expired
       if (
         tokenRecord.is_compromised ||
+        tokenRecord.session_revoked_at ||
+        tokenRecord.device_revoked ||
+        new Date(tokenRecord.session_expires_at).getTime() <= Date.now() ||
         tokenRecord.is_revoked ||
         new Date(tokenRecord.expires_at) < new Date()
       ) {
@@ -150,33 +158,8 @@ export class SessionService {
 
       // 3. REUSE DETECTION HANDLING
       if (tokenRecord.is_rotated) {
-        const rotatedAt = new Date(tokenRecord.rotated_at).getTime();
-        const now = Date.now();
-        // If within 10-second grace window, return existing active replacement token if available
-        if (now - rotatedAt <= this.concurrentGraceMs && tokenRecord.replacement_token_id) {
-          const replacementRes = await client.query(
-            `SELECT token_verifier_hash FROM refresh_tokens WHERE id = $1 AND is_revoked = false`,
-            [tokenRecord.replacement_token_id]
-          );
-          if (replacementRes.rows.length > 0) {
-            await client.query("COMMIT");
-            // Grace window reuse allowed
-            const accessToken = this.generateAccessToken({
-              sessionId: generateUUIDv7(),
-              userId: tokenRecord.user_id,
-              deviceId: tokenRecord.device_id,
-              sessionVersion: 1
-            });
-            return {
-              accessToken,
-              refreshToken: rawRefreshToken,
-              expiresInSeconds: this.accessTokenTtl,
-              sessionId: generateUUIDv7(),
-              familyId: tokenRecord.family_id
-            };
-          }
-        }
-
+        // Raw successor tokens are never stored. Reuse fails closed; clients must
+        // serialize refresh requests rather than receive an invalid old token.
         // OUTSIDE GRACE WINDOW REUSE DETECTED -> FAMILY COMPROMISE!
         await client.query(
           `UPDATE refresh_token_families SET is_compromised = true, updated_at = NOW() WHERE id = $1`,
@@ -218,14 +201,6 @@ export class SessionService {
       const now = new Date();
       const expiresAt = new Date(tokenRecord.expires_at);
 
-      // Mark old token as rotated
-      await client.query(
-        `UPDATE refresh_tokens 
-         SET is_rotated = true, rotated_at = $1, replacement_token_id = $2 
-         WHERE id = $3`,
-        [now, newTokenInstanceId, tokenRecord.token_id]
-      );
-
       // Insert replacement token
       await client.query(
         `INSERT INTO refresh_tokens 
@@ -241,20 +216,28 @@ export class SessionService {
         ]
       );
 
+      // Mark old token as rotated
+      await client.query(
+        `UPDATE refresh_tokens
+         SET is_rotated = true, rotated_at = $1, replacement_token_id = $2
+         WHERE id = $3`,
+        [now, newTokenInstanceId, tokenRecord.token_id]
+      );
+
       await client.query("COMMIT");
 
       const accessToken = this.generateAccessToken({
-        sessionId: generateUUIDv7(),
+        sessionId: tokenRecord.session_id,
         userId: tokenRecord.user_id,
         deviceId: tokenRecord.device_id,
-        sessionVersion: 1
+        sessionVersion: tokenRecord.session_version
       });
 
       return {
         accessToken,
         refreshToken: newRawRefreshToken,
         expiresInSeconds: this.accessTokenTtl,
-        sessionId: generateUUIDv7(),
+        sessionId: tokenRecord.session_id,
         familyId: tokenRecord.family_id
       };
     } catch (err) {

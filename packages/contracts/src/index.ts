@@ -83,6 +83,12 @@ export type OtpVerify = z.infer<typeof OtpVerifySchema>;
 
 export const RegisterAccountSchema = z.object({
   challengeId: z.string().uuid(),
+  phoneNumber: z.string().min(5).max(30),
+  installationId: z.string().min(1).max(128),
+  deviceName: z.string().min(1).max(100),
+  platform: z.enum(["android", "ios", "web", "desktop"]),
+  appVersion: z.string().min(1).max(32),
+  osVersion: z.string().min(1).max(32),
   displayName: z.string().min(2).max(50),
   username: z
     .string()

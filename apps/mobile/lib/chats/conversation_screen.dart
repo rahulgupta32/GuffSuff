@@ -103,7 +103,7 @@ class ConversationScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.s16),
               children: [
                 _MessageBubble(
-                  text: 'Namaste! Welcome to GuffSuff.',
+                  text: 'Namaste! Welcome to गफसफ.',
                   isOutgoing: false,
                   timestamp: '10:40 AM',
                 ),

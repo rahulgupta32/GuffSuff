@@ -9,7 +9,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: GuffSuffApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('GuffSuff'), findsOneWidget);
+    expect(find.text('गफसफ'), findsOneWidget);
     expect(find.text('Chats'), findsWidgets);
     expect(find.text('People'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);

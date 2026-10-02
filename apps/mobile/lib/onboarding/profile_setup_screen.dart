@@ -14,7 +14,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameController = TextEditingController(text: 'Rahul Gupta');
   final _usernameController = TextEditingController(text: 'rahul_g');
   final _bioController = TextEditingController(
-    text: 'Building GuffSuff for Nepal 🇳🇵',
+    text: 'Building गफसफ for Nepal 🇳🇵',
   );
 
   @override

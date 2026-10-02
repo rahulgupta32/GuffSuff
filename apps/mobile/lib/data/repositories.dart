@@ -17,7 +17,7 @@ abstract class ConversationRepository {
   Future<List<Map<String, dynamic>>> getConversations();
 }
 
-/// Production implementation backed strictly by GuffSuff NestJS backend endpoints.
+/// Production implementation backed strictly by गफसफ NestJS backend endpoints.
 class ProductionApiRepository
     implements
         ProfileRepository,
@@ -110,7 +110,7 @@ class DemoRepository
       'displayName': 'Rahul Gupta',
       'username': 'rahul_g',
       'phoneNumber': '+977 9800000000',
-      'bio': 'Building GuffSuff for Nepal 🇳🇵',
+      'bio': 'Building गफसफ for Nepal 🇳🇵',
     };
   }
 
@@ -126,7 +126,7 @@ class DemoRepository
       },
       {
         'deviceId': 'dev_macbook_pro',
-        'name': 'GuffSuff Web / Desktop',
+        'name': 'गफसफ Web / Desktop',
         'platform': 'macOS Sequoia',
         'lastActive': '2 hours ago',
         'isCurrent': false,
@@ -174,7 +174,7 @@ class DemoRepository
         'id': 'conv_1',
         'peerName': 'Aanav Sharma',
         'peerAvatar': 'A',
-        'lastMessage': 'Tap Tap 🇳🇵 GuffSuff test envelope',
+        'lastMessage': 'Tap Tap 🇳🇵 गफसफ test envelope',
         'timestamp': '10:42 AM',
         'unreadCount': 2,
         'isPinned': true,

@@ -29,18 +29,18 @@ export class EnvelopesController {
       ...body,
       conversationId
     });
-    return this.envelopeService.submitEnvelope(req.user.sub, req.user.deviceId, validated);
+    return this.envelopeService.submitEnvelope(req.user.userId, req.user.deviceId, validated);
   }
 
   @Get("conversations/:conversationId/envelopes/pending")
   async getPendingEnvelopes(@Req() req: any) {
-    return this.envelopeService.getPendingEnvelopes(req.user.sub, req.user.deviceId);
+    return this.envelopeService.getPendingEnvelopes(req.user.userId, req.user.deviceId);
   }
 
   @Post("envelopes/:envelopeId/delivered")
   @HttpCode(HttpStatus.OK)
   async acknowledgeDelivery(@Req() req: any, @Param("envelopeId") envelopeId: string) {
-    return this.envelopeService.acknowledgeDelivery(req.user.sub, req.user.deviceId, envelopeId);
+    return this.envelopeService.acknowledgeDelivery(req.user.userId, req.user.deviceId, envelopeId);
   }
 
   @Post("envelopes/:envelopeId/read")
@@ -52,7 +52,7 @@ export class EnvelopesController {
   ) {
     const validated = AcknowledgeReadSchema.parse(body);
     return this.envelopeService.acknowledgeRead(
-      req.user.sub,
+      req.user.userId,
       validated.lastReadEnvelopeId,
       envelopeId
     );
@@ -60,6 +60,6 @@ export class EnvelopesController {
 
   @Get("envelopes/:envelopeId/status")
   async getEnvelopeStatus(@Req() req: any, @Param("envelopeId") envelopeId: string) {
-    return this.envelopeService.getEnvelopeStatus(req.user.sub, envelopeId);
+    return this.envelopeService.getEnvelopeStatus(req.user.userId, envelopeId);
   }
 }

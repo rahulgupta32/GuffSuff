@@ -7,7 +7,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About GuffSuff')),
+      appBar: AppBar(title: const Text('About गफसफ')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.s24),
         children: [
@@ -27,7 +27,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s12),
-                Text('GuffSuff', style: AppTypography.display),
+                Text('गफसफ', style: AppTypography.display),
                 const SizedBox(height: AppSpacing.s4),
                 Text(
                   'Version 1.0.0 (Production Release Candidate)',

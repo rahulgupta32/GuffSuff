@@ -13,7 +13,7 @@ class AppStrings {
   bool get isNepali => locale.languageCode == 'ne';
 
   // App Title
-  String get appTitle => 'GuffSuff';
+  String get appTitle => 'गफसफ';
   String get appTagline =>
       isNepali ? 'नेपालको लागि आधुनिक मेसेजिङ' : 'Nepal-First Messaging';
 
@@ -22,8 +22,8 @@ class AppStrings {
       isNepali ? 'गोपनीयता र सुरक्षा' : 'Privacy & Security';
   String get privacyExplainBody =>
       isNepali
-          ? 'GuffSuff तपाईंको गोपनीयतालाई प्राथमिकता दिँदै निर्माण भइरहेको छ। हाल यो प्रिमियम मोबाइल अनुभवको रूपमा उपलब्ध छ।'
-          : 'GuffSuff is built with privacy at its core. Secure messaging features are currently in development.';
+          ? 'गफसफ तपाईंको गोपनीयतालाई प्राथमिकता दिँदै निर्माण भइरहेको छ। हाल यो प्रिमियम मोबाइल अनुभवको रूपमा उपलब्ध छ।'
+          : 'गफसफ is built with privacy at its core. Secure messaging features are currently in development.';
 
   String get getStarted => isNepali ? 'शुरु गर्नुहोस्' : 'Get Started';
   String get continueButton => isNepali ? 'अगाडि बढ्नुहोस्' : 'Continue';
@@ -33,8 +33,8 @@ class AppStrings {
       isNepali ? 'फोन नम्बर राख्नुहोस्' : 'Enter Phone Number';
   String get phoneSubtitle =>
       isNepali
-          ? 'GuffSuff ले प्रमाणीकरणको लागि तपाईंको फोन नम्बर प्रयोग गर्छ।'
-          : 'GuffSuff uses your phone number for simple, secure verification.';
+          ? 'गफसफ ले प्रमाणीकरणको लागि तपाईंको फोन नम्बर प्रयोग गर्छ।'
+          : 'गफसफ uses your phone number for simple, secure verification.';
   String get selectCountry => isNepali ? 'देश छान्नुहोस्' : 'Select Country';
   String get phoneNumberLabel => isNepali ? 'फोन नम्बर' : 'Phone Number';
   String get sendCode =>
@@ -87,16 +87,16 @@ class AppStrings {
   // People Screen
   String get findPeoplePrompt =>
       isNepali
-          ? 'GuffSuff मा साथीहरू खोज्नुहोस्'
-          : 'Find people you know on GuffSuff.';
+          ? 'गफसफ मा साथीहरू खोज्नुहोस्'
+          : 'Find people you know on गफसफ.';
   String get contactsPermissionSub =>
       isNepali
-          ? 'तपाईंका साथीहरू GuffSuff मा छन् कि छैनन् भनेर हेर्न सम्पर्क अनुमति दिनुहोस्।'
-          : 'Allow contacts access to discover friends already using GuffSuff.';
+          ? 'तपाईंका साथीहरू गफसफ मा छन् कि छैनन् भनेर हेर्न सम्पर्क अनुमति दिनुहोस्।'
+          : 'Allow contacts access to discover friends already using गफसफ.';
   String get contactsOnGuffSuff =>
-      isNepali ? 'GuffSuff मा भएका सम्पर्कहरू' : 'Contacts on GuffSuff';
+      isNepali ? 'गफसफ मा भएका सम्पर्कहरू' : 'Contacts on गफसफ';
   String get inviteToGuffSuff =>
-      isNepali ? 'GuffSuff मा निमन्त्रणा गर्नुहोस्' : 'Invite to GuffSuff';
+      isNepali ? 'गफसफ मा निमन्त्रणा गर्नुहोस्' : 'Invite to गफसफ';
   String get newGroup => isNepali ? 'नयाँ समूह' : 'New Group';
   String get newContact => isNepali ? 'नयाँ सम्पर्क' : 'New Contact';
 
@@ -114,7 +114,7 @@ class AppStrings {
       isNepali ? 'जोडिएका उपकरणहरू' : 'Linked Devices';
   String get languageSettings => isNepali ? 'भाषा (Language)' : 'Language';
   String get helpSettings => isNepali ? 'सहयोग (Help)' : 'Help';
-  String get buildInfo => isNepali ? 'GuffSuff बारे' : 'About GuffSuff';
+  String get buildInfo => isNepali ? 'गफसफ बारे' : 'About गफसफ';
   String get diagnosticsSettings =>
       isNepali ? 'आन्तरिक डायग्नोस्टिक्स' : 'Developer Diagnostics';
   String get internalFeedback =>

@@ -1,3 +1,4 @@
+import { identitySecret } from "./identity-secret.js";
 import * as crypto from "crypto";
 import { Pool } from "pg";
 import { OtpProvider, DevelopmentOtpProvider, ProductionOtpProvider } from "./otp.provider.js";
@@ -8,8 +9,10 @@ export class OtpService {
   private readonly provider: OtpProvider;
 
   constructor(private readonly pool: Pool) {
-    this.pepperV1 =
-      process.env.OTP_VERIFIER_PEPPER_V1 || "default_guffsuff_otp_pepper_v1_secure_key";
+    this.pepperV1 = identitySecret(
+      "OTP_VERIFIER_PEPPER_V1",
+      "default_guffsuff_otp_pepper_v1_secure_key"
+    );
     const env = process.env.NODE_ENV || "development";
     if (env === "production" || env === "staging") {
       this.provider = new ProductionOtpProvider();
@@ -101,45 +104,39 @@ export class OtpService {
   }
 
   public async verifyOtpChallenge(challengeId: string, candidateOtp: string): Promise<boolean> {
-    const { rows } = await this.pool.query(
-      `SELECT verifier_hash, attempts_count, max_attempts, expires_at, is_verified 
-       FROM otp_challenges WHERE id = $1 FOR UPDATE`,
-      [challengeId]
-    );
-
-    if (rows.length === 0) {
-      throw new Error("Invalid or expired OTP challenge");
-    }
-
-    const challenge = rows[0];
-
-    if (challenge.is_verified) {
-      throw new Error("OTP challenge has already been verified");
-    }
-
-    if (new Date(challenge.expires_at) < new Date()) {
-      throw new Error("OTP challenge has expired");
-    }
-
-    if (challenge.attempts_count >= challenge.max_attempts) {
-      throw new Error("Maximum OTP verification attempts exceeded");
-    }
-
-    const candidateHash = this.computeVerifierHash(challengeId, candidateOtp);
-    const isMatch = this.timingSafeVerify(candidateHash, challenge.verifier_hash);
-
-    if (isMatch) {
-      await this.pool.query(
-        `UPDATE otp_challenges SET is_verified = true, attempts_count = attempts_count + 1 WHERE id = $1`,
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const { rows } = await client.query(
+        `SELECT verifier_hash, attempts_count, max_attempts, expires_at, is_verified, consumed_at
+         FROM otp_challenges WHERE id = $1 FOR UPDATE`,
         [challengeId]
       );
-      return true;
-    } else {
-      await this.pool.query(
-        `UPDATE otp_challenges SET attempts_count = attempts_count + 1 WHERE id = $1`,
-        [challengeId]
+      const challenge = rows[0];
+      if (
+        !challenge ||
+        challenge.is_verified ||
+        challenge.consumed_at ||
+        new Date(challenge.expires_at).getTime() <= Date.now() ||
+        challenge.attempts_count >= challenge.max_attempts
+      ) {
+        throw new Error("Invalid, expired, or exhausted OTP challenge");
+      }
+      const isMatch = this.timingSafeVerify(
+        this.computeVerifierHash(challengeId, candidateOtp),
+        challenge.verifier_hash
       );
-      return false;
+      await client.query(
+        `UPDATE otp_challenges SET is_verified = $2, attempts_count = attempts_count + 1 WHERE id = $1`,
+        [challengeId, isMatch]
+      );
+      await client.query("COMMIT");
+      return isMatch;
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
   }
 }

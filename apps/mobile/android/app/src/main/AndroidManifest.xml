@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="guffsuff_mobile"
+        android:label="गफसफ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -34,15 +34,22 @@ export class AccountService {
 
       // 1. Verify OTP Challenge is marked as verified
       const challengeRes = await client.query(
-        `SELECT phone_blind_index, is_verified FROM otp_challenges WHERE id = $1 FOR UPDATE`,
+        `SELECT phone_blind_index, is_verified, expires_at, consumed_at FROM otp_challenges WHERE id = $1 FOR UPDATE`,
         [params.challengeId]
       );
       if (challengeRes.rows.length === 0 || !challengeRes.rows[0].is_verified) {
         throw new Error("Invalid or unverified OTP challenge");
       }
+      const challenge = challengeRes.rows[0];
+      if (challenge.consumed_at || new Date(challenge.expires_at).getTime() <= Date.now()) {
+        throw new Error("Expired or consumed OTP challenge");
+      }
 
       const phoneBlindIndex = challengeRes.rows[0].phone_blind_index;
       const normalizedE164 = this.phoneService.normalizeToE164(params.phoneNumber);
+      if (this.phoneService.generateBlindIndex(normalizedE164) !== phoneBlindIndex) {
+        throw new Error("Phone number does not match verified OTP challenge");
+      }
       const encryptedPhone = this.phoneService.encryptPhoneNumber(normalizedE164);
 
       // Check if phone number already belongs to an active account
@@ -147,6 +154,10 @@ export class AccountService {
         ]
       );
 
+      await client.query(
+        `UPDATE otp_challenges SET consumed_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [params.challengeId]
+      );
       await client.query("COMMIT");
 
       // 10. Issue Tokens
