@@ -119,7 +119,9 @@ test("submission rejects expired envelopes", async () => {
   const f = fixture((sql) =>
     sql.includes("SELECT id, is_revoked")
       ? [{ is_revoked: false }]
-      : [{ conversation_id: "conversation" }]
+      : sql.includes("FROM conversation_members")
+        ? [{ conversation_id: "conversation" }]
+        : []
   );
   await assert.rejects(
     f.service.submitEnvelope("sender", "device", { ...dto, expiresAt: new Date(0).toISOString() }),
@@ -158,4 +160,74 @@ test("delivery retries preserve an existing read receipt", async () => {
   const update = f.calls.find((c) => c.sql.includes("UPDATE message_recipient_devices"))!;
   assert.match(update.sql, /WHEN delivery_status = 'read' THEN 'read'/);
   assert.match(update.sql, /COALESCE\(delivered_at/);
+});
+
+test("submission checks idempotency under a sender-device row lock and commits cached retries", async () => {
+  const digest = (await import("node:crypto"))
+    .createHash("sha256")
+    .update(Buffer.from("test"))
+    .digest("hex");
+  const f = fixture((sql) =>
+    sql.includes("SELECT id, is_revoked")
+      ? [{ is_revoked: false }]
+      : sql.includes("FROM conversation_members")
+        ? [{ conversation_id: "conversation" }]
+        : sql.includes("FROM message_idempotency_keys")
+          ? [{ envelope_id: envelopeId, payload_digest_sha256: digest }]
+          : sql.includes("FROM message_envelopes")
+            ? [
+                {
+                  id: envelopeId,
+                  conversation_id: "conversation",
+                  recipient_user_id: "recipient",
+                  protocol_version: 1
+                }
+              ]
+            : []
+  );
+  const result = await f.service.submitEnvelope("sender", "device", dto);
+  assert.equal(result.idempotentRetry, true);
+  assert.equal(f.calls[0]!.sql, "BEGIN");
+  assert.match(f.calls[1]!.sql, /FOR UPDATE/);
+  assert.equal(f.calls.at(-1)!.sql, "COMMIT");
+  assert.equal(f.released(), true);
+});
+test("an accepted envelope retry remains idempotent after its expiry", async () => {
+  const digest = (await import("node:crypto"))
+    .createHash("sha256")
+    .update(Buffer.from("test"))
+    .digest("hex");
+  const f = fixture((sql) =>
+    sql.includes("SELECT id, is_revoked")
+      ? [{ is_revoked: false }]
+      : sql.includes("FROM conversation_members")
+        ? [{ conversation_id: "conversation" }]
+        : sql.includes("FROM message_idempotency_keys")
+          ? [{ envelope_id: envelopeId, payload_digest_sha256: digest }]
+          : sql.includes("FROM message_envelopes")
+            ? [
+                {
+                  id: envelopeId,
+                  conversation_id: "conversation",
+                  recipient_user_id: "recipient",
+                  protocol_version: 1
+                }
+              ]
+            : []
+  );
+  const result = await f.service.submitEnvelope("sender", "device", {
+    ...dto,
+    expiresAt: new Date(0).toISOString()
+  });
+  assert.equal(result.idempotentRetry, true);
+  assert.equal(
+    f.calls.some((c) => c.sql.includes("INSERT")),
+    false
+  );
+});
+test("a submission error rolls back and releases its sender-device lock", async () => {
+  const f = fixture();
+  await assert.rejects(f.service.submitEnvelope("sender", "device", dto), /invalid or revoked/);
+  assert.equal(f.calls.at(-1)!.sql, "ROLLBACK");
+  assert.equal(f.released(), true);
 });

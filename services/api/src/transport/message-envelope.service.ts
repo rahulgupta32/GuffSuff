@@ -14,90 +14,99 @@ export class MessageEnvelopeService {
   private pool = createDatabasePool();
 
   async submitEnvelope(senderUserId: string, senderDeviceId: string, dto: SubmitMessageEnvelope) {
-    // 1. Verify sender device is active
-    const deviceRes = await this.pool.query(
-      "SELECT id, is_revoked FROM devices WHERE id = $1 AND user_id = $2",
-      [senderDeviceId, senderUserId]
-    );
-    if (deviceRes.rows.length === 0 || deviceRes.rows[0].is_revoked) {
-      throw new ForbiddenException("Sender device is invalid or revoked");
-    }
-
-    // 2. Verify conversation membership
-    const memberRes = await this.pool.query(
-      "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
-      [dto.conversationId, senderUserId]
-    );
-    if (memberRes.rows.length === 0) {
-      throw new ForbiddenException("Access denied to conversation");
-    }
-
-    const recipientMember = await this.pool.query(
-      "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
-      [dto.conversationId, dto.recipientUserId]
-    );
-    if (senderUserId === dto.recipientUserId || recipientMember.rows.length === 0) {
-      throw new ForbiddenException("Recipient is not a peer in this conversation");
-    }
-
-    // 3. Compute payload digest and check payload length
-    const opaqueBuffer = Buffer.from(dto.opaquePayloadBase64, "base64");
-    if (opaqueBuffer.length === 0 || opaqueBuffer.toString("base64") !== dto.opaquePayloadBase64) {
-      throw new BadRequestException("Opaque payload must be canonical nonempty base64");
-    }
-    if (new Date(dto.expiresAt).getTime() <= Date.now()) {
-      throw new BadRequestException("Envelope expiry must be in the future");
-    }
-    if (opaqueBuffer.length > 65536) {
-      throw new BadRequestException("Opaque payload exceeds maximum allowed size of 64KB");
-    }
-
-    const payloadDigest = crypto.createHash("sha256").update(opaqueBuffer).digest("hex");
-
-    // 4. Check idempotency key
-    const idempRes = await this.pool.query(
-      "SELECT envelope_id, payload_digest_sha256 FROM message_idempotency_keys WHERE sender_device_id = $1 AND idempotency_key = $2",
-      [senderDeviceId, dto.idempotencyKey]
-    );
-
-    if (idempRes.rows.length > 0) {
-      const existing = idempRes.rows[0];
-      if (existing.payload_digest_sha256 !== payloadDigest) {
-        throw new BadRequestException("Idempotency key reused with different payload digest");
-      }
-
-      // Return cached envelope response
-      const cachedEnv = await this.pool.query(
-        "SELECT id, conversation_id, sender_user_id, sender_device_id, recipient_user_id, protocol_version, payload_byte_length, server_accepted_at, expires_at FROM message_envelopes WHERE id = $1",
-        [existing.envelope_id]
-      );
-      const cached = cachedEnv.rows[0];
-      if (
-        !cached ||
-        cached.conversation_id !== dto.conversationId ||
-        cached.recipient_user_id !== dto.recipientUserId ||
-        cached.protocol_version !== dto.protocolVersion
-      ) {
-        throw new BadRequestException("Idempotency key reused with different routing or protocol");
-      }
-      return {
-        ...cached,
-        idempotentRetry: true
-      };
-    }
-
-    // 5. Resolve active recipient devices
-    const recipientDevicesRes = await this.pool.query(
-      "SELECT id FROM devices WHERE user_id = $1 AND is_revoked = false",
-      [dto.recipientUserId]
-    );
-
-    const envelopeId = generateUUIDv7();
-    const idempRecordId = generateUUIDv7();
-
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      // 1. Verify sender device is active
+      const deviceRes = await client.query(
+        "SELECT id, is_revoked FROM devices WHERE id = $1 AND user_id = $2 FOR UPDATE",
+        [senderDeviceId, senderUserId]
+      );
+      if (deviceRes.rows.length === 0 || deviceRes.rows[0].is_revoked) {
+        throw new ForbiddenException("Sender device is invalid or revoked");
+      }
+
+      // 2. Verify conversation membership
+      const memberRes = await client.query(
+        "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
+        [dto.conversationId, senderUserId]
+      );
+      if (memberRes.rows.length === 0) {
+        throw new ForbiddenException("Access denied to conversation");
+      }
+
+      const recipientMember = await client.query(
+        "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
+        [dto.conversationId, dto.recipientUserId]
+      );
+      if (senderUserId === dto.recipientUserId || recipientMember.rows.length === 0) {
+        throw new ForbiddenException("Recipient is not a peer in this conversation");
+      }
+
+      // 3. Compute payload digest and check payload length
+      const opaqueBuffer = Buffer.from(dto.opaquePayloadBase64, "base64");
+      if (
+        opaqueBuffer.length === 0 ||
+        opaqueBuffer.toString("base64") !== dto.opaquePayloadBase64
+      ) {
+        throw new BadRequestException("Opaque payload must be canonical nonempty base64");
+      }
+      if (opaqueBuffer.length > 65536) {
+        throw new BadRequestException("Opaque payload exceeds maximum allowed size of 64KB");
+      }
+
+      const payloadDigest = crypto.createHash("sha256").update(opaqueBuffer).digest("hex");
+
+      // 4. Check idempotency key
+      const idempRes = await client.query(
+        "SELECT envelope_id, payload_digest_sha256 FROM message_idempotency_keys WHERE sender_device_id = $1 AND idempotency_key = $2",
+        [senderDeviceId, dto.idempotencyKey]
+      );
+
+      if (idempRes.rows.length > 0) {
+        const existing = idempRes.rows[0];
+        if (existing.payload_digest_sha256 !== payloadDigest) {
+          throw new BadRequestException("Idempotency key reused with different payload digest");
+        }
+
+        // Return cached envelope response
+        const cachedEnv = await client.query(
+          "SELECT id, conversation_id, sender_user_id, sender_device_id, recipient_user_id, protocol_version, payload_byte_length, server_accepted_at, expires_at FROM message_envelopes WHERE id = $1",
+          [existing.envelope_id]
+        );
+        const cached = cachedEnv.rows[0];
+        if (
+          !cached ||
+          cached.conversation_id !== dto.conversationId ||
+          cached.recipient_user_id !== dto.recipientUserId ||
+          cached.protocol_version !== dto.protocolVersion
+        ) {
+          throw new BadRequestException(
+            "Idempotency key reused with different routing or protocol"
+          );
+        }
+        await client.query("COMMIT");
+        return {
+          ...cached,
+          idempotentRetry: true
+        };
+      }
+
+      if (
+        !Number.isFinite(new Date(dto.expiresAt).getTime()) ||
+        new Date(dto.expiresAt).getTime() <= Date.now()
+      ) {
+        throw new BadRequestException("Envelope expiry must be in the future");
+      }
+
+      // 5. Resolve active recipient devices
+      const recipientDevicesRes = await client.query(
+        "SELECT id FROM devices WHERE user_id = $1 AND is_revoked = false",
+        [dto.recipientUserId]
+      );
+
+      const envelopeId = generateUUIDv7();
+      const idempRecordId = generateUUIDv7();
 
       // Insert envelope
       const insertEnv = await client.query(
