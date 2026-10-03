@@ -56,6 +56,11 @@ class SecureStorageService {
   Future<void> saveInstallationId(String id) =>
       _storage.write(key: 'gs_installation_id', value: id);
 
+  Future<String?> readMessageJournal(String scope) =>
+      _storage.read(key: 'gs_ciphertext_journal_v1_$scope');
+  Future<void> writeMessageJournal(String scope, String value) =>
+      _storage.write(key: 'gs_ciphertext_journal_v1_$scope', value: value);
+
   Future<void> clearAll() async {
     await _storage.deleteAll();
   }
