@@ -73,3 +73,13 @@ HTTP tests use controlled responses and storage doubles. They do not prove SMS d
 Forgotten-PIN recovery, delivery receipt processing, billing reconciliation and distributed abuse controls remain incomplete. Earlier references to missing returning-user login/production SMS implementation are superseded by this increment; real SMS operation remains unverified until an approved provider account is configured.
 
 Validation for this increment: 55 API tests and 38 mobile tests passed; API/dependency build, typecheck and lint passed; Flutter analysis reported no issues; Dart formatting and diff whitespace checks passed. SMS tests use a fake HTTP request; login tests use controlled database doubles. PostgreSQL runtime/migrations, SMS carrier delivery and signed real-device builds remain unverified.
+
+## Transport authorization and receipt increment — 2026-10-03
+
+- Pending-envelope requests now apply the conversation in the URL, active-device ownership and conversation membership instead of returning all conversations for the device.
+- Submission checks that the recipient is a different member of the same conversation. Malformed/noncanonical base64 and expired envelopes are rejected. A retried idempotency key cannot silently change its conversation, recipient or protocol.
+- Read receipts require the body envelope to match the URL. The service resolves the conversation from the recipient's authorized envelope and active device, then updates receipt and read position in one transaction. The read position advances by server acceptance time and envelope ID; older receipts cannot move it backward.
+- Late/repeated delivery receipts preserve read status and the original delivery timestamp. Revoked devices cannot acknowledge delivery.
+- Validation: all 30 API/dependency build, typecheck and lint tasks passed; all 66 API tests passed, including 11 new transport regressions. These use query doubles; real PostgreSQL execution and concurrent transaction validation remain required. Mobile code was unchanged in this increment.
+
+Remaining messaging release gates: production encryption provider and per-device keys, real network transport, encrypted local persistence/outbox, recipient-device fan-out, reconnect/offline synchronization, receipt integration in mobile, and physical-device testing. Concurrent first submissions can still race on the idempotency unique constraint; concurrent conversation creation also needs conflict-safe handling. Delivery acknowledgement audit rows are not yet deduplicated. Pending fetches need bounded pagination and expiry/retention limits must be enforced server-side. The existing native/test crypto provider and simulated connection lifecycle remain unsuitable for release.

@@ -7,7 +7,8 @@ import {
   Req,
   UseGuards,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  BadRequestException
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../identity/jwt-auth.guard.js";
 import { MessageEnvelopeService } from "./message-envelope.service.js";
@@ -33,8 +34,12 @@ export class EnvelopesController {
   }
 
   @Get("conversations/:conversationId/envelopes/pending")
-  async getPendingEnvelopes(@Req() req: any) {
-    return this.envelopeService.getPendingEnvelopes(req.user.userId, req.user.deviceId);
+  async getPendingEnvelopes(@Req() req: any, @Param("conversationId") conversationId: string) {
+    return this.envelopeService.getPendingEnvelopes(
+      req.user.userId,
+      req.user.deviceId,
+      conversationId
+    );
   }
 
   @Post("envelopes/:envelopeId/delivered")
@@ -51,11 +56,10 @@ export class EnvelopesController {
     @Body() body: any
   ) {
     const validated = AcknowledgeReadSchema.parse(body);
-    return this.envelopeService.acknowledgeRead(
-      req.user.userId,
-      validated.lastReadEnvelopeId,
-      envelopeId
-    );
+    if (validated.lastReadEnvelopeId !== envelopeId) {
+      throw new BadRequestException("Read receipt must match the envelope in the URL");
+    }
+    return this.envelopeService.acknowledgeRead(req.user.userId, req.user.deviceId, envelopeId);
   }
 
   @Get("envelopes/:envelopeId/status")

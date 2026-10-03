@@ -32,8 +32,22 @@ export class MessageEnvelopeService {
       throw new ForbiddenException("Access denied to conversation");
     }
 
+    const recipientMember = await this.pool.query(
+      "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
+      [dto.conversationId, dto.recipientUserId]
+    );
+    if (senderUserId === dto.recipientUserId || recipientMember.rows.length === 0) {
+      throw new ForbiddenException("Recipient is not a peer in this conversation");
+    }
+
     // 3. Compute payload digest and check payload length
     const opaqueBuffer = Buffer.from(dto.opaquePayloadBase64, "base64");
+    if (opaqueBuffer.length === 0 || opaqueBuffer.toString("base64") !== dto.opaquePayloadBase64) {
+      throw new BadRequestException("Opaque payload must be canonical nonempty base64");
+    }
+    if (new Date(dto.expiresAt).getTime() <= Date.now()) {
+      throw new BadRequestException("Envelope expiry must be in the future");
+    }
     if (opaqueBuffer.length > 65536) {
       throw new BadRequestException("Opaque payload exceeds maximum allowed size of 64KB");
     }
@@ -57,8 +71,17 @@ export class MessageEnvelopeService {
         "SELECT id, conversation_id, sender_user_id, sender_device_id, recipient_user_id, protocol_version, payload_byte_length, server_accepted_at, expires_at FROM message_envelopes WHERE id = $1",
         [existing.envelope_id]
       );
+      const cached = cachedEnv.rows[0];
+      if (
+        !cached ||
+        cached.conversation_id !== dto.conversationId ||
+        cached.recipient_user_id !== dto.recipientUserId ||
+        cached.protocol_version !== dto.protocolVersion
+      ) {
+        throw new BadRequestException("Idempotency key reused with different routing or protocol");
+      }
       return {
-        ...cachedEnv.rows[0],
+        ...cached,
         idempotentRetry: true
       };
     }
@@ -130,7 +153,7 @@ export class MessageEnvelopeService {
     }
   }
 
-  async getPendingEnvelopes(userId: string, deviceId: string) {
+  async getPendingEnvelopes(userId: string, deviceId: string, conversationId: string) {
     const res = await this.pool.query(
       `SELECT e.id, e.conversation_id, e.sender_user_id, e.sender_device_id, e.recipient_user_id,
               e.protocol_version, e.payload_byte_length, encode(e.opaque_payload, 'base64') AS opaque_payload_base64,
@@ -140,8 +163,11 @@ export class MessageEnvelopeService {
        WHERE rd.recipient_device_id = $1 AND e.recipient_user_id = $2
          AND rd.delivery_status IN ('accepted', 'queued', 'routed')
          AND e.expires_at > CURRENT_TIMESTAMP
+         AND e.conversation_id = $3
+         AND EXISTS (SELECT 1 FROM devices d WHERE d.id = $1 AND d.user_id = $2 AND NOT d.is_revoked)
+         AND EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = $3 AND m.user_id = $2)
        ORDER BY e.server_accepted_at ASC`,
-      [deviceId, userId]
+      [deviceId, userId, conversationId]
     );
     return res.rows;
   }
@@ -151,8 +177,9 @@ export class MessageEnvelopeService {
       `SELECT rd.id, rd.delivery_status, e.recipient_user_id
        FROM message_recipient_devices rd
        JOIN message_envelopes e ON rd.envelope_id = e.id
-       WHERE rd.envelope_id = $1 AND rd.recipient_device_id = $2`,
-      [envelopeId, deviceId]
+       WHERE rd.envelope_id = $1 AND rd.recipient_device_id = $2
+         AND EXISTS (SELECT 1 FROM devices d WHERE d.id = $2 AND d.user_id = $3 AND NOT d.is_revoked)`,
+      [envelopeId, deviceId, userId]
     );
 
     if (rdRes.rows.length === 0 || rdRes.rows[0].recipient_user_id !== userId) {
@@ -168,7 +195,8 @@ export class MessageEnvelopeService {
 
       await client.query(
         `UPDATE message_recipient_devices
-         SET delivery_status = 'delivered', delivered_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+         SET delivery_status = CASE WHEN delivery_status = 'read' THEN 'read' ELSE 'delivered' END,
+             delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
         [rdRecord.id]
       );
@@ -189,25 +217,51 @@ export class MessageEnvelopeService {
     }
   }
 
-  async acknowledgeRead(userId: string, conversationId: string, lastReadEnvelopeId: string) {
-    const memberRes = await this.pool.query(
-      "SELECT conversation_id FROM conversation_members WHERE conversation_id = $1 AND user_id = $2",
-      [conversationId, userId]
-    );
-    if (memberRes.rows.length === 0) {
-      throw new ForbiddenException("Access denied to conversation");
+  async acknowledgeRead(userId: string, deviceId: string, envelopeId: string) {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const target = await client.query(
+        `SELECT e.conversation_id, e.server_accepted_at
+         FROM message_envelopes e
+         JOIN message_recipient_devices rd ON rd.envelope_id = e.id
+         JOIN devices d ON d.id = rd.recipient_device_id
+         JOIN conversation_members m ON m.conversation_id = e.conversation_id AND m.user_id = $2
+         WHERE e.id = $1 AND e.recipient_user_id = $2 AND d.id = $3
+           AND d.user_id = $2 AND NOT d.is_revoked AND e.expires_at > CURRENT_TIMESTAMP
+         FOR UPDATE OF rd`,
+        [envelopeId, userId, deviceId]
+      );
+      if (target.rows.length === 0) {
+        throw new ForbiddenException("Read acknowledgement unauthorized for envelope");
+      }
+      const conversationId = target.rows[0].conversation_id;
+      await client.query(
+        `UPDATE message_recipient_devices
+         SET delivery_status = 'read', delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP),
+             read_at = COALESCE(read_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
+         WHERE envelope_id = $1 AND recipient_device_id = $2`,
+        [envelopeId, deviceId]
+      );
+      await client.query(
+        `INSERT INTO message_read_states (id, conversation_id, user_id, last_read_envelope_id, last_read_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+         ON CONFLICT (conversation_id, user_id)
+         DO UPDATE SET last_read_envelope_id = EXCLUDED.last_read_envelope_id,
+                       last_read_at = EXCLUDED.last_read_at
+         WHERE message_read_states.last_read_envelope_id IS NULL OR
+           (SELECT (server_accepted_at, id) FROM message_envelopes WHERE id = message_read_states.last_read_envelope_id)
+           < (SELECT (server_accepted_at, id) FROM message_envelopes WHERE id = EXCLUDED.last_read_envelope_id)`,
+        [generateUUIDv7(), conversationId, userId, envelopeId]
+      );
+      await client.query("COMMIT");
+      return { status: "read", conversationId, lastReadEnvelopeId: envelopeId };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
-
-    const readStateId = generateUUIDv7();
-    await this.pool.query(
-      `INSERT INTO message_read_states (id, conversation_id, user_id, last_read_envelope_id, last_read_at)
-       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-       ON CONFLICT (conversation_id, user_id)
-       DO UPDATE SET last_read_envelope_id = $4, last_read_at = CURRENT_TIMESTAMP`,
-      [readStateId, conversationId, userId, lastReadEnvelopeId]
-    );
-
-    return { status: "read", conversationId, lastReadEnvelopeId };
   }
 
   async getEnvelopeStatus(userId: string, envelopeId: string) {
