@@ -4,8 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/config/app_config.dart';
+import 'services/auth_session.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  AppConfig.validate();
+  await authSession.restore();
   runApp(const ProviderScope(child: GuffSuffApp()));
 }
 

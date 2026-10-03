@@ -6,7 +6,8 @@ import '../data/repositories.dart';
 final devicesProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((
   ref,
 ) async {
-  final repo = DemoRepository();
+  ref.watch(authenticationProvider);
+  final repo = ProductionApiRepository();
   return repo.getDevices();
 });
 

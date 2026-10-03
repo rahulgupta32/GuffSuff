@@ -6,7 +6,8 @@ import '../data/repositories.dart';
 
 final contactsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
   (ref) async {
-    final repo = DemoRepository();
+    ref.watch(authenticationProvider);
+    final repo = ProductionApiRepository();
     return repo.getContacts();
   },
 );
@@ -138,8 +139,9 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
                   ),
                 ),
             error:
-                (_, __) =>
-                    const ListTile(title: Text('Unable to load contacts')),
+                (_, __) => const ListTile(
+                  title: Text('Contact discovery is not available yet.'),
+                ),
             data: (contacts) {
               final onGuffSuff =
                   contacts.where((c) => c['onGuffSuff'] == true).toList();

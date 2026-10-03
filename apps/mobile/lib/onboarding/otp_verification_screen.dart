@@ -1,146 +1,129 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/config/app_config.dart';
 import '../core/l10n/app_strings.dart';
-import '../core/theme/app_tokens.dart';
-import '../services/otp_provider.dart';
+import '../services/auth_session.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  final String phoneNumber;
-
-  const OtpVerificationScreen({super.key, required this.phoneNumber});
-
+  final RegistrationChallenge challenge;
+  const OtpVerificationScreen({super.key, required this.challenge});
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  final _otpController = TextEditingController(text: '123456');
-  bool _isVerifying = false;
-  String? _errorMessage;
+  final _code = TextEditingController();
+  late RegistrationChallenge _challenge;
+  Timer? _timer;
+  bool _busy = false;
+  String? _error;
+  int get _remaining => _challenge.resendAvailableAt
+      .difference(DateTime.now())
+      .inSeconds
+      .clamp(0, 86400);
+  @override
+  void initState() {
+    super.initState();
+    _challenge = widget.challenge;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
-    _otpController.dispose();
+    _timer?.cancel();
+    _code.dispose();
     super.dispose();
   }
 
-  Future<void> _handleVerify() async {
+  Future<void> _verify() async {
     setState(() {
-      _isVerifying = true;
-      _errorMessage = null;
+      _busy = true;
+      _error = null;
     });
+    try {
+      final verified = await authSession.verifyOtp(_challenge, _code.text);
+      if (mounted) context.go('/profile-setup', extra: verified);
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => _error = e is AuthFailure ? e.message : 'Verification failed.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
-    final OtpProvider provider =
-        AppConfig.allowDevelopmentOtp
-            ? DevelopmentOtpProvider()
-            : ProductionOtpProvider(baseUrl: AppConfig.baseUrl);
-
-    final res = await provider.verifyOtp(
-      widget.phoneNumber,
-      'challenge_1',
-      _otpController.text,
-    );
-
-    if (!mounted) return;
-
-    if (res.success) {
-      context.push('/profile-setup');
-    } else {
-      setState(() {
-        _isVerifying = false;
-        _errorMessage = res.message ?? 'Verification failed';
-      });
+  Future<void> _resend() async {
+    if (_remaining > 0) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final replacement = await authSession.requestOtp(_challenge.phoneNumber);
+      if (mounted) {
+        setState(() {
+          _challenge = replacement;
+          _code.clear();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () =>
+              _error = e is AuthFailure ? e.message : 'Unable to resend code.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                strings.verifyOtpTitle,
-                style: AppTypography.display.copyWith(fontSize: 24),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Text(
+              strings.verifyOtpTitle,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 12),
+            Text('${strings.otpSentTo} ${_challenge.phoneNumber}'),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _code,
+              enabled: !_busy,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              decoration: const InputDecoration(
+                labelText: 'Verification code',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: AppSpacing.s8),
-              Text(
-                '${strings.otpSentTo} ${widget.phoneNumber}',
-                style: AppTypography.bodyMedium.copyWith(
-                  color:
-                      isDark
-                          ? AppColors.darkContentSecondary
-                          : AppColors.lightContentSecondary,
-                ),
+            ),
+            if (_error != null) Text(_error!),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _busy ? null : _verify,
+              child: Text(strings.verifyButton),
+            ),
+            TextButton(
+              onPressed: _busy || _remaining > 0 ? null : _resend,
+              child: Text(
+                _remaining > 0
+                    ? '${strings.resendOtp} ($_remaining s)'
+                    : strings.resendOtp,
               ),
-              if (AppConfig.allowDevelopmentOtp) ...[
-                const SizedBox(height: AppSpacing.s12),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.s8),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.15),
-                    borderRadius: AppRadii.borderSmall,
-                  ),
-                  child: Text(
-                    strings.devOtpNotice,
-                    style: AppTypography.metadata.copyWith(
-                      color: AppColors.warning,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.s24),
-              TextField(
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                style: AppTypography.display.copyWith(letterSpacing: 8),
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: AppRadii.borderMedium,
-                  ),
-                ),
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: AppSpacing.s12),
-                Text(
-                  _errorMessage!,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.danger,
-                  ),
-                ),
-              ],
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isVerifying ? null : _handleVerify,
-                  child:
-                      _isVerifying
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                          : Text(strings.verifyButton),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

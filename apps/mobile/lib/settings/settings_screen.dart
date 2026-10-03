@@ -1,3 +1,4 @@
+import '../services/auth_session.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../core/config/app_config.dart';
@@ -34,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
                       alpha: 0.15,
                     ),
                     child: const Text(
-                      'R',
+                      'ग',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -47,10 +48,13 @@ class SettingsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Rahul Gupta', style: AppTypography.titleMedium),
+                        const Text(
+                          'Your account',
+                          style: AppTypography.titleMedium,
+                        ),
                         const SizedBox(height: 2),
                         Text(
-                          'Building गफसफ for Nepal 🇳🇵',
+                          'गफसफ',
                           style: AppTypography.bodySmall.copyWith(
                             color: mutedColor,
                           ),
@@ -186,7 +190,10 @@ class SettingsScreen extends StatelessWidget {
               strings.logout,
               style: AppTypography.titleSmall.copyWith(color: AppColors.danger),
             ),
-            onTap: () => context.go('/welcome'),
+            onTap: () async {
+              await authSession.logout();
+              if (context.mounted) context.go('/welcome');
+            },
           ),
           const SizedBox(height: AppSpacing.s24),
         ],

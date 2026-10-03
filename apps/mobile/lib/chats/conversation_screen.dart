@@ -101,20 +101,7 @@ class ConversationScreen extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.s16),
-              children: [
-                _MessageBubble(
-                  text: 'Namaste! Welcome to गफसफ.',
-                  isOutgoing: false,
-                  timestamp: '10:40 AM',
-                ),
-                const SizedBox(height: AppSpacing.s8),
-                _MessageBubble(
-                  text: 'Namaste! Testing the production design system.',
-                  isOutgoing: true,
-                  timestamp: '10:42 AM',
-                  status: 'delivered',
-                ),
-              ],
+              children: const [Text('Secure messaging is not available yet.')],
             ),
           ),
           // Subtle Disabled Composer Bar
@@ -169,93 +156,6 @@ class ConversationScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MessageBubble extends StatelessWidget {
-  final String text;
-  final bool isOutgoing;
-  final String timestamp;
-  final String? status;
-
-  const _MessageBubble({
-    required this.text,
-    required this.isOutgoing,
-    required this.timestamp,
-    this.status,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bubbleColor =
-        isOutgoing
-            ? AppColors.brandPrimary
-            : (isDark
-                ? AppColors.darkSurfaceElevated
-                : AppColors.lightSurfaceSecondary);
-    final textColor =
-        isOutgoing
-            ? Colors.white
-            : (isDark
-                ? AppColors.darkContentPrimary
-                : AppColors.lightContentPrimary);
-    final metaColor =
-        isOutgoing
-            ? Colors.white70
-            : (isDark
-                ? AppColors.darkContentMuted
-                : AppColors.lightContentMuted);
-
-    return Align(
-      alignment: isOutgoing ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s12,
-          vertical: AppSpacing.s8,
-        ),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(AppRadii.bubble),
-            topRight: const Radius.circular(AppRadii.bubble),
-            bottomLeft: Radius.circular(
-              isOutgoing ? AppRadii.bubble : AppRadii.small,
-            ),
-            bottomRight: Radius.circular(
-              isOutgoing ? AppRadii.small : AppRadii.bubble,
-            ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              text,
-              style: AppTypography.bodyMedium.copyWith(color: textColor),
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  timestamp,
-                  style: AppTypography.metadata.copyWith(color: metaColor),
-                ),
-                if (isOutgoing && status != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(Icons.done_all_rounded, size: 14, color: metaColor),
-                ],
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

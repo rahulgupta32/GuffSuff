@@ -8,8 +8,9 @@ import '../data/repositories.dart';
 
 final conversationsProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-      // Use DemoRepository for dev/demo mode preview
-      final repo = DemoRepository();
+      // Never expose demo records in the application.
+      ref.watch(authenticationProvider);
+      final repo = ProductionApiRepository();
       return repo.getConversations();
     });
 
@@ -94,7 +95,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               ),
             ),
         error:
-            (_, __) => EmptyStateWidget(
+            (_, __) => const EmptyStateWidget(
               icon: Icons.error_outline,
               title: 'Unable to load chats',
               description: 'Please check your connection and try again.',

@@ -22,7 +22,7 @@ jobs:
         run: |
           cd apps/mobile
           flutter --version
-          dart format .
+          dart format --output=none --set-exit-if-changed lib test
           flutter pub get
           flutter analyze
           if [ -d "test" ]; then flutter test; fi
@@ -30,8 +30,7 @@ jobs:
       - name: Validate Android Flavor Build Configurations
         run: |
           cd apps/mobile
-          flutter create --platforms=android .
-          flutter build apk --target lib/main.dart --no-pub --debug || true
+          flutter build apk --target lib/main.dart --no-pub --debug
 
   flutter-ios-compile-validation:
     runs-on: macos-latest
@@ -46,4 +45,4 @@ jobs:
           cd apps/mobile
           flutter pub get
           flutter create --platforms=ios .
-          flutter build ios --no-codesign --target lib/main.dart || true
+          flutter build ios --no-codesign --target lib/main.dart

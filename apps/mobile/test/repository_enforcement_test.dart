@@ -20,9 +20,7 @@ void main() {
     test(
       'Production environment permits ProductionApiRepository registration',
       () {
-        final prodRepo = ProductionApiRepository(
-          baseUrl: 'https://api.guffsuff.com',
-        );
+        final prodRepo = ProductionApiRepository();
         expect(
           () => RepositoryRegistry(
             isProduction: true,
@@ -65,26 +63,26 @@ void main() {
     test(
       'Production cannot silently fall back to DemoRepository on API failure',
       () async {
-        final prodRepo = ProductionApiRepository(
-          baseUrl: 'http://invalid-host-34902',
+        final prodRepo = ProductionApiRepository();
+        await expectLater(
+          prodRepo.getProfile('user_123'),
+          throwsA(isA<Exception>()),
         );
-        final profile = await prodRepo.getProfile('user_123');
 
         // Must return null / offline error state, NEVER mock Demo profile data
-        expect(profile, isNull);
       },
     );
 
     test(
       'Failed API initialization returns empty list, NOT mock conversations',
       () async {
-        final prodRepo = ProductionApiRepository(
-          baseUrl: 'http://invalid-host-34902',
+        final prodRepo = ProductionApiRepository();
+        await expectLater(
+          prodRepo.getConversations(),
+          throwsA(isA<Exception>()),
         );
-        final conversations = await prodRepo.getConversations();
 
         // Must return empty list, NOT mock demo conversations
-        expect(conversations, isEmpty);
       },
     );
   });

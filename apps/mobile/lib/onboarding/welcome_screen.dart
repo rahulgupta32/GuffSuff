@@ -18,11 +18,11 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 48,
                 backgroundColor: AppColors.brandPrimary,
-                child: const Text(
-                  'G',
+                child: Text(
+                  'ग',
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,

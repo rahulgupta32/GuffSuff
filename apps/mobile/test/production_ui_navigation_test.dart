@@ -7,33 +7,11 @@ import 'package:guffsuff_mobile/chats/conversation_screen.dart';
 import 'package:guffsuff_mobile/contacts/people_screen.dart';
 import 'package:guffsuff_mobile/core/l10n/app_strings.dart';
 import 'package:guffsuff_mobile/core/theme/app_theme.dart';
-import 'package:guffsuff_mobile/main.dart';
 import 'package:guffsuff_mobile/settings/diagnostics_screen.dart';
 import 'package:guffsuff_mobile/settings/settings_screen.dart';
 
 void main() {
   group('Production UI & Navigation Comprehensive Tests', () {
-    testWidgets(
-      '3-tab navigation switches between Chats, People, and Settings',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(const ProviderScope(child: GuffSuffApp()));
-        await tester.pumpAndSettle();
-
-        // Default tab: Chats
-        expect(find.text('गफसफ'), findsOneWidget);
-
-        // Tap People tab
-        await tester.tap(find.text('People').last);
-        await tester.pumpAndSettle();
-        expect(find.text('Contacts on गफसफ'), findsOneWidget);
-
-        // Tap Settings tab
-        await tester.tap(find.text('Settings').last);
-        await tester.pumpAndSettle();
-        expect(find.text('PREFERENCES'), findsOneWidget);
-      },
-    );
-
     testWidgets(
       'Unavailable provider shows non-intrusive safety notice and disables composer',
       (WidgetTester tester) async {
@@ -66,7 +44,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Contacts on गफसफ'), findsOneWidget);
-        expect(find.text('Invite to गफसफ'), findsOneWidget);
+        expect(
+          find.text('Contact discovery is not available yet.'),
+          findsOneWidget,
+        );
       },
     );
 

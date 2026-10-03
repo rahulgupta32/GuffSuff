@@ -1,3 +1,5 @@
+import '../../services/auth_session.dart';
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../chats/chats_screen.dart';
@@ -26,7 +28,32 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/chats',
+  initialLocation: '/welcome',
+  refreshListenable: authSession,
+  redirect: (context, state) {
+    final path = state.uri.path;
+    final onboarding = [
+      '/welcome',
+      '/privacy-explain',
+      '/phone-entry',
+      '/otp-verification',
+      '/profile-setup',
+    ].contains(path);
+    if (!authSession.isAuthenticated && !onboarding) return '/welcome';
+    if (authSession.isAuthenticated && onboarding) return '/chats';
+    if (path == '/settings/diagnostics' && AppConfig.isProduction) {
+      return '/settings';
+    }
+    if (path == '/otp-verification' && state.extra is! RegistrationChallenge) {
+      return '/phone-entry';
+    }
+    if (path == '/profile-setup' &&
+        (state.extra is! RegistrationChallenge ||
+            !(state.extra as RegistrationChallenge).verified)) {
+      return '/phone-entry';
+    }
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/welcome',
@@ -43,13 +70,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/otp-verification',
       builder: (context, state) {
-        final phone = state.uri.queryParameters['phone'] ?? '+977 9800000000';
-        return OtpVerificationScreen(phoneNumber: phone);
+        return OtpVerificationScreen(
+          challenge: state.extra as RegistrationChallenge,
+        );
       },
     ),
     GoRoute(
       path: '/profile-setup',
-      builder: (context, state) => const ProfileSetupScreen(),
+      builder:
+          (context, state) => ProfileSetupScreen(
+            challenge: state.extra as RegistrationChallenge,
+          ),
     ),
 
     // 3-Tab Shell Route

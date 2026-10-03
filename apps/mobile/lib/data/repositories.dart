@@ -1,5 +1,15 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/auth_session.dart';
+
+final authenticationProvider = Provider<bool>((ref) {
+  void changed() {
+    ref.invalidateSelf();
+  }
+
+  authSession.addListener(changed);
+  ref.onDispose(() => authSession.removeListener(changed));
+  return authSession.isAuthenticated;
+});
 
 abstract class ProfileRepository {
   Future<Map<String, dynamic>?> getProfile(String userId);
@@ -24,73 +34,44 @@ class ProductionApiRepository
         DeviceRepository,
         ContactRepository,
         ConversationRepository {
-  final String baseUrl;
-  final String? accessToken;
-
-  ProductionApiRepository({required this.baseUrl, this.accessToken});
-
-  Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    if (accessToken != null) 'Authorization': 'Bearer $accessToken',
-  };
-
+  final AuthSession session;
+  ProductionApiRepository({AuthSession? session})
+    : session = session ?? authSession;
   @override
-  Future<Map<String, dynamic>?> getProfile(String userId) async {
-    try {
-      final res = await http.get(
-        Uri.parse('$baseUrl/users/profile'),
-        headers: _headers,
-      );
-      if (res.statusCode == 200) {
-        return jsonDecode(res.body) as Map<String, dynamic>;
-      }
-    } catch (_) {}
-    return null;
-  }
-
+  Future<Map<String, dynamic>?> getProfile(String userId) async =>
+      await session.getJson('account') as Map<String, dynamic>;
   @override
   Future<List<Map<String, dynamic>>> getDevices() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$baseUrl/devices'),
-        headers: _headers,
-      );
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as List;
-        return data.cast<Map<String, dynamic>>();
-      }
-    } catch (_) {}
-    return [];
+    final data = await session.getJson('devices') as List;
+    return data.map((value) {
+      final d = value as Map<String, dynamic>;
+      return {
+        ...d,
+        'name': d['deviceName'] ?? d['device_name'] ?? 'Device',
+        'deviceId': d['id'],
+        'isCurrent': d['isCurrentDevice'] ?? false,
+        'lastActive': d['lastSeenAt'] ?? d['last_seen_at'] ?? '',
+      };
+    }).toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getContacts() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$baseUrl/contacts'),
-        headers: _headers,
-      );
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as List;
-        return data.cast<Map<String, dynamic>>();
-      }
-    } catch (_) {}
-    return [];
-  }
-
+  Future<List<Map<String, dynamic>>> getContacts() async =>
+      throw UnsupportedError('Contact discovery is not available yet.');
   @override
   Future<List<Map<String, dynamic>>> getConversations() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$baseUrl/conversations'),
-        headers: _headers,
-      );
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as List;
-        return data.cast<Map<String, dynamic>>();
-      }
-    } catch (_) {}
-    return [];
+    final data = await session.getJson('conversations') as List;
+    return data.map((value) {
+      final c = value as Map<String, dynamic>;
+      return {
+        ...c,
+        'peerName': 'Conversation',
+        'peerAvatar': 'ग',
+        'lastMessage': '',
+        'timestamp': '',
+        'unreadCount': 0,
+      };
+    }).toList();
   }
 }
 

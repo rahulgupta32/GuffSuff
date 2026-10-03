@@ -17,7 +17,7 @@ Status: IN DEVELOPMENT. Public launch is blocked.
 
 Frozen-lockfile dependency installation succeeded. API and its dependencies build and typecheck; the initial lint run passed. API test suite: 43 passed, 0 failed, including actual service regression tests using controlled database doubles.
 
-These tests do not establish PostgreSQL concurrency behavior or migration compatibility. PostgreSQL/Docker and Flutter are not installed in this execution environment. Flutter tests, Android builds and real-device testing were not run.
+The first increment did not establish PostgreSQL concurrency behavior or migration compatibility, or run Flutter/Android checks. The later mobile verification record below supersedes its Flutter limitation. PostgreSQL migration/concurrency tests, signed Android/iOS builds and real-device testing remain outstanding.
 
 ## Ten-person beta
 
@@ -38,3 +38,26 @@ Test all 45 unordered tester pairs, then selected groups. Include offline/reconn
 9. PostgreSQL migration/concurrency regression testing, Flutter validation and green CI on the final release commit.
 
 No production deployment or store release is authorized by this document. Do not describe UI prototypes, boundary binaries, or passing unit tests as a production-ready messenger.
+
+## 2026-10-03 mobile onboarding increment
+
+- Removed the fixed-code OTP simulator from mobile authentication. The UI requests a real challenge, submits `otpCode` to `/api/v1/auth/otp/verify`, and carries that exact challenge into registration.
+- Registration submits required phone/device metadata, collects consent, and stores the returned session as a single secure-storage record.
+- Startup restores the saved session through server-side refresh. Refresh requests are serialized. Logout clears local authentication even if the server is offline.
+- Signed-out routes redirect to onboarding. Registration screens require an appropriate challenge. Release builds default to production and require an HTTPS API origin.
+- Chats/devices/profile use authenticated API requests; contact discovery remains unavailable. Demo records and fixed message bubbles are no longer used in the active screens.
+- Mobile CI now checks formatting and reports Android/iOS build failures.
+
+Still incomplete: returning-user OTP login/recovery, actual SMS delivery, production legal documents and links, complete localization of new error/consent text, contact discovery, device action wiring, E2EE and push. Registration cannot be advertised as a complete production authentication system until these and real-device checks pass.
+
+### Mobile verification record
+
+Flutter 3.29.2 was installed and used in CI mode, which avoids its Azure metadata auto-detection. Its archive extraction used `--no-same-owner` for this container. The mobile lockfile was regenerated against this pinned SDK because the previous lockfile required Flutter >=3.38.4 / Dart >=3.11, incompatible with the CI baseline.
+
+- `flutter analyze`: no issues.
+- `flutter test`: 35 passed, 0 failed.
+- Dart format check: 37 files, no changes.
+- API tests repeated: 43 passed, 0 failed.
+- Diff whitespace check: passed.
+
+HTTP tests use controlled responses and storage doubles. They do not prove SMS delivery, backend registration against PostgreSQL, real hardware keystore behavior, signed store builds or working E2EE. Existing simulated push/transport tests remain development tests. The generic simulated notification now excludes sender names as well as message contents.

@@ -86,9 +86,7 @@ class AppStrings {
 
   // People Screen
   String get findPeoplePrompt =>
-      isNepali
-          ? 'गफसफ मा साथीहरू खोज्नुहोस्'
-          : 'Find people you know on गफसफ.';
+      isNepali ? 'गफसफ मा साथीहरू खोज्नुहोस्' : 'Find people you know on गफसफ.';
   String get contactsPermissionSub =>
       isNepali
           ? 'तपाईंका साथीहरू गफसफ मा छन् कि छैनन् भनेर हेर्न सम्पर्क अनुमति दिनुहोस्।'

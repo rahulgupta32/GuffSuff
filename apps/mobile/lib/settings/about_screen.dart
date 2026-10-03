@@ -14,10 +14,10 @@ class AboutScreen extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 36,
                   backgroundColor: AppColors.brandPrimary,
-                  child: const Text(
+                  child: Text(
                     'G',
                     style: TextStyle(
                       fontSize: 32,
@@ -27,7 +27,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s12),
-                Text('गफसफ', style: AppTypography.display),
+                const Text('गफसफ', style: AppTypography.display),
                 const SizedBox(height: AppSpacing.s4),
                 Text(
                   'Version 1.0.0 (Production Release Candidate)',

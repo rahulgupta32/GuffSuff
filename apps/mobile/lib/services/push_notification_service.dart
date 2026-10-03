@@ -81,7 +81,7 @@ class FcmPushNotificationService implements PushNotificationService {
     // PRIVACY POLICY ENFORCEMENT: Push notifications contain generic notice only.
     final payload = PushNotificationPayload(
       title: 'गफसफ',
-      body: 'New message from $senderDisplayName',
+      body: 'New message received',
       conversationId: conversationId,
       rawData: {'conversationId': conversationId, 'hasEncryptedMessage': true},
     );

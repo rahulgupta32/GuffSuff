@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated plugin metadata contains local SDK/cache paths.
+.flutter-plugins

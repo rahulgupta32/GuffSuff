@@ -42,11 +42,11 @@ void main() {
         );
 
         final payload = await eventFuture;
-        expect(payload.title, equals('GuffSuff'));
-        expect(payload.body, equals('New message from Aanav Sharma'));
+        expect(payload.title, equals('गफसफ'));
+        expect(payload.body, equals('New message received'));
         expect(
           payload.body,
-          isNot(contains('Hello')),
+          isNot(contains('Aanav Sharma')),
         ); // Zero message content leakage
         expect(payload.conversationId, equals('conv_nepal_1'));
         expect(payload.rawData['hasEncryptedMessage'], isTrue);
