@@ -1,3 +1,4 @@
+import { identitySecret } from "./identity-secret.js";
 import * as argon2 from "argon2";
 import { Pool } from "pg";
 import { generateUUIDv7 } from "@guffsuff/id-generation";
@@ -6,8 +7,10 @@ export class RegistrationLockService {
   private readonly pinPepper: string;
 
   constructor(private readonly pool: Pool) {
-    this.pinPepper =
-      process.env.REGISTRATION_LOCK_PEPPER || "default_guffsuff_pin_pepper_v1_32chars!!";
+    this.pinPepper = identitySecret(
+      "REGISTRATION_LOCK_PEPPER",
+      "default_guffsuff_pin_pepper_v1_32chars!!"
+    );
   }
 
   private getPepperedPin(pin: string): string {

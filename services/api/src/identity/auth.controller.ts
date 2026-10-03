@@ -1,3 +1,4 @@
+import { LoginService } from "./login.service.js";
 import {
   Controller,
   Post,
@@ -14,6 +15,7 @@ import { SessionService } from "./session.service.js";
 import { PhoneNumberService } from "./phone-number.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
 import {
+  LoginAccountSchema,
   OtpRequestSchema,
   OtpVerifySchema,
   RegisterAccountSchema,
@@ -26,7 +28,8 @@ export class AuthController {
     @Inject("OTP_SERVICE") private readonly otpService: OtpService,
     @Inject("ACCOUNT_SERVICE") private readonly accountService: AccountService,
     @Inject("SESSION_SERVICE") private readonly sessionService: SessionService,
-    @Inject("PHONE_NUMBER_SERVICE") private readonly phoneService: PhoneNumberService
+    @Inject("PHONE_NUMBER_SERVICE") private readonly phoneService: PhoneNumberService,
+    @Inject("LOGIN_SERVICE") private readonly loginService: LoginService
   ) {}
 
   @Post("otp/request")
@@ -35,7 +38,12 @@ export class AuthController {
     const validated = OtpRequestSchema.parse(body);
     const normalized = this.phoneService.normalizeToE164(validated.phoneNumber);
     const blindIndex = this.phoneService.generateBlindIndex(normalized);
-    const result = await this.otpService.requestOtpChallenge(blindIndex);
+    const result = await this.otpService.requestOtpChallenge(
+      blindIndex,
+      undefined,
+      validated.installationId,
+      normalized
+    );
     return {
       challengeId: result.challengeId,
       resendAvailableAt: result.resendAvailableAt,
@@ -77,6 +85,12 @@ export class AuthController {
       privacyAccepted: validated.privacyAccepted
     });
     return result;
+  }
+
+  @Post("login")
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() body: any) {
+    return this.loginService.login(LoginAccountSchema.parse(body));
   }
 
   @Post("refresh")

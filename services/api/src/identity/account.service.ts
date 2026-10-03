@@ -158,10 +158,9 @@ export class AccountService {
         `UPDATE otp_challenges SET consumed_at = CURRENT_TIMESTAMP WHERE id = $1`,
         [params.challengeId]
       );
+      // Session issuance shares the account/challenge transaction.
+      const tokenPair = await this.sessionService.createSession(userId, deviceId, client);
       await client.query("COMMIT");
-
-      // 10. Issue Tokens
-      const tokenPair = await this.sessionService.createSession(userId, deviceId);
 
       return {
         userId,

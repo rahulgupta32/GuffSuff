@@ -71,6 +71,14 @@ export const OtpRequestSchema = z.object({
   osVersion: z.string().min(1).max(32)
 });
 export type OtpRequest = z.infer<typeof OtpRequestSchema>;
+export const LoginAccountSchema = OtpRequestSchema.extend({
+  challengeId: z.string().uuid(),
+  registrationLockPin: z
+    .string()
+    .regex(/^\d{6,12}$/)
+    .optional()
+});
+export type LoginAccount = z.infer<typeof LoginAccountSchema>;
 
 export const OtpVerifySchema = z.object({
   challengeId: z.string().uuid(),

@@ -197,4 +197,56 @@ void main() {
     await session.restore();
     expect(session.isAuthenticated, isFalse);
   });
+  test(
+    'existing-account login uses verified challenge and persists tokens',
+    () async {
+      final storage = MemoryStorage();
+      final session = AuthSession(
+        storage: storage,
+        client: MockClient((request) async {
+          expect(request.url.path, '/api/v1/auth/login');
+          final body = jsonDecode(request.body);
+          expect(body['registrationLockPin'], '654321');
+          expect(body['challengeId'], id);
+          return http.Response(
+            jsonEncode({...tokens(), 'registrationRequired': false}),
+            200,
+          );
+        }),
+      );
+      expect(
+        await session.login(challenge(verified: true), pin: '६५४३२१'),
+        isTrue,
+      );
+      expect(session.isAuthenticated, isTrue);
+      expect(storage.saved?['userId'], 'user');
+    },
+  );
+  test('new-user login result does not create a session', () async {
+    final storage = MemoryStorage();
+    final session = AuthSession(
+      storage: storage,
+      client: MockClient(
+        (_) async => http.Response('{"registrationRequired":true}', 200),
+      ),
+    );
+    expect(await session.login(challenge(verified: true)), isFalse);
+    expect(session.isAuthenticated, isFalse);
+    expect(storage.saved, isNull);
+  });
+  test('PIN rejection never persists credentials', () async {
+    final storage = MemoryStorage();
+    final session = AuthSession(
+      storage: storage,
+      client: MockClient(
+        (_) async => http.Response('{"errorCode":"PIN_INVALID"}', 401),
+      ),
+    );
+    await expectLater(
+      session.login(challenge(verified: true), pin: '123456'),
+      throwsA(isA<AuthFailure>()),
+    );
+    expect(storage.saved, isNull);
+    expect(session.isAuthenticated, isFalse);
+  });
 }

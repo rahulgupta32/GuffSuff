@@ -67,3 +67,27 @@ test("reuse commits family and session revocation before rejecting the token", a
   assert.ok(calls.includes("COMMIT"));
   assert.ok(!calls.some((s) => s.includes("INSERT INTO refresh_tokens")));
 });
+
+test("session creation participates in the caller transaction without committing or releasing it", async () => {
+  const calls: string[] = [];
+  let released = false;
+  const client = {
+    query: async (sql: string) => {
+      calls.push(sql);
+      return { rows: [] };
+    },
+    release: () => {
+      released = true;
+    }
+  };
+  const service = new SessionService({} as Pool);
+  const result = await service.createSession(
+    "user",
+    "device",
+    client as unknown as import("pg").PoolClient
+  );
+  assert.equal(service.verifyAccessToken(result.accessToken).sessionId, result.sessionId);
+  assert.ok(!calls.includes("BEGIN"));
+  assert.ok(!calls.includes("COMMIT"));
+  assert.equal(released, false);
+});

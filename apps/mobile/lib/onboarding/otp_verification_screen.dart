@@ -13,6 +13,7 @@ class OtpVerificationScreen extends StatefulWidget {
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _code = TextEditingController();
+  final _pin = TextEditingController();
   late RegistrationChallenge _challenge;
   Timer? _timer;
   bool _busy = false;
@@ -34,6 +35,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void dispose() {
     _timer?.cancel();
     _code.dispose();
+    _pin.dispose();
     super.dispose();
   }
 
@@ -43,8 +45,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       _error = null;
     });
     try {
-      final verified = await authSession.verifyOtp(_challenge, _code.text);
-      if (mounted) context.go('/profile-setup', extra: verified);
+      if (!_challenge.verified) {
+        _challenge = await authSession.verifyOtp(_challenge, _code.text);
+      }
+      final existingAccount = await authSession.login(
+        _challenge,
+        pin: _pin.text,
+      );
+      if (mounted) {
+        if (existingAccount) {
+          context.go('/chats');
+        } else {
+          context.go('/profile-setup', extra: _challenge);
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(
@@ -106,6 +120,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               autofillHints: const [AutofillHints.oneTimeCode],
               decoration: const InputDecoration(
                 labelText: 'Verification code',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _pin,
+              enabled: !_busy,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              maxLength: 12,
+              decoration: const InputDecoration(
+                labelText: 'Registration PIN (if enabled)',
                 border: OutlineInputBorder(),
               ),
             ),

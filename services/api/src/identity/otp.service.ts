@@ -38,7 +38,8 @@ export class OtpService {
   public async requestOtpChallenge(
     phoneBlindIndex: string,
     _ipAddress?: string,
-    _installationId?: string
+    _installationId?: string,
+    destination?: string
   ): Promise<{ challengeId: string; resendAvailableAt: Date; expiresAt: Date }> {
     // 1. Layered Abuse Controls Check
     const recentChallenges = await this.pool.query(
@@ -80,7 +81,20 @@ export class OtpService {
     );
 
     // 4. Send via Provider Abstraction
-    const deliveryResult = await this.provider.sendOtp(challengeId, phoneBlindIndex, rawOtp);
+    let deliveryResult;
+    try {
+      deliveryResult = await this.provider.sendOtp(
+        challengeId,
+        phoneBlindIndex,
+        rawOtp,
+        destination
+      );
+    } catch (error) {
+      await this.pool.query("UPDATE otp_challenges SET consumed_at = NOW() WHERE id = $1", [
+        challengeId
+      ]);
+      throw error;
+    }
 
     // 5. Record Delivery Attempt
     await this.pool.query(
@@ -92,7 +106,7 @@ export class OtpService {
         challengeId,
         deliveryResult.providerName,
         deliveryResult.providerRequestId || null,
-        deliveryResult.success ? "DELIVERED" : "FAILED",
+        deliveryResult.success ? "ACCEPTED" : "FAILED",
         deliveryResult.costAmount,
         deliveryResult.costCurrency,
         deliveryResult.errorCode || null,
@@ -100,6 +114,12 @@ export class OtpService {
       ]
     );
 
+    if (!deliveryResult.success) {
+      await this.pool.query("UPDATE otp_challenges SET consumed_at = NOW() WHERE id = $1", [
+        challengeId
+      ]);
+      throw new Error("OTP delivery could not be accepted");
+    }
     return { challengeId, resendAvailableAt, expiresAt };
   }
 

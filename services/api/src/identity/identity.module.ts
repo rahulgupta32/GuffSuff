@@ -1,3 +1,4 @@
+import { LoginService } from "./login.service.js";
 import { Module } from "@nestjs/common";
 import { createDatabasePool } from "@guffsuff/database";
 import { PhoneNumberService } from "./phone-number.service.js";
@@ -66,6 +67,11 @@ const registrationLockServiceProvider = {
     phoneServiceProvider,
     otpServiceProvider,
     sessionServiceProvider,
+    {
+      provide: "LOGIN_SERVICE",
+      useFactory: (pool: any, sessions: SessionService) => new LoginService(pool, sessions),
+      inject: ["DATABASE_POOL", "SESSION_SERVICE"]
+    },
     accountServiceProvider,
     deviceServiceProvider,
     registrationLockServiceProvider,

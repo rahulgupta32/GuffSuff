@@ -72,6 +72,10 @@ class AuthSession extends ChangeNotifier {
       throw AuthFailure(
         response.statusCode == 429
             ? 'Too many attempts. Please wait.'
+            : response.statusCode == 401
+            ? 'Verification failed. Check your registration PIN if enabled.'
+            : response.statusCode == 403
+            ? 'This account or device is unavailable.'
             : 'Request failed. Please try again.',
         statusCode: response.statusCode,
       );
@@ -187,6 +191,38 @@ class AuthSession extends ChangeNotifier {
     await storage.saveSession(body);
     _session = body;
     notifyListeners();
+  }
+
+  Future<bool> login(RegistrationChallenge challenge, {String? pin}) async {
+    if (!challenge.verified || !DateTime.now().isBefore(challenge.expiresAt)) {
+      throw AuthFailure('Please verify your phone again.');
+    }
+    final body = await _post('login', {
+      'challengeId': challenge.challengeId,
+      'phoneNumber': challenge.phoneNumber,
+      ...await _metadata(),
+      if (pin != null && pin.trim().isNotEmpty)
+        'registrationLockPin': asciiDigits(pin.trim()),
+    });
+    if (body['registrationRequired'] == true) return false;
+    if (body['registrationRequired'] != false) {
+      throw AuthFailure('The server returned an invalid login response.');
+    }
+    for (final key in [
+      'accessToken',
+      'refreshToken',
+      'sessionId',
+      'deviceId',
+      'userId',
+    ]) {
+      if (body[key] is! String || (body[key] as String).isEmpty) {
+        throw AuthFailure('The server returned an incomplete session.');
+      }
+    }
+    await storage.saveSession(body);
+    _session = body;
+    notifyListeners();
+    return true;
   }
 
   Future<void> restore() async {

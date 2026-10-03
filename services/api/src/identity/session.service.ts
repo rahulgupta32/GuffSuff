@@ -1,7 +1,7 @@
 import { identitySecret } from "./identity-secret.js";
 import * as crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { generateUUIDv7 } from "@guffsuff/id-generation";
 
 export interface TokenPair {
@@ -53,10 +53,14 @@ export class SessionService {
     }) as any;
   }
 
-  public async createSession(userId: string, deviceId: string): Promise<TokenPair> {
-    const client = await this.pool.connect();
+  public async createSession(
+    userId: string,
+    deviceId: string,
+    transactionClient?: PoolClient
+  ): Promise<TokenPair> {
+    const client = transactionClient ?? (await this.pool.connect());
     try {
-      await client.query("BEGIN");
+      if (!transactionClient) await client.query("BEGIN");
 
       const sessionId = generateUUIDv7();
       const familyId = generateUUIDv7();
@@ -93,8 +97,6 @@ export class SessionService {
         [tokenInstanceId, familyId, verifierHash, refreshExpiresAt, now]
       );
 
-      await client.query("COMMIT");
-
       const accessToken = this.generateAccessToken({
         sessionId,
         userId,
@@ -102,6 +104,7 @@ export class SessionService {
         sessionVersion
       });
 
+      if (!transactionClient) await client.query("COMMIT");
       return {
         accessToken,
         refreshToken: rawRefreshToken,
@@ -110,10 +113,10 @@ export class SessionService {
         familyId
       };
     } catch (err) {
-      await client.query("ROLLBACK");
+      if (!transactionClient) await client.query("ROLLBACK");
       throw err;
     } finally {
-      client.release();
+      if (!transactionClient) client.release();
     }
   }
 

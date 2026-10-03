@@ -61,3 +61,15 @@ Flutter 3.29.2 was installed and used in CI mode, which avoids its Azure metadat
 - Diff whitespace check: passed.
 
 HTTP tests use controlled responses and storage doubles. They do not prove SMS delivery, backend registration against PostgreSQL, real hardware keystore behavior, signed store builds or working E2EE. Existing simulated push/transport tests remain development tests. The generic simulated notification now excludes sender names as well as message contents.
+
+## Returning-user login and SMS adapter increment
+
+- `/api/v1/auth/login` distinguishes new registration from returning accounts only after phone verification. It checks challenge binding/expiry/consumption, account status, PIN requirements/lockout, and device revocation.
+- Successful login creates or reuses the installation's device and consumes its challenge in the same transaction as token issuance. Account registration now also issues its session in the account transaction.
+- Mobile OTP verification attempts login before profile setup. PIN errors can be retried without repeating an already completed OTP verification. New users proceed to profile setup; existing users store the server session and enter chats.
+- Registration-lock pepper now rejects unsafe production defaults.
+- Optional Twilio SMS adapter, failure handling and unknown-cost migration 005 are implemented. It remains unconfigured and has made no live requests. See SMS_PROVIDER_SETUP.md.
+
+Forgotten-PIN recovery, delivery receipt processing, billing reconciliation and distributed abuse controls remain incomplete. Earlier references to missing returning-user login/production SMS implementation are superseded by this increment; real SMS operation remains unverified until an approved provider account is configured.
+
+Validation for this increment: 55 API tests and 38 mobile tests passed; API/dependency build, typecheck and lint passed; Flutter analysis reported no issues; Dart formatting and diff whitespace checks passed. SMS tests use a fake HTTP request; login tests use controlled database doubles. PostgreSQL runtime/migrations, SMS carrier delivery and signed real-device builds remain unverified.
