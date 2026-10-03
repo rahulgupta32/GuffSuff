@@ -267,14 +267,41 @@ class AuthSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<dynamic> getJson(String path) async {
+  Future<dynamic> getJson(String path) => _authenticatedJson(path);
+
+  Future<dynamic> postJson(String path, Map<String, dynamic> body) =>
+      _authenticatedJson(path, body: body);
+
+  Future<dynamic> _authenticatedJson(
+    String path, {
+    Map<String, dynamic>? body,
+  }) async {
     if (!isAuthenticated) throw AuthFailure('Please sign in again.');
-    Future<http.Response> request() => client
-        .get(
-          Uri.parse('$baseUrl/api/v1/$path'),
-          headers: {'Authorization': 'Bearer $accessToken'},
-        )
-        .timeout(const Duration(seconds: 20));
+    final sessionId = _session?['sessionId'];
+    void ensureSameSession() {
+      if (!isAuthenticated || _session?['sessionId'] != sessionId) {
+        throw AuthFailure('The session changed. Please try again.');
+      }
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/$path');
+    Future<http.Response> request() {
+      ensureSameSession();
+      final headers = {'Authorization': 'Bearer $accessToken'};
+      if (body == null) {
+        return client
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 20));
+      }
+      return client
+          .post(
+            uri,
+            headers: {...headers, 'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 20));
+    }
+
     var response = await request();
     if (response.statusCode == 401) {
       try {
@@ -289,10 +316,14 @@ class AuthSession extends ChangeNotifier {
       }
       response = await request();
     }
-    if (response.statusCode != 200) {
-      throw AuthFailure('Unable to load data. Please try again.');
+    ensureSameSession();
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuthFailure(
+        'Unable to complete request. Please try again.',
+        statusCode: response.statusCode,
+      );
     }
-    return jsonDecode(response.body);
+    return response.body.isEmpty ? null : jsonDecode(response.body);
   }
 
   Future<void> logout() async {
