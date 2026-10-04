@@ -11,6 +11,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -27,6 +28,10 @@ android {
         versionName = flutter.versionName
     }
 
+    packaging {
+        resources.excludes += setOf("libsignal_jni*.dylib", "signal_jni*.dll", "libsignal_jni_testing.so")
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -38,4 +43,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Exact official artifacts. Identity support is not a complete messaging provider.
+dependencies {
+    implementation("org.signal:libsignal-android:0.104.0")
+    implementation("org.signal:libsignal-client:0.104.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    testImplementation("junit:junit:4.13.2")
 }
