@@ -91,7 +91,12 @@ try {
   // Structural fixtures only; these bytes are not real signed cryptographic material.
   const publicKey = Buffer.concat([Buffer.from([5]), Buffer.alloc(32, 7)]).toString("base64");
   const bundle = {
-    protocolVersion: 1,
+    protocolVersion: 2,
+    kemPrekeyId: 7,
+    kemPrekeyPublicBase64: Buffer.concat([Buffer.from([8]), Buffer.alloc(1568, 7)]).toString(
+      "base64"
+    ),
+    kemPrekeySignatureBase64: Buffer.alloc(64, 9).toString("base64"),
     registrationId: 42,
     identityPublicKeyBase64: publicKey,
     signedPrekeyId: 1,
@@ -104,6 +109,28 @@ try {
     }))
   };
   assert.equal((await prekeys.publish(recipient, recipientDevice, bundle)).availablePrekeys, 3);
+  const legacy = { ...bundle, protocolVersion: 1 };
+  delete legacy.kemPrekeyId;
+  delete legacy.kemPrekeyPublicBase64;
+  delete legacy.kemPrekeySignatureBase64;
+  await prekeys.publish(sender, senderDevice, legacy);
+  await assert.rejects(
+    pool.query("UPDATE device_key_bundles SET kem_prekey = NULL WHERE device_id = $1", [
+      recipientDevice
+    ]),
+    /check constraint/
+  );
+  await assert.rejects(
+    pool.query("UPDATE device_key_bundles SET kem_prekey_id = 7 WHERE device_id = $1", [
+      senderDevice
+    ]),
+    /check constraint/
+  );
+  await assert.rejects(prekeys.publish(recipient, recipientDevice, legacy), /cannot be replaced/);
+  await assert.rejects(
+    prekeys.publish(recipient, recipientDevice, { ...bundle, kemPrekeyId: 8 }),
+    /cannot be replaced/
+  );
   const claimId = randomUUID();
   const claims = await Promise.all(
     Array.from({ length: 8 }, () =>
@@ -111,6 +138,12 @@ try {
     )
   );
   assert.equal(new Set(claims.map((c) => c.oneTimePrekeyId)).size, 1);
+  for (const claim of claims) {
+    assert.equal(claim.protocolVersion, 2);
+    assert.equal(claim.kemPrekeyPublicBase64, bundle.kemPrekeyPublicBase64);
+    assert.equal(claim.kemPrekeySignatureBase64, bundle.kemPrekeySignatureBase64);
+    assert.equal(claim.kemPrekeyId, 7);
+  }
   const distinct = await Promise.all(
     Array.from({ length: 2 }, () =>
       prekeys.claim(sender, senderDevice, conversation, recipientDevice, randomUUID())
@@ -137,7 +170,7 @@ try {
   await pool.query("UPDATE devices SET is_revoked = true WHERE id = $1", [recipientDevice]);
   await assert.rejects(prekeys.publish(recipient, recipientDevice, bundle), /Active device/);
   console.log(
-    "PostgreSQL prekey integration passed: concurrent claim retries, distinct allocation, exhaustion, consumed-key replenishment and deletion/revocation safety."
+    "PostgreSQL prekey integration passed: modern KEM bundles, downgrade/replacement rejection, concurrent claim retries, distinct allocation, exhaustion, consumed-key replenishment and deletion/revocation safety."
   );
   console.log(
     "PostgreSQL integration passed: concurrent conversations, envelope retries, receipts and pending retrieval."

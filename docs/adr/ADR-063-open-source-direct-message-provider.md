@@ -9,7 +9,7 @@
 
 The official README explicitly says use outside Signal is unsupported and its bindings may change incompatibly. Java/Android builds use JDK 21. Current Java client dependencies include modern Kotlin coroutine/serialization libraries. Published Android integration needs both libsignal-android and libsignal-client from Signal's own Maven repository, rather than assuming a current Maven Central artifact exists. The library is AGPLv3; source distribution and notices must be resolved before release. Selecting open source does not automatically complete that packaging work.
 
-The current PreKeyBundle constructor requires a signed Kyber/KEM prekey in addition to the identity, classical signed prekey and optional classical one-time prekey. Our initial migration 007 and API carry only classical material. They are therefore a tested distribution foundation, not a complete v0.104.0 bundle. Do not claim this API can already establish a modern libsignal session, invent missing KEM keys or select an obsolete release merely to bypass the requirement.
+The current PreKeyBundle constructor requires a signed Kyber/KEM prekey in addition to the identity, classical signed prekey and optional classical one-time prekey. The initial migration 007 and API carry only classical material; migration 008 adds signed KEM public fields in bundle version 2. This remains a tested distribution foundation; native key parsing/signature verification and stable numeric device-address mapping are still missing from complete v0.104.0 integration. Do not claim this API can already establish a modern libsignal session, invent missing KEM keys or select an obsolete release merely to bypass the requirement.
 
 ## Required implementation order
 

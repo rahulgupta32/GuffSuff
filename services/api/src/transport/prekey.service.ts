@@ -29,6 +29,16 @@ function publicBytes(value: unknown, length: number) {
   return bytes;
 }
 
+// Transport bounds only: the native provider must parse and authenticate KEM material.
+function kemBytes(value: unknown) {
+  if (typeof value !== "string" || value.length > 5464)
+    throw new BadRequestException("Invalid KEM public key encoding");
+  const bytes = Buffer.from(value, "base64");
+  if (bytes.length < 1 || bytes.length > 4096 || bytes.toString("base64") !== value)
+    throw new BadRequestException("Invalid KEM public key encoding");
+  return bytes;
+}
+
 @Injectable()
 export class PrekeyService {
   private pool = createDatabasePool();
@@ -39,7 +49,7 @@ export class PrekeyService {
     identifier(deviceId);
     if (
       !body ||
-      body.protocolVersion !== 1 ||
+      ![1, 2].includes(body.protocolVersion) ||
       !Number.isInteger(body.registrationId) ||
       body.registrationId < 1 ||
       body.registrationId > 16380
@@ -49,6 +59,21 @@ export class PrekeyService {
     const identity = publicBytes(body.identityPublicKeyBase64, 33);
     const signed = publicBytes(body.signedPrekeyPublicBase64, 33);
     const signature = publicBytes(body.signedPrekeySignatureBase64, 64);
+    let kem: Buffer | null = null;
+    let kemSignature: Buffer | null = null;
+    let kemId: number | null = null;
+    if (body.protocolVersion === 2) {
+      keyId(body.kemPrekeyId);
+      kemId = body.kemPrekeyId;
+      kem = kemBytes(body.kemPrekeyPublicBase64);
+      kemSignature = publicBytes(body.kemPrekeySignatureBase64, 64);
+    } else if (
+      body.kemPrekeyId !== undefined ||
+      body.kemPrekeyPublicBase64 !== undefined ||
+      body.kemPrekeySignatureBase64 !== undefined
+    ) {
+      throw new BadRequestException("KEM material requires bundle version 2");
+    }
     const expires = Date.parse(body.expiresAt);
     if (!Number.isFinite(expires) || expires <= Date.now() || expires > Date.now() + 30 * 86400000)
       throw new BadRequestException("Bundle expiry must be within 30 days");
@@ -80,19 +105,24 @@ export class PrekeyService {
       ).rows[0];
       if (existing) {
         if (
+          existing.protocol_version !== body.protocolVersion ||
           existing.registration_id !== body.registrationId ||
           existing.signed_prekey_id !== body.signedPrekeyId ||
           !existing.identity_key.equals(identity) ||
           !existing.signed_prekey.equals(signed) ||
           !existing.signed_prekey_signature.equals(signature) ||
-          new Date(existing.expires_at).getTime() !== expires
+          new Date(existing.expires_at).getTime() !== expires ||
+          (body.protocolVersion === 2 &&
+            (existing.kem_prekey_id !== kemId ||
+              !existing.kem_prekey?.equals(kem!) ||
+              !existing.kem_prekey_signature?.equals(kemSignature!)))
         )
           throw new ConflictException(
             "Existing bundle cannot be replaced; identity rotation requires a separate verified flow"
           );
       } else {
         await client.query(
-          `INSERT INTO device_key_bundles(device_id, protocol_version, registration_id, identity_key, signed_prekey_id, signed_prekey, signed_prekey_signature, expires_at) VALUES ($1, 1, $2, $3, $4, $5, $6, $7)`,
+          `INSERT INTO device_key_bundles(device_id, protocol_version, registration_id, identity_key, signed_prekey_id, signed_prekey, signed_prekey_signature, expires_at, kem_prekey_id, kem_prekey, kem_prekey_signature) VALUES ($1, $8, $2, $3, $4, $5, $6, $7, $9, $10, $11)`,
           [
             deviceId,
             body.registrationId,
@@ -100,7 +130,11 @@ export class PrekeyService {
             body.signedPrekeyId,
             signed,
             signature,
-            new Date(expires)
+            new Date(expires),
+            body.protocolVersion,
+            kemId,
+            kem,
+            kemSignature
           ]
         );
       }
@@ -211,7 +245,14 @@ export class PrekeyService {
         signedPrekeySignatureBase64: bundle.signed_prekey_signature.toString("base64"),
         expiresAt: new Date(bundle.expires_at).toISOString(),
         oneTimePrekeyId: key.key_id,
-        oneTimePrekeyPublicBase64: key.public_key.toString("base64")
+        oneTimePrekeyPublicBase64: key.public_key.toString("base64"),
+        ...(bundle.protocol_version === 2
+          ? {
+              kemPrekeyId: bundle.kem_prekey_id,
+              kemPrekeyPublicBase64: bundle.kem_prekey.toString("base64"),
+              kemPrekeySignatureBase64: bundle.kem_prekey_signature.toString("base64")
+            }
+          : {})
       };
     } catch (error) {
       await client.query("ROLLBACK");

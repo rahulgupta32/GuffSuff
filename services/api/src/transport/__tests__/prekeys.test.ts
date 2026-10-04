@@ -45,6 +45,12 @@ test("invalid public material and batch IDs fail before database writes", async 
     { identityPublicKeyBase64: "plaintext" },
     { signedPrekeySignatureBase64: publicKey },
     { registrationId: 0 },
+    {
+      oneTimePrekeys: [
+        { keyId: 1, publicKeyBase64: publicKey },
+        { keyId: 2, publicKeyBase64: publicKey }
+      ]
+    },
     { expiresAt: new Date(0).toISOString() },
     {
       oneTimePrekeys: [
@@ -199,4 +205,95 @@ test("exhausted or expired bundles never manufacture a successful claim", async 
     assert.equal(f.calls.at(-1), "ROLLBACK");
     assert.equal(f.released(), true);
   }
+});
+
+test("KEM material cannot be published under the legacy bundle version", async () => {
+  const f = fixture();
+  await assert.rejects(f.service.publish(user, device, { ...body(), kemPrekeyId: 7 }), /version 2/);
+  assert.equal(f.calls.length, 0);
+});
+
+test("modern bundles reject missing, noncanonical, oversized and unsigned KEM material", async () => {
+  const modern = {
+    ...body(),
+    protocolVersion: 2,
+    kemPrekeyId: 7,
+    kemPrekeyPublicBase64: Buffer.alloc(1569, 8).toString("base64"),
+    kemPrekeySignatureBase64: Buffer.alloc(64, 9).toString("base64")
+  };
+  for (const bad of [
+    { kemPrekeyId: -1 },
+    { kemPrekeyPublicBase64: "" },
+    { kemPrekeyPublicBase64: "not base64" },
+    { kemPrekeyPublicBase64: Buffer.alloc(4097).toString("base64") },
+    { kemPrekeySignatureBase64: publicKey }
+  ]) {
+    const f = fixture();
+    await assert.rejects(f.service.publish(user, device, { ...modern, ...bad }));
+    assert.equal(f.calls.length, 0);
+  }
+});
+
+test("publication persists modern KEM bytes alongside the immutable public bundle", async () => {
+  const kem = Buffer.alloc(1569, 8),
+    signature = Buffer.alloc(64, 9);
+  let inserted: unknown[] = [];
+  const f = fixture((sql, values) => {
+    if (sql.includes("SELECT d.id")) return [{ id: device }];
+    if (sql.includes("INSERT INTO device_key_bundles")) inserted = values;
+    if (sql.includes("COUNT(*)")) return [{ count: 1 }];
+    return [];
+  });
+  await f.service.publish(user, device, {
+    ...body(),
+    protocolVersion: 2,
+    kemPrekeyId: 7,
+    kemPrekeyPublicBase64: kem.toString("base64"),
+    kemPrekeySignatureBase64: signature.toString("base64")
+  });
+  assert.equal(inserted[7], 2);
+  assert.equal(inserted[8], 7);
+  assert.deepEqual(inserted[9], kem);
+  assert.deepEqual(inserted[10], signature);
+  assert.equal(f.calls.at(-1), "COMMIT");
+});
+
+test("modern claim retries return exact stored KEM public material", async () => {
+  const kem = Buffer.alloc(1569, 8),
+    signature = Buffer.alloc(64, 9);
+  const f = fixture((sql) => {
+    if (sql.includes("SELECT d.id"))
+      return [
+        { id: device, user_id: user },
+        { id: target, user_id: randomUUID() }
+      ];
+    if (sql.includes("conversation_members")) return [{ user_id: user }, { user_id: "recipient" }];
+    if (sql.includes("SELECT *"))
+      return [
+        {
+          protocol_version: 2,
+          registration_id: 42,
+          identity_key: Buffer.from(publicKey, "base64"),
+          signed_prekey_id: 1,
+          signed_prekey: Buffer.from(publicKey, "base64"),
+          signed_prekey_signature: signature,
+          expires_at: new Date(Date.now() + 1000),
+          kem_prekey_id: 7,
+          kem_prekey: kem,
+          kem_prekey_signature: signature
+        }
+      ];
+    if (sql.includes("SELECT key_id"))
+      return [{ key_id: 5, public_key: Buffer.from(publicKey, "base64") }];
+    return [];
+  });
+  const result = await f.service.claim(user, device, conversation, target, randomUUID());
+  assert.equal(result.protocolVersion, 2);
+  assert.equal(result.kemPrekeyId, 7);
+  assert.equal(result.kemPrekeyPublicBase64, kem.toString("base64"));
+  assert.equal(result.kemPrekeySignatureBase64, signature.toString("base64"));
+  assert.equal(
+    f.calls.some((s) => s.includes("UPDATE device_one_time_prekeys")),
+    false
+  );
 });
