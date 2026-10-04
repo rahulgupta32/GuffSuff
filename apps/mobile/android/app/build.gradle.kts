@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.guffsuff.mobile"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -52,6 +52,10 @@ dependencies {
     implementation("org.signal:libsignal-client:0.104.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     testImplementation("junit:junit:4.13.2")
+    // Flutter's integration_test plugin contributes older test libraries to the
+    // debug app. AGP requires its instrumentation APK to resolve the same versions.
+    debugImplementation("junit:junit:4.13.2")
+    debugImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
