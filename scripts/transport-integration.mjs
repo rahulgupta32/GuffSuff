@@ -7,9 +7,12 @@ import { MessageEnvelopeService } from "../services/api/dist/transport/message-e
 if (process.env.GUFFSUFF_INTEGRATION_DATABASE !== "true" || !process.env.DATABASE_URL) {
   throw new Error("Run only against an explicitly selected isolated integration database.");
 }
+import { PrekeyService } from "../services/api/dist/transport/prekey.service.js";
+
 const pool = createDatabasePool();
 const conversations = new ConversationService();
 const envelopes = new MessageEnvelopeService();
+const prekeys = new PrekeyService();
 const sender = randomUUID(),
   recipient = randomUUID();
 const senderDevice = randomUUID(),
@@ -85,6 +88,57 @@ try {
     (await envelopes.getPendingEnvelopes(recipient, recipientDevice, conversation)).length,
     0
   );
+  // Structural fixtures only; these bytes are not real signed cryptographic material.
+  const publicKey = Buffer.concat([Buffer.from([5]), Buffer.alloc(32, 7)]).toString("base64");
+  const bundle = {
+    protocolVersion: 1,
+    registrationId: 42,
+    identityPublicKeyBase64: publicKey,
+    signedPrekeyId: 1,
+    signedPrekeyPublicBase64: publicKey,
+    signedPrekeySignatureBase64: Buffer.alloc(64, 9).toString("base64"),
+    expiresAt: new Date(Date.now() + 3600000).toISOString(),
+    oneTimePrekeys: [1, 2, 3].map((keyId) => ({
+      keyId,
+      publicKeyBase64: Buffer.concat([Buffer.from([5]), Buffer.alloc(32, keyId)]).toString("base64")
+    }))
+  };
+  assert.equal((await prekeys.publish(recipient, recipientDevice, bundle)).availablePrekeys, 3);
+  const claimId = randomUUID();
+  const claims = await Promise.all(
+    Array.from({ length: 8 }, () =>
+      prekeys.claim(sender, senderDevice, conversation, recipientDevice, claimId)
+    )
+  );
+  assert.equal(new Set(claims.map((c) => c.oneTimePrekeyId)).size, 1);
+  const distinct = await Promise.all(
+    Array.from({ length: 2 }, () =>
+      prekeys.claim(sender, senderDevice, conversation, recipientDevice, randomUUID())
+    )
+  );
+  assert.equal(new Set([...claims, ...distinct].map((c) => c.oneTimePrekeyId)).size, 3);
+  await assert.rejects(
+    prekeys.claim(sender, senderDevice, conversation, recipientDevice, randomUUID()),
+    /exhausted/
+  );
+  assert.equal((await prekeys.publish(recipient, recipientDevice, bundle)).availablePrekeys, 0);
+  // Consumed keys must remain consumed when a requesting device is deleted.
+  await pool.query("DELETE FROM devices WHERE id = $1", [senderDevice]);
+  assert.equal((await prekeys.publish(recipient, recipientDevice, bundle)).availablePrekeys, 0);
+  assert.equal(
+    (
+      await pool.query(
+        "SELECT COUNT(*)::int AS count FROM device_one_time_prekeys WHERE device_id = $1 AND claim_id IS NOT NULL",
+        [recipientDevice]
+      )
+    ).rows[0].count,
+    3
+  );
+  await pool.query("UPDATE devices SET is_revoked = true WHERE id = $1", [recipientDevice]);
+  await assert.rejects(prekeys.publish(recipient, recipientDevice, bundle), /Active device/);
+  console.log(
+    "PostgreSQL prekey integration passed: concurrent claim retries, distinct allocation, exhaustion, consumed-key replenishment and deletion/revocation safety."
+  );
   console.log(
     "PostgreSQL integration passed: concurrent conversations, envelope retries, receipts and pending retrieval."
   );
@@ -93,6 +147,11 @@ try {
   try {
     await pool.query("DELETE FROM users WHERE id = ANY($1::uuid[])", [[sender, recipient]]);
   } finally {
-    await Promise.all([pool.end(), conversations.pool.end(), envelopes.pool.end()]);
+    await Promise.all([
+      pool.end(),
+      conversations.pool.end(),
+      envelopes.pool.end(),
+      prekeys.pool.end()
+    ]);
   }
 }
