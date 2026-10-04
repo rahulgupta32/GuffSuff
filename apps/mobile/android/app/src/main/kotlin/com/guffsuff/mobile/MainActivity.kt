@@ -15,15 +15,17 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         val store = DeviceIdentityStore(applicationContext)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "guffsuff/native_identity").setMethodCallHandler { call, result ->
-            if (call.method != "initializeIdentity") {
+            if (call.method != "initializeIdentity" && call.method != "initializePreKeys") {
                 result.notImplemented()
             } else {
-                val accountId = call.argument<String>("accountId")
-                val deviceId = call.argument<String>("deviceId")
+                val arguments = call.arguments as? Map<*, *>
+                val accountId = arguments?.get("accountId") as? String
+                val deviceId = arguments?.get("deviceId") as? String
                 if (accountId == null || deviceId == null) result.error("INVALID_SCOPE", "Account/device scope required", null)
                 else identityExecutor.execute {
                     try {
-                        val publicResult = store.initialize(accountId, deviceId)
+                        val publicResult = if (call.method == "initializePreKeys") store.initializePreKeys(accountId, deviceId)
+                            else store.initialize(accountId, deviceId)
                         Handler(Looper.getMainLooper()).post { result.success(publicResult) }
                     } catch (_: Throwable) {
                         // Do not expose keystore, native private record or filesystem diagnostics.

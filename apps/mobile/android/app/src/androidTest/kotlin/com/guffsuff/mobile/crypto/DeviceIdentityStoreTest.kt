@@ -10,10 +10,20 @@ import java.util.UUID
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.signal.libsignal.protocol.SessionBuilder
+import org.signal.libsignal.protocol.SessionCipher
+import org.signal.libsignal.protocol.message.PreKeySignalMessage
+import org.signal.libsignal.protocol.message.SignalMessage
+import org.signal.libsignal.protocol.state.PreKeyBundle
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.state.KyberPreKeyRecord
 
 /** Actual AndroidKeyStore/filesystem tests. Every scope is an isolated generated fixture. */
 @RunWith(AndroidJUnit4::class)
@@ -124,5 +134,99 @@ class DeviceIdentityStoreTest {
         assertThrows(IllegalArgumentException::class.java) {
             DeviceIdentityStore(context).initialize("../invalid", UUID.randomUUID().toString())
         }
+    }
+
+    @Test fun signedPublicBundleRestoresExactlyWithoutReplacingIdentity() {
+        val scope = scope()
+        val originalIdentity = initialize(scope)
+        val original = DeviceIdentityStore(context).initializePreKeys(scope.first, scope.second)
+        val restored = DeviceIdentityStore(context).initializePreKeys(scope.first, scope.second)
+        assertEquals(original, restored)
+        assertEquals(originalIdentity["identityPublicKeyBase64"], restored["identityPublicKeyBase64"])
+        assertEquals(false, restored["supportsDirectMessaging"])
+        val bundle = restored["bundle"] as Map<*, *>
+        assertEquals(2, bundle["protocolVersion"])
+        assertEquals(100, (bundle["oneTimePrekeys"] as List<*>).size)
+        assertEquals(setOf("protocolVersion", "registrationId", "identityPublicKeyBase64", "signedPrekeyId",
+            "signedPrekeyPublicBase64", "signedPrekeySignatureBase64", "kemPrekeyId", "kemPrekeyPublicBase64",
+            "kemPrekeySignatureBase64", "expiresAt", "oneTimePrekeys"), bundle.keys)
+    }
+
+    @Test fun failedStagedMutationLeavesEntireEncryptedStateUnchanged() {
+        val scope = scope()
+        val store = DeviceIdentityStore(context)
+        val original = store.initializePreKeys(scope.first, scope.second)
+        val before = record(scope).readBytes()
+        assertThrows(IllegalStateException::class.java) {
+            store.withState(scope.first, scope.second) { state ->
+                state.preKeys.remove(1)
+                error("Injected operation failure")
+            }
+        }
+        assertArrayEquals(before, record(scope).readBytes())
+        assertEquals(original, store.initializePreKeys(scope.first, scope.second))
+    }
+
+    @Test fun encryptedLegacyRecordMigratesWithoutRegeneratingIdentity() {
+        val scope = scope()
+        val store = DeviceIdentityStore(context)
+        val original = initialize(scope)
+        val legacy = store.withState(scope.first, scope.second) { it.identity.encode() }
+        try {
+            val key = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.getKey(alias(scope), null) as SecretKey
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.ENCRYPT_MODE, key)
+            cipher.updateAAD("guffsuff/libsignal/identity/v1/${scope.first}/${scope.second}".toByteArray(Charsets.UTF_8))
+            record(scope).writeBytes(byteArrayOf(1) + cipher.iv + cipher.doFinal(legacy))
+            val upgraded = DeviceIdentityStore(context).initializePreKeys(scope.first, scope.second)
+            assertEquals(original["identityPublicKeyBase64"], upgraded["identityPublicKeyBase64"])
+            assertEquals(original["registrationId"], upgraded["registrationId"])
+            assertEquals(upgraded, DeviceIdentityStore(context).initializePreKeys(scope.first, scope.second))
+        } finally { legacy.fill(0) }
+    }
+
+    @Test fun realEncryptedExchangeAndReplayRejectionSurviveNewStoreInstances() {
+        val alice = scope(); val bob = scope()
+        fun <T> transaction(scope: Pair<String, String>, operation: (DeviceKeyState) -> T): T =
+            DeviceIdentityStore(context).withState(scope.first, scope.second, operation)
+        DeviceIdentityStore(context).initializePreKeys(alice.first, alice.second)
+        DeviceIdentityStore(context).initializePreKeys(bob.first, bob.second)
+        val aliceAddress = DeviceProtocolStore.deviceAddress(alice.second)
+        val bobAddress = DeviceProtocolStore.deviceAddress(bob.second)
+        val bundle = transaction(bob) { state ->
+            val signed = SignedPreKeyRecord(state.signedPreKey!!); val kem = KyberPreKeyRecord(state.kemPreKey!!)
+            val prekey = PreKeyRecord(state.preKeys.getValue(1))
+            PreKeyBundle(state.identity.registrationId, 1, prekey.id, prekey.keyPair.publicKey,
+                signed.id, signed.keyPair.publicKey, signed.signature, state.identity.pair.publicKey,
+                kem.id, kem.keyPair.publicKey, kem.signature)
+        }
+        transaction(alice) { SessionBuilder(DeviceProtocolStore(it), bobAddress, aliceAddress).process(bundle) }
+        val message = "गफसफ Android protected session".toByteArray(Charsets.UTF_8)
+        val encrypted = transaction(alice) { SessionCipher(DeviceProtocolStore(it), aliceAddress, bobAddress).encrypt(message).serialize() }
+        assertArrayEquals(message, transaction(bob) {
+            SessionCipher(DeviceProtocolStore(it), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted))
+        })
+        val beforeReplay = record(bob).readBytes()
+        assertThrows(Exception::class.java) {
+            transaction(bob) { SessionCipher(DeviceProtocolStore(it), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted)) }
+        }
+        assertArrayEquals(beforeReplay, record(bob).readBytes())
+        transaction(bob) {
+            assertFalse(DeviceProtocolStore(it).containsPreKey(1))
+            assertEquals(1, it.usedKemBaseKeys.size)
+        }
+        val reply = "restored reply".toByteArray(Charsets.UTF_8)
+        val encryptedReply = transaction(bob) { SessionCipher(DeviceProtocolStore(it), bobAddress, aliceAddress).encrypt(reply).serialize() }
+        assertArrayEquals(reply, transaction(alice) {
+            SessionCipher(DeviceProtocolStore(it), aliceAddress, bobAddress).decrypt(SignalMessage(encryptedReply))
+        })
+    }
+
+    @Test fun expiredBundleRequiresRotationWithoutExtendingOrReplacingKeys() {
+        val scope = scope(); val store = DeviceIdentityStore(context)
+        store.withState(scope.first, scope.second) { it.initializePreKeys(System.currentTimeMillis() - DeviceKeyState.BUNDLE_LIFETIME - 1000) }
+        val before = record(scope).readBytes()
+        assertThrows(IllegalStateException::class.java) { store.initializePreKeys(scope.first, scope.second) }
+        assertArrayEquals(before, record(scope).readBytes())
     }
 }

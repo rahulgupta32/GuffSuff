@@ -21,6 +21,14 @@ The current PreKeyBundle constructor requires a signed Kyber/KEM prekey in addit
 
 The current composer remains disabled. The Android identity foundation now creates private keys only on the device and returns public identity metadata through its channel. Exact native dependencies are declared, with JNI and AndroidKeyStore checks in CI. This is not a complete messaging provider. No SMS, tester messages or release deployment have occurred.
 
+## Android protected key/session increment
+
+The Android state format now includes signed classical/KEM keys, 100 initial one-time keys, serialized sessions, peer identity pins and KEM base-key replay records. Legacy private identity records migrate without replacing their identity or registration ID. SDK callbacks mutate a staged state; the protected transaction commits the complete state only after the callback succeeds. New tests exercise real session creation, encrypted request/reply and restored-state replay rejection; fresh CI is required before claiming these results.
+
+Each server device UUID becomes a separate libsignal address name with numeric device slot 1. This avoids assigning unrelated server UUIDs to an account-wide numeric slot. The future client must still bind that device to its authenticated account/conversation through discovery and prekey claims before building a session. This local mapping does not authenticate the server response.
+
+This is a bounded, single-process foundation with a 1 MiB encoded-state limit, 128 peer/session entries, 100 initial one-time keys and 1000 KEM base-key replay entries. The fixed initial signed bundle expires after 28 days. Rotation/replenishment, explicit peer verification/key-change UI, arbitrary snapshot rollback protection, scalable state/history retention and the iOS adapter remain incomplete. Encryption/session operations are not exposed through the Flutter channel. The composer cannot be enabled until outgoing ciphertext/outbox and incoming plaintext/history commit atomically with session changes, and the full authenticated send/receive flow is verified.
+
 ## Sources
 
 - https://github.com/signalapp/libsignal/releases/tag/v0.104.0

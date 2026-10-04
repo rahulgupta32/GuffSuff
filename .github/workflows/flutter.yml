@@ -37,7 +37,7 @@ jobs:
           cd apps/mobile
           flutter build apk --target lib/main.dart --no-pub --debug
 
-      - name: Verify official libsignal native identity serialization
+      - name: Verify official libsignal native keys and sessions
         run: |
           cd apps/mobile/android
           ./gradlew :app:testDebugUnitTest --no-daemon
@@ -48,7 +48,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Verify identity persistence with AndroidKeyStore
+      - name: Verify keys and sessions with AndroidKeyStore
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 29
