@@ -6,12 +6,29 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/app_config.dart';
 import 'services/auth_session.dart';
+import 'services/envelope_api.dart';
+import 'services/message_journal.dart';
+import 'services/message_sync.dart';
+import 'services/message_sync_lifecycle.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.validate();
   await authSession.restore();
-  runApp(const ProviderScope(child: GuffSuffApp()));
+  final sync = MessageSync(
+    api: EnvelopeApi(authSession),
+    journalFactory:
+        (userId, deviceId) => MessageJournal(
+          storage: authSession.storage,
+          userId: userId,
+          deviceId: deviceId,
+        ),
+  );
+  runApp(
+    ProviderScope(
+      child: MessageSyncLifecycle(sync: sync, child: const GuffSuffApp()),
+    ),
+  );
 }
 
 class GuffSuffApp extends StatelessWidget {

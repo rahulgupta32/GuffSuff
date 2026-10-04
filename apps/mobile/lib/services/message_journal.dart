@@ -128,7 +128,7 @@ class MessageJournal {
 
   /// Persist first, acknowledge second. Duplicate downloads still acknowledge
   /// so a lost receipt can recover without inserting duplicate local entries.
-  Future<void> receive(EnvelopeApi api, String conversationId) =>
+  Future<int> receive(EnvelopeApi api, String conversationId) =>
       _serialized(() async {
         _checkOwner(api);
         final envelopes = await api.pending(conversationId);
@@ -181,6 +181,7 @@ class MessageJournal {
           _checkOwner(api);
           await api.delivered(id);
         }
+        return envelopes.length;
       });
 
   Future<List<Map<String, dynamic>>> inbox() => _serialized(() async {
