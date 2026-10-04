@@ -84,6 +84,22 @@ class DirectMessageCipherTest {
         assertThrows(Exception::class.java) { cipher.send(id(), listOf(route), "\uD800", emptyMap(), now) }
     }
 
+    @Test fun signedOnlyFallbackAndOversizedFanoutAreRejected() {
+        val alice = state(); val bob = state(); val route = route(id())
+        val valid = bundle(bob)
+        val withoutOneTimeKey = PreKeyBundle(valid.registrationId, 1, -1, null, valid.signedPreKeyId,
+            valid.signedPreKey, valid.signedPreKeySignature, valid.identityKey, valid.kyberPreKeyId, valid.kyberPreKey, valid.kyberPreKeySignature)
+        assertThrows(IllegalArgumentException::class.java) {
+            DirectMessageCipher(alice, aliceUser, aliceDevice).send(id(), listOf(route), "no fallback", mapOf(route.recipientDeviceId to withoutOneTimeKey), now)
+        }
+        assertTrue(alice.sessions.isEmpty() && alice.outbox.isEmpty())
+        val routes = (1..9).map { route.copy(recipientDeviceId = id()) }
+        val bundles = routes.associate { it.recipientDeviceId to bundle(state()) }
+        assertThrows(IllegalArgumentException::class.java) {
+            DirectMessageCipher(state(), aliceUser, aliceDevice).send(id(), routes, "a".repeat(8192), bundles, now)
+        }
+    }
+
     @Test fun replyUsesRestoredSessionAndChangedPeerIdentityCannotReplacePin() {
         val alice = state(); val bob = state(); val route = route(id())
         val outgoing = DirectMessageCipher(alice, aliceUser, aliceDevice).send(id(), listOf(route), "first", mapOf(route.recipientDeviceId to bundle(bob)), now).getValue(route.recipientDeviceId)

@@ -83,7 +83,9 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
                         val remote = DeviceProtocolStore.deviceAddress(route.recipientDeviceId)
                         val claimed = claimedBundles[route.recipientDeviceId]
                         if (claimed != null) {
-                            require(claimed.deviceId == 1)
+                            require(claimed.deviceId == 1 && claimed.preKeyId >= 0 && claimed.preKey != null) {
+                                "A claimed one-time prekey is required; signed-only fallback is disabled"
+                            }
                             check(store.isTrustedIdentity(remote, claimed.identityKey, IdentityKeyStore.Direction.SENDING)) {
                                 "Peer identity change requires verification"
                             }
