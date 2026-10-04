@@ -202,10 +202,53 @@ class DeviceIdentityStoreTest {
         }
         transaction(alice) { SessionBuilder(DeviceProtocolStore(it), bobAddress, aliceAddress).process(bundle) }
         val message = "गफसफ Android protected session".toByteArray(Charsets.UTF_8)
-        val encrypted = transaction(alice) { SessionCipher(DeviceProtocolStore(it), aliceAddress, bobAddress).encrypt(message).serialize() }
-        assertArrayEquals(message, transaction(bob) {
-            SessionCipher(DeviceProtocolStore(it), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted))
+        val outgoingId = UUID.randomUUID().toString(); val incomingId = UUID.randomUUID().toString()
+        val intent = "fixture-routing/alice/bob/first".toByteArray() + message
+        val beforeEncryptFailure = record(alice).readBytes()
+        assertThrows(IllegalStateException::class.java) {
+            transaction(alice) { state ->
+                NativeMessageJournal(state).outgoing(outgoingId, intent) {
+                    SessionCipher(DeviceProtocolStore(state), aliceAddress, bobAddress).encrypt(message)
+                    error("Injected outbox failure")
+                }
+            }
+        }
+        assertArrayEquals(beforeEncryptFailure, record(alice).readBytes())
+        val encrypted = transaction(alice) { state ->
+            NativeMessageJournal(state).outgoing(outgoingId, intent) {
+                SessionCipher(DeviceProtocolStore(state), aliceAddress, bobAddress).encrypt(message).serialize() to message
+            }.ciphertext()
+        }
+        // Fresh encrypted storage load: retry must leave every session byte unchanged.
+        val beforeRetry = transaction(alice) { it.sessions.mapValues { entry -> entry.value.copyOf() } }
+        assertArrayEquals(encrypted, transaction(alice) { state ->
+            NativeMessageJournal(state).outgoing(outgoingId, intent) { error("Retry advanced ratchet") }.ciphertext()
         })
+        transaction(alice) { state -> for ((key, bytes) in beforeRetry) assertArrayEquals(bytes, state.sessions.getValue(key)) }
+        // Decryption mutates prekeys/ratchet; failure before persistence must discard all of it.
+        val beforeFailure = record(bob).readBytes()
+        assertThrows(IllegalStateException::class.java) {
+            transaction(bob) { state ->
+                NativeMessageJournal(state).incoming(incomingId, encrypted) {
+                    SessionCipher(DeviceProtocolStore(state), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted))
+                    error("Injected history failure")
+                }
+            }
+        }
+        assertArrayEquals(beforeFailure, record(bob).readBytes())
+        assertArrayEquals(message, transaction(bob) { state ->
+            NativeMessageJournal(state).incoming(incomingId, encrypted) {
+                SessionCipher(DeviceProtocolStore(state), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted))
+            }
+        })
+        assertArrayEquals(message, transaction(bob) { state ->
+            NativeMessageJournal(state).incoming(incomingId, encrypted) { error("Duplicate advanced ratchet") }
+        })
+        transaction(alice) { NativeMessageJournal(it).markAccepted(outgoingId, intent) }
+        transaction(alice) { state ->
+            assertTrue(NativeMessageJournal(state).pending().isEmpty())
+            assertArrayEquals(encrypted, NativeMessageJournal(state).outgoing(outgoingId, intent) { error("Accepted retry") }.ciphertext())
+        }
         val beforeReplay = record(bob).readBytes()
         assertThrows(Exception::class.java) {
             transaction(bob) { SessionCipher(DeviceProtocolStore(it), bobAddress, aliceAddress).decrypt(PreKeySignalMessage(encrypted)) }
@@ -220,6 +263,27 @@ class DeviceIdentityStoreTest {
         assertArrayEquals(reply, transaction(alice) {
             SessionCipher(DeviceProtocolStore(it), aliceAddress, bobAddress).decrypt(SignalMessage(encryptedReply))
         })
+    }
+
+    @Test fun serializationCapacityFailureRollsBackPrekeyAndJournalMutations() {
+        val scope = scope(); val store = DeviceIdentityStore(context)
+        store.initializePreKeys(scope.first, scope.second)
+        val before = record(scope).readBytes()
+        assertThrows(IllegalArgumentException::class.java) {
+            store.withState(scope.first, scope.second) { state ->
+                state.preKeys.remove(1)
+                repeat(20) {
+                    NativeMessageJournal(state).outgoing(UUID.randomUUID().toString(), byteArrayOf(1)) {
+                        ByteArray(NativeMessageJournal.MAX_BATCH) to byteArrayOf(1)
+                    }
+                }
+            }
+        }
+        assertArrayEquals(before, record(scope).readBytes())
+        store.withState(scope.first, scope.second) {
+            assertTrue(it.preKeys.containsKey(1))
+            assertTrue(it.outbox.isEmpty())
+        }
     }
 
     @Test fun expiredBundleRequiresRotationWithoutExtendingOrReplacingKeys() {

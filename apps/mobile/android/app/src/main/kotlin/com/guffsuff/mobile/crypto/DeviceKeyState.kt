@@ -21,6 +21,8 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     val sessions = sortedMapOf<String, ByteArray>()
     val trustedIdentities = sortedMapOf<String, ByteArray>()
     val usedKemBaseKeys = sortedSetOf<String>()
+    val outbox = sortedMapOf<String, JournalRecord>()
+    val inbox = sortedMapOf<String, JournalRecord>()
 
     fun initializePreKeys(now: Long) {
         if (signedPreKey != null) return
@@ -40,9 +42,9 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     fun bundleExpiresAt(): Long = Math.addExact(bundleCreatedAt, BUNDLE_LIFETIME)
 
     fun encode(): ByteArray {
-        val output = ByteArrayOutputStream()
+        val output = BoundedOutput()
         DataOutputStream(output).use { stream ->
-            stream.writeInt(2)
+            stream.writeInt(3)
             val identityBytes = identity.encode()
             try { stream.blob(identityBytes, 4096) } finally { identityBytes.fill(0) }
             stream.writeLong(bundleCreatedAt)
@@ -56,9 +58,23 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
             require(usedKemBaseKeys.size <= 1000)
             stream.writeInt(usedKemBaseKeys.size)
             for (entry in usedKemBaseKeys) { require(kemUse.matches(entry)); stream.writeUTF(entry) }
+            NativeMessageJournal.write(stream, outbox, incoming = false)
+            NativeMessageJournal.write(stream, inbox, incoming = true)
         }
         require(output.size() <= MAX_BYTES) { "Secure state capacity exceeded" }
         return output.toByteArray()
+    }
+
+    /** Stop before allocating beyond the total encrypted-record budget. */
+    private class BoundedOutput : ByteArrayOutputStream() {
+        override fun write(value: Int) {
+            require(size() < MAX_BYTES) { "Secure state capacity exceeded" }
+            super.write(value)
+        }
+        override fun write(bytes: ByteArray, offset: Int, length: Int) {
+            require(length >= 0 && length <= MAX_BYTES - size()) { "Secure state capacity exceeded" }
+            super.write(bytes, offset, length)
+        }
     }
 
     companion object {
@@ -70,9 +86,10 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
         fun decode(bytes: ByteArray): DeviceKeyState {
             require(bytes.size in 13..MAX_BYTES)
             DataInputStream(ByteArrayInputStream(bytes)).use { stream ->
-                when (stream.readInt()) {
+                val version = stream.readInt()
+                when (version) {
                     1 -> return DeviceKeyState(IdentityMaterial.decode(bytes)) // Preserve the original identity.
-                    2 -> Unit
+                    2, 3 -> Unit
                     else -> throw IllegalArgumentException("Unsupported secure state version")
                 }
                 val identityBytes = stream.blob(4096)
@@ -93,6 +110,10 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
                 repeat(stream.count(1000)) {
                     val entry = stream.readUTF()
                     require(kemUse.matches(entry) && state.usedKemBaseKeys.add(entry))
+                }
+                if (version == 3) {
+                    state.outbox.putAll(NativeMessageJournal.read(stream, incoming = false))
+                    state.inbox.putAll(NativeMessageJournal.read(stream, incoming = true))
                 }
                 require(stream.available() == 0) { "Trailing secure state data" }
                 state.validateBundle()
