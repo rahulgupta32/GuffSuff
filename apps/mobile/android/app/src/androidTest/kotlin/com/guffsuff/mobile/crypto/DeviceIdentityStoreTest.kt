@@ -286,6 +286,46 @@ class DeviceIdentityStoreTest {
         }
     }
 
+    @Test fun routedMultiDeviceBatchAndTamperedMetadataRollbackUseProtectedStorage() {
+        val alice = scope(); val bobOne = scope()
+        val bobTwo = (bobOne.first to UUID.randomUUID().toString()).also { scopes.add(it) }
+        val now = System.currentTimeMillis()
+        for (scope in listOf(alice, bobOne, bobTwo)) DeviceIdentityStore(context).initializePreKeys(scope.first, scope.second)
+        fun bundle(scope: Pair<String, String>): PreKeyBundle = DeviceIdentityStore(context).withState(scope.first, scope.second) { state ->
+            val signed = SignedPreKeyRecord(state.signedPreKey!!); val kem = KyberPreKeyRecord(state.kemPreKey!!)
+            val prekey = PreKeyRecord(state.preKeys.getValue(1))
+            PreKeyBundle(state.identity.registrationId, 1, prekey.id, prekey.keyPair.publicKey,
+                signed.id, signed.keyPair.publicKey, signed.signature, state.identity.pair.publicKey,
+                kem.id, kem.keyPair.publicKey, kem.signature)
+        }
+        val first = DirectMessageRoute(UUID.randomUUID().toString(), alice.first, alice.second, bobOne.first, bobOne.second, now, now + 60000)
+        val second = first.copy(recipientDeviceId = bobTwo.second)
+        val messageId = UUID.randomUUID().toString()
+        val text = "गफसफ सुरक्षित संवाद"
+        val firstBundle = bundle(bobOne); val secondBundle = bundle(bobTwo)
+        val beforeFailure = record(alice).readBytes()
+        assertThrows(IllegalStateException::class.java) {
+            DeviceIdentityStore(context).sendDirectMessage(alice.first, alice.second, messageId, listOf(first, second), text,
+                if (bobOne.second < bobTwo.second) mapOf(bobOne.second to firstBundle) else mapOf(bobTwo.second to secondBundle), now)
+        }
+        assertArrayEquals(beforeFailure, record(alice).readBytes())
+        val batch = DeviceIdentityStore(context).sendDirectMessage(alice.first, alice.second, messageId, listOf(first, second), text,
+            mapOf(bobOne.second to firstBundle, bobTwo.second to secondBundle), now)
+        val retry = DeviceIdentityStore(context).sendDirectMessage(alice.first, alice.second, messageId, listOf(second, first), text, emptyMap(), now)
+        for ((id, bytes) in batch) assertArrayEquals(bytes, retry.getValue(id))
+        assertFalse(batch.getValue(bobOne.second).contentEquals(batch.getValue(bobTwo.second)))
+        val beforeTampering = record(bobOne).readBytes(); val envelopeId = UUID.randomUUID().toString()
+        assertThrows(IllegalArgumentException::class.java) {
+            DeviceIdentityStore(context).receiveDirectMessage(bobOne.first, bobOne.second, envelopeId,
+                first.copy(conversationId = UUID.randomUUID().toString()), batch.getValue(bobOne.second), now)
+        }
+        assertArrayEquals(beforeTampering, record(bobOne).readBytes())
+        val received = DeviceIdentityStore(context).receiveDirectMessage(bobOne.first, bobOne.second, envelopeId, first, batch.getValue(bobOne.second), now)
+        assertEquals(messageId, received.messageId); assertEquals(text, received.text); assertEquals(first, received.route)
+        assertEquals(received, DeviceIdentityStore(context).receiveDirectMessage(bobOne.first, bobOne.second, envelopeId, first, batch.getValue(bobOne.second), now))
+        assertEquals(text, DeviceIdentityStore(context).receiveDirectMessage(bobTwo.first, bobTwo.second, UUID.randomUUID().toString(), second, batch.getValue(bobTwo.second), now).text)
+    }
+
     @Test fun expiredBundleRequiresRotationWithoutExtendingOrReplacingKeys() {
         val scope = scope(); val store = DeviceIdentityStore(context)
         store.withState(scope.first, scope.second) { it.initializePreKeys(System.currentTimeMillis() - DeviceKeyState.BUNDLE_LIFETIME - 1000) }
