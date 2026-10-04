@@ -64,10 +64,11 @@ class MessageSync extends ChangeNotifier {
 
   void _schedule(Duration delay) {
     _timer?.cancel();
-    if (_eligible)
+    if (_eligible) {
       _timer = Timer(delay, () {
         synchronizeNow();
       });
+    }
   }
 
   bool _valid(int generation, String owner) =>
@@ -98,8 +99,9 @@ class MessageSync extends ChangeNotifier {
       }
       if (!_valid(generation, owner)) return;
       final conversations = await session.getJson('conversations');
-      if (conversations is! List)
+      if (conversations is! List) {
         throw const FormatException('Invalid conversation list');
+      }
       for (final conversation in conversations) {
         if (!_valid(generation, owner)) return;
         if (conversation is! Map || conversation['id'] is! String) {

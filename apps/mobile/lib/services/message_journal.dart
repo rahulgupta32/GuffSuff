@@ -34,8 +34,9 @@ class MessageJournal {
 
   Future<Map<String, dynamic>> _load() async {
     final raw = await storage.readMessageJournal(scope);
-    if (raw == null)
+    if (raw == null) {
       return {'version': 1, 'outbox': <dynamic>[], 'inbox': <dynamic>[]};
+    }
     final decoded = jsonDecode(raw);
     if (decoded is! Map<String, dynamic> ||
         decoded['version'] != 1 ||
@@ -50,8 +51,9 @@ class MessageJournal {
 
   Future<void> _save(Map<String, dynamic> state) async {
     final raw = jsonEncode(state);
-    if (utf8.encode(raw).length > maxBytes)
+    if (utf8.encode(raw).length > maxBytes) {
       throw StateError('Message storage is full');
+    }
     await storage.writeMessageJournal(scope, raw);
   }
 
@@ -84,8 +86,9 @@ class MessageJournal {
       'clientCreatedAt',
       'expiresAt',
     ]) {
-      if (entry[field] is! String)
+      if (entry[field] is! String) {
         throw ArgumentError('Missing envelope field: $field');
+      }
     }
     DateTime.parse(entry['clientCreatedAt'] as String);
     DateTime.parse(entry['expiresAt'] as String);
@@ -95,8 +98,9 @@ class MessageJournal {
       (e) => e['idempotencyKey'] == entry['idempotencyKey'],
     );
     if (existing.isNotEmpty) {
-      if (jsonEncode(existing.first) != jsonEncode(entry))
+      if (jsonEncode(existing.first) != jsonEncode(entry)) {
         throw StateError('Retry key already has another envelope');
+      }
       return;
     }
     outbox.add(entry);
