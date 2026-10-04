@@ -175,32 +175,34 @@ export class MessageEnvelopeService {
          AND e.conversation_id = $3
          AND EXISTS (SELECT 1 FROM devices d WHERE d.id = $1 AND d.user_id = $2 AND NOT d.is_revoked)
          AND EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = $3 AND m.user_id = $2)
-       ORDER BY e.server_accepted_at ASC`,
+       ORDER BY e.server_accepted_at ASC, e.id ASC
+       LIMIT 100`,
       [deviceId, userId, conversationId]
     );
     return res.rows;
   }
 
   async acknowledgeDelivery(userId: string, deviceId: string, envelopeId: string) {
-    const rdRes = await this.pool.query(
-      `SELECT rd.id, rd.delivery_status, e.recipient_user_id
-       FROM message_recipient_devices rd
-       JOIN message_envelopes e ON rd.envelope_id = e.id
-       WHERE rd.envelope_id = $1 AND rd.recipient_device_id = $2
-         AND EXISTS (SELECT 1 FROM devices d WHERE d.id = $2 AND d.user_id = $3 AND NOT d.is_revoked)`,
-      [envelopeId, deviceId, userId]
-    );
-
-    if (rdRes.rows.length === 0 || rdRes.rows[0].recipient_user_id !== userId) {
-      throw new ForbiddenException("Delivery acknowledgement unauthorized for envelope");
-    }
-
-    const rdRecord = rdRes.rows[0];
-    const ackId = generateUUIDv7();
-
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      const rdRes = await client.query(
+        `SELECT rd.id, rd.delivery_status, e.recipient_user_id
+       FROM message_recipient_devices rd
+       JOIN message_envelopes e ON rd.envelope_id = e.id
+       WHERE rd.envelope_id = $1 AND rd.recipient_device_id = $2
+         AND EXISTS (SELECT 1 FROM devices d WHERE d.id = $2 AND d.user_id = $3 AND NOT d.is_revoked)
+         AND EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = e.conversation_id AND m.user_id = $3)
+       FOR UPDATE OF rd`,
+        [envelopeId, deviceId, userId]
+      );
+
+      if (rdRes.rows.length === 0 || rdRes.rows[0].recipient_user_id !== userId) {
+        throw new ForbiddenException("Delivery acknowledgement unauthorized for envelope");
+      }
+
+      const rdRecord = rdRes.rows[0];
+      const ackId = generateUUIDv7();
 
       await client.query(
         `UPDATE message_recipient_devices
@@ -212,7 +214,8 @@ export class MessageEnvelopeService {
 
       await client.query(
         `INSERT INTO message_acknowledgements (id, envelope_id, recipient_device_id, ack_type)
-         VALUES ($1, $2, $3, 'delivery')`,
+         VALUES ($1, $2, $3, 'delivery')
+         ON CONFLICT (envelope_id, recipient_device_id, ack_type) DO NOTHING`,
         [ackId, envelopeId, deviceId]
       );
 
@@ -251,6 +254,12 @@ export class MessageEnvelopeService {
              read_at = COALESCE(read_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
          WHERE envelope_id = $1 AND recipient_device_id = $2`,
         [envelopeId, deviceId]
+      );
+      await client.query(
+        `INSERT INTO message_acknowledgements (id, envelope_id, recipient_device_id, ack_type)
+         VALUES ($1, $2, $3, 'read')
+         ON CONFLICT (envelope_id, recipient_device_id, ack_type) DO NOTHING`,
+        [generateUUIDv7(), envelopeId, deviceId]
       );
       await client.query(
         `INSERT INTO message_read_states (id, conversation_id, user_id, last_read_envelope_id, last_read_at)

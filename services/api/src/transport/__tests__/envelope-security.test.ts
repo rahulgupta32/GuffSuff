@@ -231,3 +231,44 @@ test("a submission error rolls back and releases its sender-device lock", async 
   assert.equal(f.calls.at(-1)!.sql, "ROLLBACK");
   assert.equal(f.released(), true);
 });
+
+test("pending fetch is bounded and has deterministic tie ordering", async () => {
+  const f = fixture();
+  await f.service.getPendingEnvelopes("user", "device", "conversation");
+  assert.match(f.calls[0]!.sql, /ORDER BY e.server_accepted_at ASC, e.id ASC/);
+  assert.match(f.calls[0]!.sql, /LIMIT 100/);
+});
+test("delivery authorization and audit receipt occur in one locked transaction", async () => {
+  const f = fixture((sql) =>
+    sql.includes("SELECT rd.id")
+      ? [{ id: "receipt", recipient_user_id: "user", delivery_status: "delivered" }]
+      : []
+  );
+  await f.service.acknowledgeDelivery("user", "device", envelopeId);
+  assert.equal(f.calls[0]!.sql, "BEGIN");
+  assert.match(f.calls[1]!.sql, /FOR UPDATE OF rd/);
+  assert.match(f.calls[1]!.sql, /FROM conversation_members/);
+  const audit = f.calls.find((c) => c.sql.includes("INSERT INTO message_acknowledgements"))!;
+  assert.match(audit.sql, /ON CONFLICT \(envelope_id, recipient_device_id, ack_type\) DO NOTHING/);
+  assert.equal(f.calls.at(-1)!.sql, "COMMIT");
+});
+test("unauthorized delivery rolls back without changing status or audit rows", async () => {
+  const f = fixture();
+  await assert.rejects(f.service.acknowledgeDelivery("user", "device", envelopeId), /unauthorized/);
+  assert.equal(f.calls.at(-1)!.sql, "ROLLBACK");
+  assert.equal(
+    f.calls.some((c) => /^\s*(INSERT|UPDATE)\b/.test(c.sql)),
+    false
+  );
+  assert.equal(f.released(), true);
+});
+test("read receipt writes a deduplicated audit row before committing", async () => {
+  const f = fixture((sql) =>
+    sql.includes("SELECT e.conversation_id") ? [{ conversation_id: "conversation" }] : []
+  );
+  await f.service.acknowledgeRead("user", "device", envelopeId);
+  const audit = f.calls.find((c) => c.sql.includes("INSERT INTO message_acknowledgements"))!;
+  assert.match(audit.sql, /'read'/);
+  assert.match(audit.sql, /ON CONFLICT/);
+  assert.deepEqual(audit.values.slice(1), [envelopeId, "device"]);
+});
