@@ -6,7 +6,11 @@ import {
 } from "@nestjs/common";
 import { createDatabasePool } from "@guffsuff/database";
 import { generateUUIDv7 } from "@guffsuff/id-generation";
-import { SubmitMessageEnvelope } from "@guffsuff/contracts";
+import {
+  SubmitMessageEnvelope,
+  SubmitDeviceEnvelopesSchema,
+  SubmitDeviceEnvelopes
+} from "@guffsuff/contracts";
 import * as crypto from "crypto";
 
 @Injectable()
@@ -162,14 +166,184 @@ export class MessageEnvelopeService {
     }
   }
 
+  async listRecipientDevices(
+    userId: string,
+    deviceId: string,
+    conversationId: string,
+    recipientUserId: string
+  ) {
+    const ids = [userId, deviceId, conversationId, recipientUserId];
+    if (
+      !ids.every((value) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+      )
+    )
+      throw new BadRequestException("Invalid identifier");
+    if (userId.toLowerCase() === recipientUserId.toLowerCase())
+      throw new BadRequestException("Recipient must be another account");
+    const access = await this.pool.query(
+      `SELECT d.id FROM devices d JOIN users u ON u.id = d.user_id
+      WHERE d.id=$1 AND d.user_id=$2 AND NOT d.is_revoked AND u.account_state='active'
+      AND EXISTS (SELECT 1 FROM users peer WHERE peer.id=$4 AND peer.account_state='active')
+      AND EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id=$3 AND m.user_id=$2)
+      AND EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id=$3 AND m.user_id=$4)`,
+      [deviceId, userId, conversationId, recipientUserId]
+    );
+    if (!access.rows.length)
+      throw new ForbiddenException("Recipient device discovery unauthorized");
+    return (
+      await this.pool.query(
+        "SELECT id FROM devices WHERE user_id=$1 AND NOT is_revoked ORDER BY id",
+        [recipientUserId]
+      )
+    ).rows;
+  }
+
+  async submitDeviceEnvelopes(
+    senderUserId: string,
+    senderDeviceId: string,
+    input: SubmitDeviceEnvelopes
+  ) {
+    const parsed = SubmitDeviceEnvelopesSchema.safeParse(input);
+    if (!parsed.success) throw new BadRequestException("Invalid per-device envelope request");
+    const dto = parsed.data;
+    dto.conversationId = dto.conversationId.toLowerCase();
+    dto.recipientUserId = dto.recipientUserId.toLowerCase();
+    senderUserId = senderUserId.toLowerCase();
+    senderDeviceId = senderDeviceId.toLowerCase();
+    const payloads = dto.deviceEnvelopes
+      .map((item) => {
+        const bytes = Buffer.from(item.opaquePayloadBase64, "base64");
+        if (!bytes.length || bytes.toString("base64") !== item.opaquePayloadBase64)
+          throw new BadRequestException("Ciphertext must be canonical nonempty base64");
+        return { deviceId: item.recipientDeviceId.toLowerCase(), bytes };
+      })
+      .sort((a, b) => a.deviceId.localeCompare(b.deviceId));
+    if (new Set(payloads.map((p) => p.deviceId)).size !== payloads.length)
+      throw new BadRequestException("Duplicate recipient device");
+    const total = payloads.reduce((sum, p) => sum + p.bytes.length, 0);
+    if (total > 65536) throw new BadRequestException("Combined ciphertext exceeds 64KB");
+    const digest = crypto
+      .createHash("sha256")
+      .update("guffsuff/per-device/v1\0")
+      .update(
+        JSON.stringify({
+          conversationId: dto.conversationId.toLowerCase(),
+          recipientUserId: dto.recipientUserId.toLowerCase(),
+          protocolVersion: dto.protocolVersion,
+          clientCreatedAt: dto.clientCreatedAt,
+          expiresAt: dto.expiresAt,
+          payloads: payloads.map((p) => [p.deviceId, p.bytes.toString("base64")])
+        })
+      )
+      .digest("hex");
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      if (senderUserId === dto.recipientUserId)
+        throw new ForbiddenException("Recipient must be another account");
+      const users = await client.query(
+        "SELECT id FROM users WHERE id = ANY($1::uuid[]) AND account_state = 'active' ORDER BY id FOR SHARE",
+        [[senderUserId, dto.recipientUserId]]
+      );
+      if (users.rows.length !== 2) throw new ForbiddenException("Both accounts must be active");
+      // Lock in global device order, including the sender, to avoid crossed-send deadlocks.
+      const devices = await client.query(
+        `SELECT id, user_id, is_revoked FROM devices
+        WHERE id = $1 OR (user_id = $2 AND NOT is_revoked) ORDER BY id FOR UPDATE`,
+        [senderDeviceId, dto.recipientUserId]
+      );
+      const sender = devices.rows.find((d) => d.id === senderDeviceId);
+      if (!sender || sender.user_id !== senderUserId || sender.is_revoked)
+        throw new ForbiddenException("Sender device is invalid or revoked");
+      if (senderUserId === dto.recipientUserId)
+        throw new ForbiddenException("Recipient must be another account");
+      const members = await client.query(
+        "SELECT user_id FROM conversation_members WHERE conversation_id = $1 AND user_id = ANY($2::uuid[]) FOR SHARE",
+        [dto.conversationId, [senderUserId, dto.recipientUserId]]
+      );
+      if (members.rows.length !== 2)
+        throw new ForbiddenException("Both accounts must belong to the conversation");
+      const cached = (
+        await client.query(
+          `SELECT k.payload_digest_sha256, e.id, e.payload_mode, e.conversation_id, e.sender_user_id, e.sender_device_id,
+        e.recipient_user_id, e.protocol_version, e.payload_byte_length, e.server_accepted_at, e.expires_at
+        FROM message_idempotency_keys k JOIN message_envelopes e ON e.id = k.envelope_id
+        WHERE k.sender_device_id = $1 AND k.idempotency_key = $2`,
+          [senderDeviceId, dto.idempotencyKey]
+        )
+      ).rows[0];
+      if (cached) {
+        if (cached.payload_mode !== "per_device" || cached.payload_digest_sha256 !== digest)
+          throw new BadRequestException(
+            "Idempotency key reused with changed device payloads or metadata"
+          );
+        const { payload_digest_sha256: _digest, ...response } = cached;
+        await client.query("COMMIT");
+        return { ...response, idempotentRetry: true };
+      }
+      if (new Date(dto.expiresAt).getTime() <= Date.now())
+        throw new BadRequestException("Envelope expiry must be in the future");
+      const targets = devices.rows
+        .filter((d) => d.user_id === dto.recipientUserId && !d.is_revoked)
+        .map((d) => d.id)
+        .sort();
+      if (
+        targets.length !== payloads.length ||
+        targets.some((id, i) => id !== payloads[i]?.deviceId)
+      )
+        throw new BadRequestException(
+          "Ciphertext must cover exactly the active recipient devices; refresh the device list"
+        );
+      const envelopeId = generateUUIDv7();
+      const result = await client.query(
+        `INSERT INTO message_envelopes (id, client_idempotency_key, conversation_id, sender_user_id, sender_device_id,
+        recipient_user_id, protocol_version, payload_byte_length, opaque_payload, payload_mode, client_created_at, expires_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NULL,'per_device',$9,$10)
+        RETURNING id, conversation_id, sender_user_id, sender_device_id, recipient_user_id, protocol_version, payload_byte_length, payload_mode, server_accepted_at, expires_at`,
+        [
+          envelopeId,
+          dto.idempotencyKey,
+          dto.conversationId,
+          senderUserId,
+          senderDeviceId,
+          dto.recipientUserId,
+          dto.protocolVersion,
+          total,
+          dto.clientCreatedAt,
+          dto.expiresAt
+        ]
+      );
+      await client.query(
+        "INSERT INTO message_idempotency_keys (id, sender_device_id, idempotency_key, envelope_id, payload_digest_sha256) VALUES ($1,$2,$3,$4,$5)",
+        [generateUUIDv7(), senderDeviceId, dto.idempotencyKey, envelopeId, digest]
+      );
+      for (const payload of payloads)
+        await client.query(
+          `INSERT INTO message_recipient_devices (id,envelope_id,recipient_device_id,delivery_status,opaque_payload)
+        VALUES ($1,$2,$3,'accepted',$4)`,
+          [generateUUIDv7(), envelopeId, payload.deviceId, payload.bytes]
+        );
+      await client.query("COMMIT");
+      return { ...result.rows[0], recipientDeviceCount: payloads.length, idempotentRetry: false };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async getPendingEnvelopes(userId: string, deviceId: string, conversationId: string) {
     const res = await this.pool.query(
       `SELECT e.id, e.conversation_id, e.sender_user_id, e.sender_device_id, e.recipient_user_id,
-              e.protocol_version, e.payload_byte_length, encode(e.opaque_payload, 'base64') AS opaque_payload_base64,
+              e.protocol_version, octet_length(CASE WHEN e.payload_mode = 'per_device' THEN rd.opaque_payload ELSE e.opaque_payload END) AS payload_byte_length,
+              encode(CASE WHEN e.payload_mode = 'per_device' THEN rd.opaque_payload ELSE e.opaque_payload END, 'base64') AS opaque_payload_base64,
               e.client_created_at, e.server_accepted_at, e.expires_at, rd.delivery_status
        FROM message_envelopes e
        JOIN message_recipient_devices rd ON e.id = rd.envelope_id
        WHERE rd.recipient_device_id = $1 AND e.recipient_user_id = $2
+         AND (e.payload_mode = 'shared' OR rd.opaque_payload IS NOT NULL)
          AND rd.delivery_status IN ('accepted', 'queued', 'routed')
          AND e.expires_at > CURRENT_TIMESTAMP
          AND e.conversation_id = $3

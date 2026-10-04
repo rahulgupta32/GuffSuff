@@ -197,3 +197,27 @@ export const AcknowledgeReadSchema = z.object({
   lastReadEnvelopeId: z.string().uuid()
 });
 export type AcknowledgeRead = z.infer<typeof AcknowledgeReadSchema>;
+
+// Each device has its own cryptographic session and therefore its own ciphertext.
+export const SubmitDeviceEnvelopesSchema = z
+  .object({
+    idempotencyKey: z.string().min(1).max(64),
+    conversationId: z.string().uuid(),
+    recipientUserId: z.string().uuid(),
+    protocolVersion: z.number().int().positive().max(2147483647),
+    clientCreatedAt: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    deviceEnvelopes: z
+      .array(
+        z
+          .object({
+            recipientDeviceId: z.string().uuid(),
+            opaquePayloadBase64: z.string().min(1).max(87384)
+          })
+          .strict()
+      )
+      .min(1)
+      .max(16)
+  })
+  .strict();
+export type SubmitDeviceEnvelopes = z.infer<typeof SubmitDeviceEnvelopesSchema>;

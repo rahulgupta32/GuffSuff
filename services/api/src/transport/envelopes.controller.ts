@@ -33,6 +33,33 @@ export class EnvelopesController {
     return this.envelopeService.submitEnvelope(req.user.userId, req.user.deviceId, validated);
   }
 
+  @Get("conversations/:conversationId/recipients/:recipientUserId/devices")
+  listRecipientDevices(
+    @Req() req: any,
+    @Param("conversationId") conversationId: string,
+    @Param("recipientUserId") recipientUserId: string
+  ) {
+    return this.envelopeService.listRecipientDevices(
+      req.user.userId,
+      req.user.deviceId,
+      conversationId,
+      recipientUserId
+    );
+  }
+
+  @Post("conversations/:conversationId/device-envelopes")
+  @HttpCode(HttpStatus.CREATED)
+  submitDeviceEnvelopes(
+    @Req() req: any,
+    @Param("conversationId") conversationId: string,
+    @Body() body: any
+  ) {
+    return this.envelopeService.submitDeviceEnvelopes(req.user.userId, req.user.deviceId, {
+      ...body,
+      conversationId
+    });
+  }
+
   @Get("conversations/:conversationId/envelopes/pending")
   async getPendingEnvelopes(@Req() req: any, @Param("conversationId") conversationId: string) {
     return this.envelopeService.getPendingEnvelopes(

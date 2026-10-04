@@ -88,6 +88,100 @@ try {
     (await envelopes.getPendingEnvelopes(recipient, recipientDevice, conversation)).length,
     0
   );
+  const secondDevice = randomUUID();
+  async function addRecipientDevice(id) {
+    await pool.query(
+      `INSERT INTO devices(id,user_id,installation_id,device_name,platform,app_version,os_version)
+      VALUES ($1,$2,$3,'Integration test','android','test','test')`,
+      [id, recipient, id]
+    );
+  }
+  await addRecipientDevice(secondDevice);
+  assert.deepEqual(
+    (await envelopes.listRecipientDevices(sender, senderDevice, conversation, recipient))
+      .map((d) => d.id)
+      .sort(),
+    [recipientDevice, secondDevice].sort()
+  );
+  await assert.rejects(
+    envelopes.listRecipientDevices(sender, recipientDevice, conversation, recipient),
+    /unauthorized/
+  );
+  const deviceBatch = {
+    idempotencyKey: randomUUID(),
+    conversationId: conversation,
+    recipientUserId: recipient,
+    protocolVersion: 2,
+    clientCreatedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 3600000).toISOString(),
+    deviceEnvelopes: [
+      { recipientDeviceId: recipientDevice, opaquePayloadBase64: "AQID" },
+      { recipientDeviceId: secondDevice, opaquePayloadBase64: "BAUG" }
+    ]
+  };
+  const batches = await Promise.all(
+    Array.from({ length: 8 }, () =>
+      envelopes.submitDeviceEnvelopes(sender, senderDevice, deviceBatch)
+    )
+  );
+  assert.equal(new Set(batches.map((b) => b.id)).size, 1);
+  assert.equal(batches.filter((b) => !b.idempotentRetry).length, 1);
+  const batchId = batches[0].id;
+  for (const [device, expected] of [
+    [recipientDevice, "AQID"],
+    [secondDevice, "BAUG"]
+  ]) {
+    const pending = await envelopes.getPendingEnvelopes(recipient, device, conversation);
+    const item = pending.find((e) => e.id === batchId);
+    assert.equal(item.opaque_payload_base64.replace(/\s/g, ""), expected);
+    assert.equal(item.payload_byte_length, 3);
+  }
+  assert.equal(
+    (await pool.query("SELECT opaque_payload FROM message_envelopes WHERE id=$1", [batchId]))
+      .rows[0].opaque_payload,
+    null
+  );
+  await envelopes.acknowledgeDelivery(recipient, recipientDevice, batchId);
+  assert.equal(
+    (await envelopes.getPendingEnvelopes(recipient, recipientDevice, conversation)).length,
+    0
+  );
+  assert.equal(
+    (await envelopes.getPendingEnvelopes(recipient, secondDevice, conversation)).length,
+    1
+  );
+  await addRecipientDevice(randomUUID());
+  const retry = await envelopes.submitDeviceEnvelopes(sender, senderDevice, {
+    ...deviceBatch,
+    deviceEnvelopes: [...deviceBatch.deviceEnvelopes].reverse()
+  });
+  assert.equal(retry.id, batchId);
+  assert.equal(retry.idempotentRetry, true);
+  await assert.rejects(
+    envelopes.submitDeviceEnvelopes(sender, senderDevice, {
+      ...deviceBatch,
+      deviceEnvelopes: [
+        { ...deviceBatch.deviceEnvelopes[0], opaquePayloadBase64: "BwgJ" },
+        deviceBatch.deviceEnvelopes[1]
+      ]
+    }),
+    /changed device payloads/
+  );
+  await assert.rejects(
+    envelopes.submitDeviceEnvelopes(sender, senderDevice, {
+      ...deviceBatch,
+      idempotencyKey: randomUUID()
+    }),
+    /exactly the active/
+  );
+  await pool.query("UPDATE devices SET is_revoked=true WHERE id=$1", [secondDevice]);
+  assert.equal(
+    (await envelopes.getPendingEnvelopes(recipient, secondDevice, conversation)).length,
+    0
+  );
+  console.log(
+    "PostgreSQL per-device integration passed: concurrent batch retries, isolated ciphertext downloads, independent receipts, changed target inventory and revocation."
+  );
   // Structural fixtures only; these bytes are not real signed cryptographic material.
   const publicKey = Buffer.concat([Buffer.from([5]), Buffer.alloc(32, 7)]).toString("base64");
   const bundle = {
