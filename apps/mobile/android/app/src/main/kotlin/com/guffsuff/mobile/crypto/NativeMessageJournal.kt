@@ -33,7 +33,7 @@ internal class NativeMessageJournal(private val state: DeviceKeyState) {
         val commitment = commitment("incoming", canonicalEnvelope)
         state.inbox[id]?.let { return matching(it, commitment).history() }
         check(state.inbox.size < MAX_INBOX) { "History capacity exceeded" }
-        val record = JournalRecord(commitment, byteArrayOf(), decrypt(), true, incoming = true)
+        val record = JournalRecord(commitment, byteArrayOf(), decrypt(), true, isIncoming = true)
         state.inbox[id] = record
         return record.history()
     }
