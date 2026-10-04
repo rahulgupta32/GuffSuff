@@ -3,7 +3,7 @@
 - Status: Direction selected; production integration not complete
 - Date: 2026-10-04
 - Decision: The owner selected an open-source mobile application. Evaluate official signalapp/libsignal for direct messaging through native Android/Swift bindings; do not substitute the development boundary provider.
-- Candidate reviewed: v0.104.0, published 2026-10-02. This is a review baseline, not an installed dependency or a claim of production approval.
+- Candidate reviewed: v0.104.0, published 2026-10-02. Exact Android/client artifacts are now declared for the identity persistence foundation; full production integration and release approval remain incomplete.
 
 ## Verified upstream requirements
 
@@ -19,7 +19,7 @@ The current PreKeyBundle constructor requires a signed Kyber/KEM prekey in addit
 4. Change transport to address each recipient device with its own ciphertext. The present shared opaque payload fan-out cannot stand in for separate per-device Signal sessions. Establish stable retry batches and recipient/device authorization.
 5. Connect the provider to the composer and receive/history coordinator; add explicit key-change and delivery failure UI. Test two independent devices, tampering, reordered/duplicate messages, offline retries, crash recovery, revocation and reinstall before enabling messaging in release.
 
-The current composer remains disabled. No private keys, SMS, tester messages or native production dependency have been introduced by this direction decision.
+The current composer remains disabled. The Android identity foundation now creates private keys only on the device and returns public identity metadata through its channel. Exact native dependencies are declared, with JNI and AndroidKeyStore checks in CI. This is not a complete messaging provider. No SMS, tester messages or release deployment have occurred.
 
 ## Sources
 
