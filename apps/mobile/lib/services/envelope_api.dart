@@ -92,8 +92,9 @@ class EnvelopeApi {
       total += bytes.length;
       targets[id] = base64Encode(bytes);
     }
-    if (total > 65536)
+    if (total > 65536) {
       throw const FormatException('Ciphertext batch too large');
+    }
     final ids = targets.keys.toList()..sort();
     final response = await session.postJson(
       'conversations/$conversation/device-envelopes',

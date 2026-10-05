@@ -141,7 +141,7 @@ void main() {
         {...bundle(), 'protocolVersion': 2.0},
         {...bundle(), 'registrationId': 0},
         {...bundle(), 'kemPrekeyId': -1},
-        {...bundle(), 'identityPublicKeyBase64': curve(1) + '\n'},
+        {...bundle(), 'identityPublicKeyBase64': '${curve(1)}\n'},
         {...bundle(), 'kemPrekeyPublicBase64': ''},
         {...bundle(), 'expiresAt': now.toIso8601String()},
         {...bundle(), 'expiresAt': '2026-02-30T00:00:00Z'},
