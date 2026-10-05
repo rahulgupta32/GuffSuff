@@ -221,7 +221,7 @@ void main() {
         {
           'messageId': fixture.retry,
           'route': route,
-          'text': String.fromCharCode(0xdc00),
+          'text': ' ',
         },
         {
           'messageId': fixture.retry,

@@ -20,14 +20,16 @@ class AndroidDirectCrypto {
     String method,
     Map<String, dynamic> args,
   ) async {
-    final account = publicId(session.userId);
-    final device = publicId(session.deviceId);
+    final originalAccount = session.userId;
+    final originalDevice = session.deviceId;
+    final account = publicId(originalAccount);
+    final device = publicId(originalDevice);
     if (!session.isAuthenticated) throw AuthFailure('Please sign in again.');
     var changed = false;
     void checkSession() {
       if (!session.isAuthenticated ||
-          session.userId != account ||
-          session.deviceId != device) {
+          session.userId != originalAccount ||
+          session.deviceId != originalDevice) {
         changed = true;
       }
     }
