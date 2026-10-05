@@ -1,6 +1,7 @@
 package com.guffsuff.mobile
 
 import com.guffsuff.mobile.crypto.DeviceIdentityStore
+import com.guffsuff.mobile.crypto.NativeCryptoBridge
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,23 +14,20 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        val store = DeviceIdentityStore(applicationContext)
+        val bridge = NativeCryptoBridge(DeviceIdentityStore(applicationContext))
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "guffsuff/native_identity").setMethodCallHandler { call, result ->
-            if (call.method != "initializeIdentity" && call.method != "initializePreKeys") {
+            if (call.method !in NativeCryptoBridge.METHODS) {
                 result.notImplemented()
             } else {
-                val arguments = call.arguments as? Map<*, *>
-                val accountId = arguments?.get("accountId") as? String
-                val deviceId = arguments?.get("deviceId") as? String
-                if (accountId == null || deviceId == null) result.error("INVALID_SCOPE", "Account/device scope required", null)
-                else identityExecutor.execute {
+                identityExecutor.execute {
                     try {
-                        val publicResult = if (call.method == "initializePreKeys") store.initializePreKeys(accountId, deviceId)
-                            else store.initialize(accountId, deviceId)
+                        val publicResult = bridge.execute(call.method, call.arguments)
                         Handler(Looper.getMainLooper()).post { result.success(publicResult) }
+                    } catch (_: IllegalArgumentException) {
+                        Handler(Looper.getMainLooper()).post { result.error("INVALID_CRYPTO_REQUEST", "Invalid encryption request", null) }
                     } catch (_: Throwable) {
-                        // Do not expose keystore, native private record or filesystem diagnostics.
-                        Handler(Looper.getMainLooper()).post { result.error("IDENTITY_UNAVAILABLE", "Secure identity storage unavailable; recovery may be required", null) }
+                        // Never expose keystore, private records, message contents or filesystem details.
+                        Handler(Looper.getMainLooper()).post { result.error("CRYPTO_UNAVAILABLE", "Secure messaging unavailable; recovery may be required", null) }
                     }
                 }
             }

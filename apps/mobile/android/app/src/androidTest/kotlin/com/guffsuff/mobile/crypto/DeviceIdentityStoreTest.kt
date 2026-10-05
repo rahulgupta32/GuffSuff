@@ -326,6 +326,52 @@ class DeviceIdentityStoreTest {
         assertEquals(text, DeviceIdentityStore(context).receiveDirectMessage(bobTwo.first, bobTwo.second, UUID.randomUUID().toString(), second, batch.getValue(bobTwo.second), now).text)
     }
 
+    @Test fun nativeBridgePublicClaimAndVerifiedMessageRoundTripRestoreProtectedState() {
+        val alice = scope(); val bob = scope(); val now = System.currentTimeMillis()
+        fun bridge() = NativeCryptoBridge(DeviceIdentityStore(context))
+        fun args(scope: Pair<String, String>): Map<String, Any> = mapOf("accountId" to scope.first, "deviceId" to scope.second)
+        val published = bridge().execute("initializePreKeys", args(bob))
+        val bundle = published.getValue("bundle") as Map<*, *>
+        val key = (bundle["oneTimePrekeys"] as List<*>).first() as Map<*, *>
+        val claimed = bundle.entries.filter { it.key != "oneTimePrekeys" }.associate { it.key as String to it.value } +
+            mapOf("deviceId" to bob.second, "oneTimePrekeyId" to key["keyId"], "oneTimePrekeyPublicBase64" to key["publicKeyBase64"])
+        val route = DirectMessageRoute(UUID.randomUUID().toString(), alice.first, alice.second, bob.first, bob.second, now, now + 60000)
+        val messageId = UUID.randomUUID().toString()
+        val request = args(alice) + mapOf("messageId" to messageId, "routes" to listOf(BridgeValues.routeMap(route)),
+            "text" to "गफसफ Flutter bridge fixture", "claimedBundles" to listOf(claimed))
+        val outgoing = bridge().execute("sendDirectMessage", request, now)
+        assertEquals(setOf("messageId", "protocolVersion", "deviceEnvelopes"), outgoing.keys)
+        val wire = ((outgoing["deviceEnvelopes"] as List<*>).single() as Map<*, *>)["opaquePayloadBase64"] as String
+        assertEquals(outgoing, bridge().execute("sendDirectMessage", request + ("claimedBundles" to emptyList<Any>()), now))
+        val inbound = args(bob) + mapOf("envelopeId" to UUID.randomUUID().toString(), "route" to BridgeValues.routeMap(route), "opaquePayloadBase64" to wire)
+        val beforeTampering = record(bob).readBytes()
+        assertThrows(IllegalArgumentException::class.java) {
+            bridge().execute("receiveDirectMessage", inbound + ("route" to BridgeValues.routeMap(route.copy(conversationId = UUID.randomUUID().toString()))), now)
+        }
+        assertArrayEquals(beforeTampering, record(bob).readBytes())
+        val received = bridge().execute("receiveDirectMessage", inbound, now)
+        assertEquals(setOf("messageId", "route", "text"), received.keys)
+        assertEquals(messageId, received["messageId"])
+        assertEquals(request["text"], received["text"])
+        assertEquals(BridgeValues.routeMap(route), received["route"])
+        assertEquals(received, bridge().execute("receiveDirectMessage", inbound, now))
+        assertEquals(false, published["supportsDirectMessaging"])
+    }
+
+    @Test fun malformedBridgeRequestsCannotCreateOrReplaceProtectedRecords() {
+        val scope = scope(); val bridge = NativeCryptoBridge(DeviceIdentityStore(context))
+        val args = mapOf("accountId" to scope.first, "deviceId" to scope.second)
+        for (bad in listOf(null, "not an object", args + ("privateKey" to "never accepted"), args + ("deviceId" to 1))) {
+            assertThrows(IllegalArgumentException::class.java) { bridge.execute("initializeIdentity", bad) }
+        }
+        assertFalse(record(scope).exists())
+        bridge.execute("initializeIdentity", args)
+        val before = record(scope).readBytes()
+        assertThrows(IllegalArgumentException::class.java) { bridge.execute("exportPrivateState", args) }
+        assertThrows(IllegalArgumentException::class.java) { bridge.execute("sendDirectMessage", args) }
+        assertArrayEquals(before, record(scope).readBytes())
+    }
+
     @Test fun expiredBundleRequiresRotationWithoutExtendingOrReplacingKeys() {
         val scope = scope(); val store = DeviceIdentityStore(context)
         store.withState(scope.first, scope.second) { it.initializePreKeys(System.currentTimeMillis() - DeviceKeyState.BUNDLE_LIFETIME - 1000) }
