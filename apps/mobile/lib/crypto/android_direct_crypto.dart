@@ -30,7 +30,8 @@ class AndroidDirectCrypto {
     void checkSession() {
       if (!session.isAuthenticated ||
           session.userId != originalAccount ||
-          session.deviceId != originalDevice || session.sessionId != originalSession) {
+          session.deviceId != originalDevice ||
+          session.sessionId != originalSession) {
         changed = true;
       }
     }
@@ -217,12 +218,17 @@ class AndroidDirectCrypto {
     final result = <RecoveredDirectBatch>[];
     for (final value in rows) {
       final row = publicObject(value, {
-        'messageId', 'route', 'batchFingerprintBase64', 'deviceEnvelopes',
+        'messageId',
+        'route',
+        'batchFingerprintBase64',
+        'deviceEnvelopes',
       });
       final message = publicId(row['messageId']);
       final route = DirectCryptoRoute.parse(row['route']);
-      if (!ids.add(message) || route.conversationId != conversation ||
-          route.senderUserId != account || route.senderDeviceId != device) {
+      if (!ids.add(message) ||
+          route.conversationId != conversation ||
+          route.senderUserId != account ||
+          route.senderDeviceId != device) {
         throw const FormatException('Saved batch scope mismatch');
       }
       publicBytes(row['batchFingerprintBase64'], 32, 32);
@@ -233,7 +239,10 @@ class AndroidDirectCrypto {
       final batch = <String, List<int>>{};
       var total = 0;
       for (final entry in entries) {
-        final data = publicObject(entry, {'recipientDeviceId', 'opaquePayloadBase64'});
+        final data = publicObject(entry, {
+          'recipientDeviceId',
+          'opaquePayloadBase64',
+        });
         final id = publicId(data['recipientDeviceId']);
         if (id == device || batch.containsKey(id)) {
           throw const FormatException('Invalid saved device target');
@@ -247,26 +256,39 @@ class AndroidDirectCrypto {
       if (total > 65536 || route.recipientDeviceId != targets.first) {
         throw const FormatException('Saved batch inventory mismatch');
       }
-      result.add(RecoveredDirectBatch._(message, route,
-        row['batchFingerprintBase64'] as String, Map.unmodifiable(batch)));
+      result.add(
+        RecoveredDirectBatch._(
+          message,
+          route,
+          row['batchFingerprintBase64'] as String,
+          Map.unmodifiable(batch),
+        ),
+      );
     }
     return List.unmodifiable(result);
   }
 
   /// Call only after authenticated acceptance of this exact restored batch.
-  Future<void> accepted(RecoveredDirectBatch batch, String serverEnvelopeId) async {
+  Future<void> accepted(
+    RecoveredDirectBatch batch,
+    String serverEnvelopeId,
+  ) async {
     if (batch.route.senderUserId != publicId(session.userId) ||
         batch.route.senderDeviceId != publicId(session.deviceId)) {
       throw const FormatException('Acceptance scope mismatch');
     }
     final envelope = publicId(serverEnvelopeId);
-    final response = publicObject(await _invoke('markDirectMessageAccepted', {
-      'messageId': batch.messageId,
-      'serverEnvelopeId': envelope,
-      'batchFingerprintBase64': batch.fingerprintBase64,
-    }), {'messageId', 'serverEnvelopeId', 'isAccepted'});
+    final response = publicObject(
+      await _invoke('markDirectMessageAccepted', {
+        'messageId': batch.messageId,
+        'serverEnvelopeId': envelope,
+        'batchFingerprintBase64': batch.fingerprintBase64,
+      }),
+      {'messageId', 'serverEnvelopeId', 'isAccepted'},
+    );
     if (response['messageId'] != batch.messageId ||
-        response['serverEnvelopeId'] != envelope || response['isAccepted'] != true) {
+        response['serverEnvelopeId'] != envelope ||
+        response['isAccepted'] != true) {
       throw const FormatException('Native acceptance mismatch');
     }
   }
@@ -275,9 +297,10 @@ class AndroidDirectCrypto {
     final conversation = publicId(conversationId);
     final account = publicId(session.userId);
     final device = publicId(session.deviceId);
-    final response = publicObject(await _invoke('directMessageHistory', {
-      'conversationId': conversation,
-    }), {'history'});
+    final response = publicObject(
+      await _invoke('directMessageHistory', {'conversationId': conversation}),
+      {'history'},
+    );
     final rows = response['history'];
     if (rows is! List || rows.length > 192) {
       throw const FormatException('Invalid saved history list');
@@ -286,33 +309,54 @@ class AndroidDirectCrypto {
     final result = <DirectHistoryEntry>[];
     for (final value in rows) {
       final row = publicObject(value, {
-        'recordId', 'direction', 'messageId', 'route', 'text',
-        'isAccepted', 'serverEnvelopeId',
+        'recordId',
+        'direction',
+        'messageId',
+        'route',
+        'text',
+        'isAccepted',
+        'serverEnvelopeId',
       });
       final record = publicId(row['recordId']);
       final message = publicId(row['messageId']);
       final direction = row['direction'];
       final accepted = row['isAccepted'];
-      final envelope = row['serverEnvelopeId'] == null ? null : publicId(row['serverEnvelopeId']);
+      final envelope =
+          row['serverEnvelopeId'] == null
+              ? null
+              : publicId(row['serverEnvelopeId']);
       final route = DirectCryptoRoute.parse(row['route']);
-      if (!['incoming', 'outgoing'].contains(direction) || accepted is! bool ||
-          !ids.add('$direction/$record') || route.conversationId != conversation) {
+      if (!['incoming', 'outgoing'].contains(direction) ||
+          accepted is! bool ||
+          !ids.add('$direction/$record') ||
+          route.conversationId != conversation) {
         throw const FormatException('Invalid saved history record');
       }
       if (direction == 'outgoing') {
-        if (record != message || route.senderUserId != account ||
-            route.senderDeviceId != device || (!accepted && envelope != null)) {
+        if (record != message ||
+            route.senderUserId != account ||
+            route.senderDeviceId != device ||
+            (!accepted && envelope != null)) {
           throw const FormatException('Outgoing history mismatch');
         }
       } else if (route.recipientUserId != account ||
-          route.recipientDeviceId != device || !accepted || envelope != record) {
+          route.recipientDeviceId != device ||
+          !accepted ||
+          envelope != record) {
         throw const FormatException('Incoming history mismatch');
       }
       final text = row['text'];
       if (text is! String) throw const FormatException('Invalid saved text');
       _text(text);
-      result.add(DirectHistoryEntry(record, direction as String,
-        VerifiedDirectMessage(message, route, text), accepted, envelope));
+      result.add(
+        DirectHistoryEntry(
+          record,
+          direction as String,
+          VerifiedDirectMessage(message, route, text),
+          accepted,
+          envelope,
+        ),
+      );
     }
     return List.unmodifiable(result);
   }
@@ -322,7 +366,12 @@ class RecoveredDirectBatch {
   final String messageId, fingerprintBase64;
   final DirectCryptoRoute route;
   final Map<String, List<int>> ciphertexts;
-  RecoveredDirectBatch._(this.messageId, this.route, this.fingerprintBase64, this.ciphertexts);
+  RecoveredDirectBatch._(
+    this.messageId,
+    this.route,
+    this.fingerprintBase64,
+    this.ciphertexts,
+  );
 }
 
 class DirectHistoryEntry {
@@ -330,8 +379,13 @@ class DirectHistoryEntry {
   final VerifiedDirectMessage message;
   final bool isAccepted;
   final String? serverEnvelopeId;
-  const DirectHistoryEntry(this.recordId, this.direction, this.message,
-    this.isAccepted, this.serverEnvelopeId);
+  const DirectHistoryEntry(
+    this.recordId,
+    this.direction,
+    this.message,
+    this.isAccepted,
+    this.serverEnvelopeId,
+  );
 }
 
 class CryptoBridgeFailure implements Exception {
