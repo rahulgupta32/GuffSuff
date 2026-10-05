@@ -54,8 +54,12 @@ class AndroidDirectCrypto {
   Future<PublicPrekeyBundle> initializePreKeys() async {
     final result = await _invoke('initializePreKeys', {});
     publicObject(result, {
-      'providerId', 'providerVersion', 'identityPublicKeyBase64',
-      'registrationId', 'supportsDirectMessaging', 'bundle',
+      'providerId',
+      'providerVersion',
+      'identityPublicKeyBase64',
+      'registrationId',
+      'supportsDirectMessaging',
+      'bundle',
     });
     if (result['providerId'] != 'signalapp/libsignal' ||
         result['providerVersion'] != '0.104.0' ||
@@ -63,7 +67,8 @@ class AndroidDirectCrypto {
       throw const FormatException('Unsupported native provider');
     }
     final bundle = PublicPrekeyBundle.parse(result['bundle'], now: clock());
-    if (result['identityPublicKeyBase64'] != bundle.json['identityPublicKeyBase64'] ||
+    if (result['identityPublicKeyBase64'] !=
+            bundle.json['identityPublicKeyBase64'] ||
         result['registrationId'] != bundle.json['registrationId']) {
       throw const FormatException('Native identity mismatch');
     }
@@ -84,18 +89,27 @@ class AndroidDirectCrypto {
     _text(text);
     final snapshot = List<DirectCryptoRoute>.from(routes);
     final ids = snapshot.map((route) => route.recipientDeviceId).toSet();
-    if (snapshot.isEmpty || snapshot.length > 16 || ids.length != snapshot.length ||
-        snapshot.any((route) => route.senderUserId != account || route.senderDeviceId != device)) {
+    if (snapshot.isEmpty ||
+        snapshot.length > 16 ||
+        ids.length != snapshot.length ||
+        snapshot.any(
+          (route) =>
+              route.senderUserId != account || route.senderDeviceId != device,
+        )) {
       throw const FormatException('Invalid outgoing routes');
     }
     final first = snapshot.first;
-    if (snapshot.any((route) => route.conversationId != first.conversationId ||
-        route.recipientUserId != first.recipientUserId ||
-        route.createdAtMillis != first.createdAtMillis ||
-        route.expiresAtMillis != first.expiresAtMillis)) {
+    if (snapshot.any(
+      (route) =>
+          route.conversationId != first.conversationId ||
+          route.recipientUserId != first.recipientUserId ||
+          route.createdAtMillis != first.createdAtMillis ||
+          route.expiresAtMillis != first.expiresAtMillis,
+    )) {
       throw const FormatException('Inconsistent outgoing routes');
     }
-    if (claimedBundles.length > 16) throw const FormatException('Too many claims');
+    if (claimedBundles.length > 16)
+      throw const FormatException('Too many claims');
     final claims = <Map<String, dynamic>>[];
     final claimIds = <String>{};
     for (final claim in claimedBundles) {
@@ -103,15 +117,25 @@ class AndroidDirectCrypto {
       if (!ids.contains(id) || !claimIds.add(id)) {
         throw const FormatException('Claim target mismatch');
       }
-      claims.add(PublicPrekeyBundle.parse(claim.json, now: clock(), expectedDeviceId: id).json);
+      claims.add(
+        PublicPrekeyBundle.parse(
+          claim.json,
+          now: clock(),
+          expectedDeviceId: id,
+        ).json,
+      );
     }
-    final response = publicObject(await _invoke('sendDirectMessage', {
-      'messageId': message,
-      'routes': snapshot.map((route) => route.json).toList(),
-      'text': text,
-      'claimedBundles': claims,
-    }), {'messageId', 'protocolVersion', 'deviceEnvelopes'});
-    if (response['messageId'] != message || response['protocolVersion'] is! int ||
+    final response = publicObject(
+      await _invoke('sendDirectMessage', {
+        'messageId': message,
+        'routes': snapshot.map((route) => route.json).toList(),
+        'text': text,
+        'claimedBundles': claims,
+      }),
+      {'messageId', 'protocolVersion', 'deviceEnvelopes'},
+    );
+    if (response['messageId'] != message ||
+        response['protocolVersion'] is! int ||
         response['protocolVersion'] != 2) {
       throw const FormatException('Native batch mismatch');
     }
@@ -122,7 +146,10 @@ class AndroidDirectCrypto {
     final batch = <String, List<int>>{};
     var total = 0;
     for (final entry in entries) {
-      final data = publicObject(entry, {'recipientDeviceId', 'opaquePayloadBase64'});
+      final data = publicObject(entry, {
+        'recipientDeviceId',
+        'opaquePayloadBase64',
+      });
       final id = publicId(data['recipientDeviceId']);
       if (!ids.contains(id) || batch.containsKey(id)) {
         throw const FormatException('Native device mismatch');
@@ -146,11 +173,14 @@ class AndroidDirectCrypto {
     }
     final encoded = base64Encode(envelope.ciphertext);
     publicBytes(encoded, 13, 65536);
-    final response = publicObject(await _invoke('receiveDirectMessage', {
-      'envelopeId': publicId(envelope.id),
-      'route': route.json,
-      'opaquePayloadBase64': encoded,
-    }), {'messageId', 'route', 'text'});
+    final response = publicObject(
+      await _invoke('receiveDirectMessage', {
+        'envelopeId': publicId(envelope.id),
+        'route': route.json,
+        'opaquePayloadBase64': encoded,
+      }),
+      {'messageId', 'route', 'text'},
+    );
     final verified = DirectCryptoRoute.parse(response['route']);
     if (jsonEncode(verified.json) != jsonEncode(route.json)) {
       throw const FormatException('Verified route mismatch');
@@ -158,14 +188,19 @@ class AndroidDirectCrypto {
     final text = response['text'];
     if (text is! String) throw const FormatException('Invalid verified text');
     _text(text);
-    return VerifiedDirectMessage(publicId(response['messageId']), verified, text);
+    return VerifiedDirectMessage(
+      publicId(response['messageId']),
+      verified,
+      text,
+    );
   }
 }
 
 class CryptoBridgeFailure implements Exception {
   const CryptoBridgeFailure();
   @override
-  String toString() => 'Secure messaging unavailable; recovery may be required.';
+  String toString() =>
+      'Secure messaging unavailable; recovery may be required.';
 }
 
 class VerifiedDirectMessage {
@@ -175,8 +210,11 @@ class VerifiedDirectMessage {
 }
 
 class DirectCryptoRoute {
-  final String conversationId, senderUserId, senderDeviceId,
-      recipientUserId, recipientDeviceId;
+  final String conversationId,
+      senderUserId,
+      senderDeviceId,
+      recipientUserId,
+      recipientDeviceId;
   final int createdAtMillis, expiresAtMillis;
   DirectCryptoRoute({
     required String conversationId,
@@ -193,7 +231,8 @@ class DirectCryptoRoute {
        recipientDeviceId = publicId(recipientDeviceId) {
     publicInteger(createdAtMillis, 1, 8640000000000000);
     publicInteger(expiresAtMillis, 1, 8640000000000000);
-    if (expiresAtMillis <= createdAtMillis || this.senderUserId == this.recipientUserId ||
+    if (expiresAtMillis <= createdAtMillis ||
+        this.senderUserId == this.recipientUserId ||
         this.senderDeviceId == this.recipientDeviceId) {
       throw const FormatException('Invalid crypto route');
     }
@@ -215,8 +254,14 @@ class DirectCryptoRoute {
   }
   factory DirectCryptoRoute.parse(dynamic value) {
     final data = publicObject(value, {
-      'conversationId', 'senderUserId', 'senderDeviceId', 'recipientUserId',
-      'recipientDeviceId', 'createdAtMillis', 'expiresAtMillis', 'protocolVersion',
+      'conversationId',
+      'senderUserId',
+      'senderDeviceId',
+      'recipientUserId',
+      'recipientDeviceId',
+      'createdAtMillis',
+      'expiresAtMillis',
+      'protocolVersion',
     });
     publicInteger(data['protocolVersion'], 2, 2);
     return DirectCryptoRoute(
@@ -225,15 +270,27 @@ class DirectCryptoRoute {
       senderDeviceId: publicId(data['senderDeviceId']),
       recipientUserId: publicId(data['recipientUserId']),
       recipientDeviceId: publicId(data['recipientDeviceId']),
-      createdAtMillis: publicInteger(data['createdAtMillis'], 1, 8640000000000000),
-      expiresAtMillis: publicInteger(data['expiresAtMillis'], 1, 8640000000000000),
+      createdAtMillis: publicInteger(
+        data['createdAtMillis'],
+        1,
+        8640000000000000,
+      ),
+      expiresAtMillis: publicInteger(
+        data['expiresAtMillis'],
+        1,
+        8640000000000000,
+      ),
     );
   }
   Map<String, dynamic> get json => Map<String, dynamic>.unmodifiable({
-    'conversationId': conversationId, 'senderUserId': senderUserId,
-    'senderDeviceId': senderDeviceId, 'recipientUserId': recipientUserId,
-    'recipientDeviceId': recipientDeviceId, 'createdAtMillis': createdAtMillis,
-    'expiresAtMillis': expiresAtMillis, 'protocolVersion': 2,
+    'conversationId': conversationId,
+    'senderUserId': senderUserId,
+    'senderDeviceId': senderDeviceId,
+    'recipientUserId': recipientUserId,
+    'recipientDeviceId': recipientDeviceId,
+    'createdAtMillis': createdAtMillis,
+    'expiresAtMillis': expiresAtMillis,
+    'protocolVersion': 2,
   });
 }
 
@@ -245,9 +302,11 @@ Map<String, dynamic> _codecObject(dynamic value) {
   dynamic convert(dynamic item) {
     if (item is Map) return _codecObject(item);
     if (item is List) return item.map(convert).toList(growable: false);
-    if (item == null || item is String || item is int || item is bool) return item;
+    if (item == null || item is String || item is int || item is bool)
+      return item;
     throw const FormatException('Invalid native value');
   }
+
   return value.map((key, item) => MapEntry(key as String, convert(item)));
 }
 
@@ -266,5 +325,6 @@ void _text(String text) {
       throw const FormatException('Invalid Unicode text');
     }
   }
-  if (utf8.encode(text).length > 8192) throw const FormatException('Text too large');
+  if (utf8.encode(text).length > 8192)
+    throw const FormatException('Text too large');
 }
