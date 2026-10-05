@@ -126,6 +126,7 @@ try {
   );
   assert.equal(new Set(batches.map((b) => b.id)).size, 1);
   assert.equal(batches.filter((b) => !b.idempotentRetry).length, 1);
+  assert.ok(batches.every((b) => b.recipientDeviceCount === 2));
   const batchId = batches[0].id;
   for (const [device, expected] of [
     [recipientDevice, "AQID"],
@@ -157,6 +158,7 @@ try {
   });
   assert.equal(retry.id, batchId);
   assert.equal(retry.idempotentRetry, true);
+  assert.equal(retry.recipientDeviceCount, 2);
   await assert.rejects(
     envelopes.submitDeviceEnvelopes(sender, senderDevice, {
       ...deviceBatch,

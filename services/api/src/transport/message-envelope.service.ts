@@ -280,7 +280,7 @@ export class MessageEnvelopeService {
           );
         const { payload_digest_sha256: _digest, ...response } = cached;
         await client.query("COMMIT");
-        return { ...response, idempotentRetry: true };
+        return { ...response, recipientDeviceCount: payloads.length, idempotentRetry: true };
       }
       if (new Date(dto.expiresAt).getTime() <= Date.now())
         throw new BadRequestException("Envelope expiry must be in the future");

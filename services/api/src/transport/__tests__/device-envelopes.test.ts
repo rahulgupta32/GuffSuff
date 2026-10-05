@@ -180,6 +180,7 @@ test("matching retry preserves accepted inventory after a new recipient device j
     deviceEnvelopes: [...input.deviceEnvelopes].reverse()
   });
   assert.equal(result.idempotentRetry, true);
+  assert.equal(result.recipientDeviceCount, 2);
   assert.equal(
     f.calls.some((c) => c.sql.includes("INSERT")),
     false
