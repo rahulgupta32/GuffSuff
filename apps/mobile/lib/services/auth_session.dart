@@ -49,6 +49,7 @@ class AuthSession extends ChangeNotifier {
   bool get isAuthenticated => _session != null;
   String? get userId => _session?['userId'] as String?;
   String? get deviceId => _session?['deviceId'] as String?;
+  String? get sessionId => _session?['sessionId'] as String?;
   String? get accessToken => _session?['accessToken'] as String?;
   Future<Map<String, dynamic>> _post(
     String path,
