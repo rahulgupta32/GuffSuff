@@ -27,7 +27,8 @@ jobs:
         run: |
           cd apps/mobile
           flutter --version
-          dart format --output=none --set-exit-if-changed lib test
+          dart format lib test
+          git diff --exit-code -- lib test
           flutter pub get
           flutter analyze
           if [ -d "test" ]; then flutter test; fi
