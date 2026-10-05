@@ -1,3 +1,4 @@
+import { LoginService } from "./login.service.js";
 import {
   Controller,
   Post,
@@ -14,6 +15,7 @@ import { SessionService } from "./session.service.js";
 import { PhoneNumberService } from "./phone-number.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
 import {
+  LoginAccountSchema,
   OtpRequestSchema,
   OtpVerifySchema,
   RegisterAccountSchema,
@@ -26,7 +28,8 @@ export class AuthController {
     @Inject("OTP_SERVICE") private readonly otpService: OtpService,
     @Inject("ACCOUNT_SERVICE") private readonly accountService: AccountService,
     @Inject("SESSION_SERVICE") private readonly sessionService: SessionService,
-    @Inject("PHONE_NUMBER_SERVICE") private readonly phoneService: PhoneNumberService
+    @Inject("PHONE_NUMBER_SERVICE") private readonly phoneService: PhoneNumberService,
+    @Inject("LOGIN_SERVICE") private readonly loginService: LoginService
   ) {}
 
   @Post("otp/request")
@@ -35,7 +38,12 @@ export class AuthController {
     const validated = OtpRequestSchema.parse(body);
     const normalized = this.phoneService.normalizeToE164(validated.phoneNumber);
     const blindIndex = this.phoneService.generateBlindIndex(normalized);
-    const result = await this.otpService.requestOtpChallenge(blindIndex);
+    const result = await this.otpService.requestOtpChallenge(
+      blindIndex,
+      undefined,
+      validated.installationId,
+      normalized
+    );
     return {
       challengeId: result.challengeId,
       resendAvailableAt: result.resendAvailableAt,
@@ -63,20 +71,26 @@ export class AuthController {
     const validated = RegisterAccountSchema.parse(body);
     const result = await this.accountService.registerAccount({
       challengeId: validated.challengeId,
-      phoneNumber: body.phoneNumber || "+9779800000000",
+      phoneNumber: validated.phoneNumber,
       displayName: validated.displayName,
       username: validated.username,
-      installationId: body.installationId || "inst_default",
-      deviceName: body.deviceName || "Mobile Device",
-      platform: body.platform || "android",
-      appVersion: body.appVersion || "1.0.0",
-      osVersion: body.osVersion || "Android 14",
+      installationId: validated.installationId,
+      deviceName: validated.deviceName,
+      platform: validated.platform,
+      appVersion: validated.appVersion,
+      osVersion: validated.osVersion,
       locale: validated.locale,
       timezone: validated.timezone,
       termsAccepted: validated.termsAccepted,
       privacyAccepted: validated.privacyAccepted
     });
     return result;
+  }
+
+  @Post("login")
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() body: any) {
+    return this.loginService.login(LoginAccountSchema.parse(body));
   }
 
   @Post("refresh")

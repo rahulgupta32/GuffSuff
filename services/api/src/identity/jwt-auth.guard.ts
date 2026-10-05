@@ -28,7 +28,7 @@ export class JwtAuthGuard implements CanActivate {
 
       // Authoritative Session & Device Validation in DB
       const { rows } = await this.pool.query(
-        `SELECT s.id as session_id, s.revoked_at as session_revoked, s.session_version,
+        `SELECT s.id as session_id, s.revoked_at as session_revoked, s.session_version, s.expires_at,
                 d.is_revoked as device_revoked, u.account_state
          FROM sessions s
          JOIN devices d ON s.device_id = d.id
@@ -42,7 +42,11 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       const session = rows[0];
-      if (session.session_revoked || session.device_revoked) {
+      if (
+        session.session_revoked ||
+        session.device_revoked ||
+        new Date(session.expires_at).getTime() <= Date.now()
+      ) {
         throw new UnauthorizedException("Session or device has been revoked");
       }
       if (session.account_state !== "active" && session.account_state !== "pending_profile") {

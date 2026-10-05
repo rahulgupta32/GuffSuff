@@ -7,7 +7,8 @@ import {
   Req,
   UseGuards,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  BadRequestException
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../identity/jwt-auth.guard.js";
 import { MessageEnvelopeService } from "./message-envelope.service.js";
@@ -29,18 +30,49 @@ export class EnvelopesController {
       ...body,
       conversationId
     });
-    return this.envelopeService.submitEnvelope(req.user.sub, req.user.deviceId, validated);
+    return this.envelopeService.submitEnvelope(req.user.userId, req.user.deviceId, validated);
+  }
+
+  @Get("conversations/:conversationId/recipients/:recipientUserId/devices")
+  listRecipientDevices(
+    @Req() req: any,
+    @Param("conversationId") conversationId: string,
+    @Param("recipientUserId") recipientUserId: string
+  ) {
+    return this.envelopeService.listRecipientDevices(
+      req.user.userId,
+      req.user.deviceId,
+      conversationId,
+      recipientUserId
+    );
+  }
+
+  @Post("conversations/:conversationId/device-envelopes")
+  @HttpCode(HttpStatus.CREATED)
+  submitDeviceEnvelopes(
+    @Req() req: any,
+    @Param("conversationId") conversationId: string,
+    @Body() body: any
+  ) {
+    return this.envelopeService.submitDeviceEnvelopes(req.user.userId, req.user.deviceId, {
+      ...body,
+      conversationId
+    });
   }
 
   @Get("conversations/:conversationId/envelopes/pending")
-  async getPendingEnvelopes(@Req() req: any) {
-    return this.envelopeService.getPendingEnvelopes(req.user.sub, req.user.deviceId);
+  async getPendingEnvelopes(@Req() req: any, @Param("conversationId") conversationId: string) {
+    return this.envelopeService.getPendingEnvelopes(
+      req.user.userId,
+      req.user.deviceId,
+      conversationId
+    );
   }
 
   @Post("envelopes/:envelopeId/delivered")
   @HttpCode(HttpStatus.OK)
   async acknowledgeDelivery(@Req() req: any, @Param("envelopeId") envelopeId: string) {
-    return this.envelopeService.acknowledgeDelivery(req.user.sub, req.user.deviceId, envelopeId);
+    return this.envelopeService.acknowledgeDelivery(req.user.userId, req.user.deviceId, envelopeId);
   }
 
   @Post("envelopes/:envelopeId/read")
@@ -51,15 +83,14 @@ export class EnvelopesController {
     @Body() body: any
   ) {
     const validated = AcknowledgeReadSchema.parse(body);
-    return this.envelopeService.acknowledgeRead(
-      req.user.sub,
-      validated.lastReadEnvelopeId,
-      envelopeId
-    );
+    if (validated.lastReadEnvelopeId !== envelopeId) {
+      throw new BadRequestException("Read receipt must match the envelope in the URL");
+    }
+    return this.envelopeService.acknowledgeRead(req.user.userId, req.user.deviceId, envelopeId);
   }
 
   @Get("envelopes/:envelopeId/status")
   async getEnvelopeStatus(@Req() req: any, @Param("envelopeId") envelopeId: string) {
-    return this.envelopeService.getEnvelopeStatus(req.user.sub, envelopeId);
+    return this.envelopeService.getEnvelopeStatus(req.user.userId, envelopeId);
   }
 }

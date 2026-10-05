@@ -2,6 +2,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        exclusiveContent {
+            forRepository { maven { url = uri("https://build-artifacts.signal.org/libraries/maven/") } }
+            filter { includeGroup("org.signal") }
+        }
     }
 }
 

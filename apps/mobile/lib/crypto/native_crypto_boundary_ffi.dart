@@ -24,27 +24,30 @@ typedef NativeApiVersionC = Uint32 Function();
 typedef NativeApiVersionDart = int Function();
 
 typedef QueryCapabilitiesC = Int32 Function(Pointer<NativeCapabilityMapStruct>);
-typedef QueryCapabilitiesDart = int Function(Pointer<NativeCapabilityMapStruct>);
+typedef QueryCapabilitiesDart =
+    int Function(Pointer<NativeCapabilityMapStruct>);
 
 typedef CreateHandleC = Int32 Function(Pointer<Uint64>);
 typedef CreateHandleDart = int Function(Pointer<Uint64>);
 
-typedef TransformPayloadC = Int32 Function(
-  Uint64 handle,
-  Pointer<Uint8> inBuf,
-  IntPtr inLen,
-  Pointer<Uint8> outBuf,
-  IntPtr outMaxLen,
-  Pointer<IntPtr> outLen,
-);
-typedef TransformPayloadDart = int Function(
-  int handle,
-  Pointer<Uint8> inBuf,
-  int inLen,
-  Pointer<Uint8> outBuf,
-  int outMaxLen,
-  Pointer<IntPtr> outLen,
-);
+typedef TransformPayloadC =
+    Int32 Function(
+      Uint64 handle,
+      Pointer<Uint8> inBuf,
+      IntPtr inLen,
+      Pointer<Uint8> outBuf,
+      IntPtr outMaxLen,
+      Pointer<IntPtr> outLen,
+    );
+typedef TransformPayloadDart =
+    int Function(
+      int handle,
+      Pointer<Uint8> inBuf,
+      int inLen,
+      Pointer<Uint8> outBuf,
+      int outMaxLen,
+      Pointer<IntPtr> outLen,
+    );
 
 typedef DisposeHandleC = Int32 Function(Uint64);
 typedef DisposeHandleDart = int Function(int);
@@ -85,20 +88,47 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
     if (Platform.isAndroid) {
       _lib = DynamicLibrary.open('libguffsuff_mobile_crypto_boundary.so');
     } else {
-      throw UnsupportedError('NativeAndroidCryptoProvider is only supported on Android.');
+      throw UnsupportedError(
+        'NativeAndroidCryptoProvider is only supported on Android.',
+      );
     }
 
-    _apiVersion = _lib.lookupFunction<NativeApiVersionC, NativeApiVersionDart>('boundary_api_version');
-    _queryCapabilities = _lib.lookupFunction<QueryCapabilitiesC, QueryCapabilitiesDart>('query_capabilities');
-    _createIdentityHandle = _lib.lookupFunction<CreateHandleC, CreateHandleDart>('create_test_identity_handle');
-    _createSessionHandle = _lib.lookupFunction<CreateHandleC, CreateHandleDart>('create_test_session_handle');
-    _createGroupHandle = _lib.lookupFunction<CreateHandleC, CreateHandleDart>('create_test_group_handle');
-    _transformPayload = _lib.lookupFunction<TransformPayloadC, TransformPayloadDart>('transform_test_payload');
-    _disposeHandle = _lib.lookupFunction<DisposeHandleC, DisposeHandleDart>('dispose_handle');
-    _exportState = _lib.lookupFunction<ExportStateC, ExportStateDart>('export_opaque_test_state');
-    _importState = _lib.lookupFunction<ImportStateC, ImportStateDart>('import_opaque_test_state');
-    _triggerPanic = _lib.lookupFunction<TriggerPanicC, TriggerPanicDart>('trigger_controlled_test_panic');
-    _lastErrorCode = _lib.lookupFunction<LastErrorCodeC, LastErrorCodeDart>('boundary_last_error_code');
+    _apiVersion = _lib.lookupFunction<NativeApiVersionC, NativeApiVersionDart>(
+      'boundary_api_version',
+    );
+    _queryCapabilities = _lib
+        .lookupFunction<QueryCapabilitiesC, QueryCapabilitiesDart>(
+          'query_capabilities',
+        );
+    _createIdentityHandle = _lib
+        .lookupFunction<CreateHandleC, CreateHandleDart>(
+          'create_test_identity_handle',
+        );
+    _createSessionHandle = _lib.lookupFunction<CreateHandleC, CreateHandleDart>(
+      'create_test_session_handle',
+    );
+    _createGroupHandle = _lib.lookupFunction<CreateHandleC, CreateHandleDart>(
+      'create_test_group_handle',
+    );
+    _transformPayload = _lib
+        .lookupFunction<TransformPayloadC, TransformPayloadDart>(
+          'transform_test_payload',
+        );
+    _disposeHandle = _lib.lookupFunction<DisposeHandleC, DisposeHandleDart>(
+      'dispose_handle',
+    );
+    _exportState = _lib.lookupFunction<ExportStateC, ExportStateDart>(
+      'export_opaque_test_state',
+    );
+    _importState = _lib.lookupFunction<ImportStateC, ImportStateDart>(
+      'import_opaque_test_state',
+    );
+    _triggerPanic = _lib.lookupFunction<TriggerPanicC, TriggerPanicDart>(
+      'trigger_controlled_test_panic',
+    );
+    _lastErrorCode = _lib.lookupFunction<LastErrorCodeC, LastErrorCodeDart>(
+      'boundary_last_error_code',
+    );
 
     _isInitialized = true;
   }
@@ -108,7 +138,8 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
 
   int get apiVersion => _apiVersion();
   int get lastErrorCode => _lastErrorCode();
-  String get providerLabel => 'TEST PROVIDER — NO CONFIDENTIALITY OR AUTHENTICITY';
+  String get providerLabel =>
+      'TEST PROVIDER — NO CONFIDENTIALITY OR AUTHENTICITY';
 
   @override
   ProviderCapabilityMap queryCapabilities() {
@@ -116,7 +147,9 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
     try {
       final res = _queryCapabilities(ptr);
       if (res != 0) {
-        throw ProviderUnavailableException('Native capability query failed with code: $res');
+        throw ProviderUnavailableException(
+          'Native capability query failed with code: $res',
+        );
       }
       final map = ptr.ref;
       return ProviderCapabilityMap(
@@ -147,7 +180,9 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<OpaqueSessionHandle> establishOutboundSession(String recipientPrekeyBundle) async {
+  Future<OpaqueSessionHandle> establishOutboundSession(
+    String recipientPrekeyBundle,
+  ) async {
     final ptr = calloc<Uint64>();
     try {
       final res = _createSessionHandle(ptr);
@@ -161,7 +196,10 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<OpaqueGroupHandle> createGroupState(String groupId, List<String> memberDeviceIds) async {
+  Future<OpaqueGroupHandle> createGroupState(
+    String groupId,
+    List<String> memberDeviceIds,
+  ) async {
     final ptr = calloc<Uint64>();
     try {
       final res = _createGroupHandle(ptr);
@@ -175,16 +213,25 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<List<int>> encryptPayload(OpaqueSessionHandle sessionHandle, List<int> plaintext) async {
+  Future<List<int>> encryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> plaintext,
+  ) async {
     return _transformPayloadInternal(sessionHandle.handleId, plaintext);
   }
 
   @override
-  Future<List<int>> decryptPayload(OpaqueSessionHandle sessionHandle, List<int> ciphertext) async {
+  Future<List<int>> decryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> ciphertext,
+  ) async {
     return _transformPayloadInternal(sessionHandle.handleId, ciphertext);
   }
 
-  Future<List<int>> _transformPayloadInternal(int handleId, List<int> input) async {
+  Future<List<int>> _transformPayloadInternal(
+    int handleId,
+    List<int> input,
+  ) async {
     if (input.length > 10 * 1024 * 1024) {
       throw ArgumentError('OVERSIZED_BUFFER');
     }
@@ -196,7 +243,14 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
 
     try {
       inPtr.asTypedList(input.length).setAll(0, input);
-      final res = _transformPayload(handleId, inPtr, input.length, outPtr, outMaxLen, outLenPtr);
+      final res = _transformPayload(
+        handleId,
+        inPtr,
+        input.length,
+        outPtr,
+        outMaxLen,
+        outLenPtr,
+      );
       if (res != 0) {
         if (res == -2) throw Exception('INVALID_HANDLE');
         if (res == -3) throw Exception('STALE_OR_DOUBLE_FREE');
@@ -261,11 +315,13 @@ class NativeAndroidCryptoProvider implements MobileCryptoProvider {
       final handleType = stateData[offset + 8];
       final isActive = stateData[offset + 9] != 0;
       offset += 10;
-      list.add(RestoredOpaqueHandle(
-        handleId: handleId,
-        handleType: handleType,
-        isActive: isActive,
-      ));
+      list.add(
+        RestoredOpaqueHandle(
+          handleId: handleId,
+          handleType: handleType,
+          isActive: isActive,
+        ),
+      );
     }
     return list;
   }
@@ -301,4 +357,3 @@ class RestoredOpaqueHandle {
     required this.isActive,
   });
 }
-

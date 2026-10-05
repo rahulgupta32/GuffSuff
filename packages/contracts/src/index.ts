@@ -71,6 +71,14 @@ export const OtpRequestSchema = z.object({
   osVersion: z.string().min(1).max(32)
 });
 export type OtpRequest = z.infer<typeof OtpRequestSchema>;
+export const LoginAccountSchema = OtpRequestSchema.extend({
+  challengeId: z.string().uuid(),
+  registrationLockPin: z
+    .string()
+    .regex(/^\d{6,12}$/)
+    .optional()
+});
+export type LoginAccount = z.infer<typeof LoginAccountSchema>;
 
 export const OtpVerifySchema = z.object({
   challengeId: z.string().uuid(),
@@ -83,6 +91,12 @@ export type OtpVerify = z.infer<typeof OtpVerifySchema>;
 
 export const RegisterAccountSchema = z.object({
   challengeId: z.string().uuid(),
+  phoneNumber: z.string().min(5).max(30),
+  installationId: z.string().min(1).max(128),
+  deviceName: z.string().min(1).max(100),
+  platform: z.enum(["android", "ios", "web", "desktop"]),
+  appVersion: z.string().min(1).max(32),
+  osVersion: z.string().min(1).max(32),
   displayName: z.string().min(2).max(50),
   username: z
     .string()
@@ -183,3 +197,27 @@ export const AcknowledgeReadSchema = z.object({
   lastReadEnvelopeId: z.string().uuid()
 });
 export type AcknowledgeRead = z.infer<typeof AcknowledgeReadSchema>;
+
+// Each device has its own cryptographic session and therefore its own ciphertext.
+export const SubmitDeviceEnvelopesSchema = z
+  .object({
+    idempotencyKey: z.string().min(1).max(64),
+    conversationId: z.string().uuid(),
+    recipientUserId: z.string().uuid(),
+    protocolVersion: z.number().int().positive().max(2147483647),
+    clientCreatedAt: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    deviceEnvelopes: z
+      .array(
+        z
+          .object({
+            recipientDeviceId: z.string().uuid(),
+            opaquePayloadBase64: z.string().min(1).max(87384)
+          })
+          .strict()
+      )
+      .min(1)
+      .max(16)
+  })
+  .strict();
+export type SubmitDeviceEnvelopes = z.infer<typeof SubmitDeviceEnvelopesSchema>;

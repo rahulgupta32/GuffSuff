@@ -1,3 +1,4 @@
+import { identitySecret } from "./identity-secret.js";
 import { parsePhoneNumberWithError, CountryCode } from "libphonenumber-js";
 import * as crypto from "crypto";
 
@@ -30,10 +31,14 @@ export class PhoneNumberService {
   private readonly aesKey: Buffer;
 
   constructor() {
-    this.phonePepper =
-      process.env.PHONE_HMAC_PEPPER || "default_guffsuff_phone_pepper_v1_32chars_len";
-    const secret =
-      process.env.PHONE_ENCRYPTION_SECRET || "default_guffsuff_phone_aes_key_32bytes!!";
+    this.phonePepper = identitySecret(
+      "PHONE_HMAC_PEPPER",
+      "default_guffsuff_phone_pepper_v1_32chars_len"
+    );
+    const secret = identitySecret(
+      "PHONE_ENCRYPTION_SECRET",
+      "default_guffsuff_phone_aes_key_32bytes!!"
+    );
     this.aesKey = crypto.createHash("sha256").update(secret).digest();
   }
 

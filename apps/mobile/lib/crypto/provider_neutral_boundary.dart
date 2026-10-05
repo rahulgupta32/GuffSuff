@@ -1,5 +1,5 @@
 /// Provider-Neutral Mobile Cryptographic Boundary
-/// 
+///
 /// SECURITY NOTICE:
 /// This interface layer defines opaque handles, error models, and capability
 /// queries ONLY. It contains zero embedded production cryptographic backends.
@@ -40,7 +40,9 @@ class ProviderCapabilityMap {
 
 class ProviderUnavailableException implements Exception {
   final String message;
-  const ProviderUnavailableException([this.message = 'SECURE MESSAGING PROVIDER UNAVAILABLE']);
+  const ProviderUnavailableException([
+    this.message = 'SECURE MESSAGING PROVIDER UNAVAILABLE',
+  ]);
 
   @override
   String toString() => 'ProviderUnavailableException: $message';
@@ -54,7 +56,10 @@ class ProductionSafetyException implements Exception {
   String toString() => 'ProductionSafetyException: $message';
 }
 
-void assertProductionProviderSafety(ProviderCapabilityMap capabilities, bool isProductionEnvironment) {
+void assertProductionProviderSafety(
+  ProviderCapabilityMap capabilities,
+  bool isProductionEnvironment,
+) {
   if (isProductionEnvironment && capabilities.isTestProvider) {
     throw ProductionSafetyException(
       'PROHIBITED: Test provider "${capabilities.providerId}" cannot be loaded in production environment',
@@ -66,10 +71,21 @@ abstract class MobileCryptoProvider {
   bool get isAvailable;
   ProviderCapabilityMap queryCapabilities();
   Future<OpaqueIdentityHandle> initializeDeviceIdentity();
-  Future<OpaqueSessionHandle> establishOutboundSession(String recipientPrekeyBundle);
-  Future<OpaqueGroupHandle> createGroupState(String groupId, List<String> memberDeviceIds);
-  Future<List<int>> encryptPayload(OpaqueSessionHandle sessionHandle, List<int> plaintext);
-  Future<List<int>> decryptPayload(OpaqueSessionHandle sessionHandle, List<int> ciphertext);
+  Future<OpaqueSessionHandle> establishOutboundSession(
+    String recipientPrekeyBundle,
+  );
+  Future<OpaqueGroupHandle> createGroupState(
+    String groupId,
+    List<String> memberDeviceIds,
+  );
+  Future<List<int>> encryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> plaintext,
+  );
+  Future<List<int>> decryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> ciphertext,
+  );
   Future<void> disposeHandle(dynamic handle);
 }
 
@@ -91,22 +107,33 @@ class UnavailableCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<OpaqueSessionHandle> establishOutboundSession(String recipientPrekeyBundle) async {
+  Future<OpaqueSessionHandle> establishOutboundSession(
+    String recipientPrekeyBundle,
+  ) async {
     throw const ProviderUnavailableException();
   }
 
   @override
-  Future<OpaqueGroupHandle> createGroupState(String groupId, List<String> memberDeviceIds) async {
+  Future<OpaqueGroupHandle> createGroupState(
+    String groupId,
+    List<String> memberDeviceIds,
+  ) async {
     throw const ProviderUnavailableException();
   }
 
   @override
-  Future<List<int>> encryptPayload(OpaqueSessionHandle sessionHandle, List<int> plaintext) async {
+  Future<List<int>> encryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> plaintext,
+  ) async {
     throw const ProviderUnavailableException();
   }
 
   @override
-  Future<List<int>> decryptPayload(OpaqueSessionHandle sessionHandle, List<int> ciphertext) async {
+  Future<List<int>> decryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> ciphertext,
+  ) async {
     throw const ProviderUnavailableException();
   }
 
@@ -124,7 +151,6 @@ class TestBoundaryCryptoProvider implements MobileCryptoProvider {
 
   @override
   bool get isAvailable => true;
-
 
   @override
   ProviderCapabilityMap queryCapabilities() {
@@ -146,21 +172,29 @@ class TestBoundaryCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<OpaqueSessionHandle> establishOutboundSession(String recipientPrekeyBundle) async {
+  Future<OpaqueSessionHandle> establishOutboundSession(
+    String recipientPrekeyBundle,
+  ) async {
     final id = ++_counter;
     _activeHandles.add(id);
     return OpaqueSessionHandle(id);
   }
 
   @override
-  Future<OpaqueGroupHandle> createGroupState(String groupId, List<String> memberDeviceIds) async {
+  Future<OpaqueGroupHandle> createGroupState(
+    String groupId,
+    List<String> memberDeviceIds,
+  ) async {
     final id = ++_counter;
     _activeHandles.add(id);
     return OpaqueGroupHandle(id);
   }
 
   @override
-  Future<List<int>> encryptPayload(OpaqueSessionHandle sessionHandle, List<int> plaintext) async {
+  Future<List<int>> encryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> plaintext,
+  ) async {
     if (!_activeHandles.contains(sessionHandle.handleId)) {
       throw const ProviderUnavailableException('INVALID_HANDLE');
     }
@@ -169,7 +203,10 @@ class TestBoundaryCryptoProvider implements MobileCryptoProvider {
   }
 
   @override
-  Future<List<int>> decryptPayload(OpaqueSessionHandle sessionHandle, List<int> ciphertext) async {
+  Future<List<int>> decryptPayload(
+    OpaqueSessionHandle sessionHandle,
+    List<int> ciphertext,
+  ) async {
     if (!_activeHandles.contains(sessionHandle.handleId)) {
       throw const ProviderUnavailableException('INVALID_HANDLE');
     }
