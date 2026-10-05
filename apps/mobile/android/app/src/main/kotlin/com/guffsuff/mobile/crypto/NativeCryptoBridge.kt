@@ -15,6 +15,8 @@ internal class NativeCryptoBridge(private val store: DeviceIdentityStore) {
         val fields = when (method) {
             "sendDirectMessage" -> setOf("accountId", "deviceId", "messageId", "routes", "text", "claimedBundles")
             "receiveDirectMessage" -> setOf("accountId", "deviceId", "envelopeId", "route", "opaquePayloadBase64")
+            "pendingDirectMessages", "directMessageHistory" -> setOf("accountId", "deviceId", "conversationId")
+            "markDirectMessageAccepted" -> setOf("accountId", "deviceId", "messageId", "serverEnvelopeId", "batchFingerprintBase64")
             else -> setOf("accountId", "deviceId")
         }
         val args = BridgeValues.objectMap(arguments, fields)
@@ -49,12 +51,30 @@ internal class NativeCryptoBridge(private val store: DeviceIdentityStore) {
                 val received = store.receiveDirectMessage(account, device, envelope, route, ciphertext, nowMillis)
                 mapOf("messageId" to received.messageId, "route" to BridgeValues.routeMap(received.route), "text" to received.text)
             }
+            "pendingDirectMessages", "directMessageHistory" -> {
+                val conversation = BridgeValues.id(args["conversationId"])
+                store.withState(account, device) { state ->
+                    val recovery = DirectMessageRecovery(state, account, device)
+                    if (method == "pendingDirectMessages") mapOf("pending" to recovery.pending(conversation))
+                    else mapOf("history" to recovery.history(conversation))
+                }
+            }
+            "markDirectMessageAccepted" -> {
+                val message = BridgeValues.id(args["messageId"])
+                val envelope = BridgeValues.id(args["serverEnvelopeId"])
+                val fingerprint = BridgeValues.bytes(args["batchFingerprintBase64"], 32, 32)
+                store.withState(account, device) { state ->
+                    DirectMessageRecovery(state, account, device).accepted(message, envelope, fingerprint)
+                    mapOf("messageId" to message, "serverEnvelopeId" to envelope, "isAccepted" to true)
+                }
+            }
             else -> error("Unsupported operation")
         }
     }
 
     companion object {
-        val METHODS = setOf("initializeIdentity", "initializePreKeys", "sendDirectMessage", "receiveDirectMessage")
+        val METHODS = setOf("initializeIdentity", "initializePreKeys", "sendDirectMessage", "receiveDirectMessage",
+            "pendingDirectMessages", "directMessageHistory", "markDirectMessageAccepted")
     }
 }
 

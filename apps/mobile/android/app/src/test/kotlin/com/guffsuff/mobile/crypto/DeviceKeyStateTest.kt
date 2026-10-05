@@ -122,7 +122,7 @@ class DeviceKeyStateTest {
     @Test fun corruptTruncatedTrailingAndOversizedStatesFailClosed() {
         val bytes = state().encode()
         try {
-            assertThrows(IllegalArgumentException::class.java) { DeviceKeyState.decode(bytes.copyOf().apply { this[3] = 4 }) }
+            assertThrows(IllegalArgumentException::class.java) { DeviceKeyState.decode(bytes.copyOf().apply { this[3] = 5 }) }
             assertThrows(Exception::class.java) { DeviceKeyState.decode(bytes.copyOf(bytes.size - 1)) }
             assertThrows(IllegalArgumentException::class.java) { DeviceKeyState.decode(bytes + byteArrayOf(1)) }
             assertThrows(IllegalArgumentException::class.java) { DeviceKeyState.decode(ByteArray(DeviceKeyState.MAX_BYTES + 1)) }

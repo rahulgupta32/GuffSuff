@@ -23,6 +23,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     val usedKemBaseKeys = sortedSetOf<String>()
     val outbox = sortedMapOf<String, JournalRecord>()
     val inbox = sortedMapOf<String, JournalRecord>()
+    val acceptedEnvelopes = sortedMapOf<String, String>()
 
     fun initializePreKeys(now: Long) {
         if (signedPreKey != null) return
@@ -44,7 +45,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     fun encode(): ByteArray {
         val output = BoundedOutput()
         DataOutputStream(output).use { stream ->
-            stream.writeInt(3)
+            stream.writeInt(4)
             val identityBytes = identity.encode()
             try { stream.blob(identityBytes, 4096) } finally { identityBytes.fill(0) }
             stream.writeLong(bundleCreatedAt)
@@ -60,6 +61,13 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
             for (entry in usedKemBaseKeys) { require(kemUse.matches(entry)); stream.writeUTF(entry) }
             NativeMessageJournal.write(stream, outbox, incoming = false)
             NativeMessageJournal.write(stream, inbox, incoming = true)
+            require(acceptedEnvelopes.size <= NativeMessageJournal.MAX_OUTBOX)
+            require(acceptedEnvelopes.values.toSet().size == acceptedEnvelopes.size)
+            stream.writeInt(acceptedEnvelopes.size)
+            for ((message, envelope) in acceptedEnvelopes) {
+                require(uuid.matches(message) && uuid.matches(envelope) && outbox[message]?.isAccepted == true)
+                stream.writeUTF(message); stream.writeUTF(envelope)
+            }
         }
         require(output.size() <= MAX_BYTES) { "Secure state capacity exceeded" }
         return output.toByteArray()
@@ -82,6 +90,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
         const val BUNDLE_LIFETIME = 28L * 86400000
         private val address = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/1$")
         private val kemUse = Regex("^1:1:[0-9a-f]{66}$")
+        private val uuid = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 
         fun decode(bytes: ByteArray): DeviceKeyState {
             require(bytes.size in 13..MAX_BYTES)
@@ -89,7 +98,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
                 val version = stream.readInt()
                 when (version) {
                     1 -> return DeviceKeyState(IdentityMaterial.decode(bytes)) // Preserve the original identity.
-                    2, 3 -> Unit
+                    2, 3, 4 -> Unit
                     else -> throw IllegalArgumentException("Unsupported secure state version")
                 }
                 val identityBytes = stream.blob(4096)
@@ -111,9 +120,18 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
                     val entry = stream.readUTF()
                     require(kemUse.matches(entry) && state.usedKemBaseKeys.add(entry))
                 }
-                if (version == 3) {
+                if (version >= 3) {
                     state.outbox.putAll(NativeMessageJournal.read(stream, incoming = false))
                     state.inbox.putAll(NativeMessageJournal.read(stream, incoming = true))
+                }
+                if (version >= 4) {
+                    repeat(stream.count(NativeMessageJournal.MAX_OUTBOX)) {
+                        val message = stream.readUTF(); val envelope = stream.readUTF()
+                        require(uuid.matches(message) && uuid.matches(envelope))
+                        require(!state.acceptedEnvelopes.containsKey(message) && !state.acceptedEnvelopes.containsValue(envelope))
+                        require(state.outbox[message]?.isAccepted == true)
+                        state.acceptedEnvelopes[message] = envelope
+                    }
                 }
                 require(stream.available() == 0) { "Trailing secure state data" }
                 state.validateBundle()

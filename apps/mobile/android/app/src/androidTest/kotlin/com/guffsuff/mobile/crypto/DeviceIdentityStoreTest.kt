@@ -355,7 +355,53 @@ class DeviceIdentityStoreTest {
         assertEquals(request["text"], received["text"])
         assertEquals(BridgeValues.routeMap(route), received["route"])
         assertEquals(received, bridge().execute("receiveDirectMessage", inbound, now))
+        val query = args(alice) + ("conversationId" to route.conversationId)
+        val pending = (bridge().execute("pendingDirectMessages", query)["pending"] as List<*>).single() as Map<*, *>
+        assertEquals(outgoing["deviceEnvelopes"], pending["deviceEnvelopes"])
+        assertEquals(setOf("messageId", "route", "batchFingerprintBase64", "deviceEnvelopes"), pending.keys)
+        val acceptance = args(alice) + mapOf("messageId" to messageId, "serverEnvelopeId" to inbound.getValue("envelopeId"),
+            "batchFingerprintBase64" to pending["batchFingerprintBase64"])
+        val beforeBadAcceptance = record(alice).readBytes()
+        assertThrows(IllegalArgumentException::class.java) {
+            bridge().execute("markDirectMessageAccepted", acceptance + ("batchFingerprintBase64" to java.util.Base64.getEncoder().encodeToString(ByteArray(32))))
+        }
+        assertArrayEquals(beforeBadAcceptance, record(alice).readBytes())
+        val accepted = bridge().execute("markDirectMessageAccepted", acceptance)
+        assertEquals(accepted, bridge().execute("markDirectMessageAccepted", acceptance))
+        assertTrue((bridge().execute("pendingDirectMessages", query)["pending"] as List<*>).isEmpty())
+        val beforeRebind = record(alice).readBytes()
+        assertThrows(IllegalArgumentException::class.java) {
+            bridge().execute("markDirectMessageAccepted", acceptance + ("serverEnvelopeId" to UUID.randomUUID().toString()))
+        }
+        assertArrayEquals(beforeRebind, record(alice).readBytes())
+        val history = (bridge().execute("directMessageHistory", query)["history"] as List<*>).single() as Map<*, *>
+        assertEquals(request["text"], history["text"])
+        assertEquals(inbound["envelopeId"], history["serverEnvelopeId"])
+        assertEquals(true, history["isAccepted"])
+        val incomingHistory = (bridge().execute("directMessageHistory", args(bob) + ("conversationId" to route.conversationId))["history"] as List<*>).single() as Map<*, *>
+        assertEquals("incoming", incomingHistory["direction"])
+        assertEquals(messageId, incomingHistory["messageId"])
+        assertEquals(inbound["envelopeId"], incomingHistory["recordId"])
+        assertEquals(outgoing, bridge().execute("sendDirectMessage", request + ("claimedBundles" to emptyList<Any>()), now))
         assertEquals(false, published["supportsDirectMessaging"])
+    }
+
+    @Test fun malformedRecoveryArgumentsAndUnknownAcceptanceCannotReplaceProtectedState() {
+        val scope = scope(); val bridge = NativeCryptoBridge(DeviceIdentityStore(context))
+        val args = mapOf("accountId" to scope.first, "deviceId" to scope.second)
+        for (method in listOf("pendingDirectMessages", "directMessageHistory")) {
+            assertThrows(IllegalArgumentException::class.java) { bridge.execute(method, args + ("conversationId" to "invalid")) }
+            assertThrows(IllegalArgumentException::class.java) { bridge.execute(method, args + mapOf("conversationId" to UUID.randomUUID().toString(), "privateState" to true)) }
+        }
+        assertFalse(record(scope).exists())
+        bridge.execute("initializeIdentity", args)
+        val before = record(scope).readBytes()
+        val acceptance = args + mapOf("messageId" to UUID.randomUUID().toString(), "serverEnvelopeId" to UUID.randomUUID().toString(),
+            "batchFingerprintBase64" to java.util.Base64.getEncoder().encodeToString(ByteArray(32)))
+        assertThrows(IllegalStateException::class.java) { bridge.execute("markDirectMessageAccepted", acceptance) }
+        assertThrows(IllegalArgumentException::class.java) { bridge.execute("markDirectMessageAccepted", acceptance + ("batchFingerprintBase64" to "AQID")) }
+        assertArrayEquals(before, record(scope).readBytes())
+        assertEquals(false, initialize(scope)["supportsDirectMessaging"])
     }
 
     @Test fun malformedBridgeRequestsCannotCreateOrReplaceProtectedRecords() {

@@ -59,13 +59,13 @@ class NativeMessageJournalTest {
 
     @Test fun legacyVersionTwoMigratesWithoutReplacingKeys() {
         val state = state()
-        // An empty format-3 journal appends two zero counts to the otherwise unchanged format-2 record.
-        val bytes = state.encode().dropLast(8).toByteArray().apply { this[3] = 2 }
+        // Empty format-4 journals/acceptance mappings append three zero counts to format 2.
+        val bytes = state.encode().dropLast(12).toByteArray().apply { this[3] = 2 }
         val restored = DeviceKeyState.decode(bytes)
         assertArrayEquals(state.identity.pair.publicKey.serialize(), restored.identity.pair.publicKey.serialize())
         assertEquals(state.identity.registrationId, restored.identity.registrationId)
         assertTrue(restored.outbox.isEmpty() && restored.inbox.isEmpty())
-        assertEquals(3, restored.encode()[3].toInt())
+        assertEquals(4, restored.encode()[3].toInt())
     }
 
     @Test fun malformedAndOversizedJournalRecordsFailClosed() {

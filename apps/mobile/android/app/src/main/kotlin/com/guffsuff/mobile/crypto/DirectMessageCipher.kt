@@ -68,11 +68,7 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
         require(nowMillis > 0 && first.expiresAtMillis > nowMillis) { "Message expired" }
         require(claimedBundles.keys.all { id -> sorted.any { it.recipientDeviceId == id } })
         val textBytes = encodeText(text)
-        val intent = encode { stream ->
-            stream.writeInt(INTENT_MAGIC); stream.uuid(messageId); stream.writeInt(sorted.size)
-            for (route in sorted) route.write(stream)
-            stream.blob(textBytes, MAX_TEXT)
-        }
+        val intent = canonicalIntent(messageId, sorted, textBytes)
         try {
             val record = NativeMessageJournal(state).outgoing(messageId, intent) {
                 val store = DeviceProtocolStore(state)
@@ -157,7 +153,12 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
             DataOutputStream(output).use(block)
             return output.toByteArray()
         }
-        private fun encodeText(text: String): ByteArray {
+        internal fun canonicalIntent(messageId: String, routes: List<DirectMessageRoute>, text: ByteArray): ByteArray = encode { stream ->
+            stream.writeInt(INTENT_MAGIC); stream.uuid(messageId); stream.writeInt(routes.size)
+            for (route in routes) route.write(stream)
+            stream.blob(text, MAX_TEXT)
+        }
+        internal fun encodeText(text: String): ByteArray {
             require(text.isNotBlank() && text.length <= MAX_TEXT)
             val bytes = Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
                 .onUnmappableCharacter(CodingErrorAction.REPORT).encode(java.nio.CharBuffer.wrap(text))
@@ -167,7 +168,7 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
         private fun payload(messageId: String, route: DirectMessageRoute, text: ByteArray): ByteArray = encode {
             it.writeInt(PAYLOAD_MAGIC); it.uuid(messageId); route.write(it); it.blob(text, MAX_TEXT)
         }
-        private fun decodePayload(bytes: ByteArray): ReceivedDirectMessage {
+        internal fun decodePayload(bytes: ByteArray): ReceivedDirectMessage {
             require(bytes.size in 1..NativeMessageJournal.MAX_HISTORY)
             return DataInputStream(ByteArrayInputStream(bytes)).use { stream ->
                 require(stream.readInt() == PAYLOAD_MAGIC)
@@ -181,13 +182,13 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
                 } finally { textBytes.fill(0) }
             }
         }
-        private fun decodeBatch(bytes: ByteArray): Map<String, ByteArray> = DataInputStream(ByteArrayInputStream(bytes)).use { stream ->
+        internal fun decodeBatch(bytes: ByteArray): Map<String, ByteArray> = DataInputStream(ByteArrayInputStream(bytes)).use { stream ->
             require(bytes.size in 1..NativeMessageJournal.MAX_BATCH && stream.readInt() == BATCH_MAGIC)
             val count = stream.readInt(); require(count in 1..16)
             val result = sortedMapOf<String, ByteArray>()
             repeat(count) {
                 val id = stream.uuid(); require(!result.containsKey(id))
-                result[id] = stream.blob(MAX_WIRE)
+                result[id] = stream.blob(MAX_WIRE).also { require(it.size >= 13) }
             }
             require(stream.available() == 0)
             result
