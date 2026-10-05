@@ -23,7 +23,8 @@ class DirectMessageRecoveryCoordinator {
     }
   }
 
-  PrekeyApi _prekeys() => prekeys ??
+  PrekeyApi _prekeys() =>
+      prekeys ??
       (throw StateError('Prekey transport is required for prepared sends'));
 
   /// Discovery precedes preparation; no prekey claims are made until native
@@ -42,20 +43,33 @@ class DirectMessageRecoveryCoordinator {
     final recipient = publicId(recipientUserId);
     if (createdAt.microsecondsSinceEpoch % 1000 != 0 ||
         expiresAt.microsecondsSinceEpoch % 1000 != 0 ||
-        !expiresAt.isAfter(createdAt) || !expiresAt.isAfter(clock())) {
+        !expiresAt.isAfter(createdAt) ||
+        !expiresAt.isAfter(clock())) {
       throw const FormatException('Invalid prepared timestamps');
     }
     final account = publicId(crypto.session.userId);
     final device = publicId(crypto.session.deviceId);
     final inventory = await api.recipientDevices(conversation, recipient);
     check();
-    final routes = inventory.map((target) => DirectCryptoRoute(
-      conversationId: conversation, senderUserId: account, senderDeviceId: device,
-      recipientUserId: recipient, recipientDeviceId: target,
-      createdAtMillis: createdAt.millisecondsSinceEpoch,
-      expiresAtMillis: expiresAt.millisecondsSinceEpoch,
-    )).toList();
-    final prepared = await crypto.prepare(messageId: message, routes: routes, text: text);
+    final routes =
+        inventory
+            .map(
+              (target) => DirectCryptoRoute(
+                conversationId: conversation,
+                senderUserId: account,
+                senderDeviceId: device,
+                recipientUserId: recipient,
+                recipientDeviceId: target,
+                createdAtMillis: createdAt.millisecondsSinceEpoch,
+                expiresAtMillis: expiresAt.millisecondsSinceEpoch,
+              ),
+            )
+            .toList();
+    final prepared = await crypto.prepare(
+      messageId: message,
+      routes: routes,
+      text: text,
+    );
     check();
     return prepared;
   });
@@ -68,22 +82,32 @@ class DirectMessageRecoveryCoordinator {
     final drafts = await crypto.prepared(conversation);
     check();
     for (final draft in drafts) {
-      if (draft.routes.first.expiresAtMillis <= clock().millisecondsSinceEpoch) {
+      if (draft.routes.first.expiresAtMillis <=
+          clock().millisecondsSinceEpoch) {
         continue;
       }
       final claims = <PublicPrekeyBundle>[];
       for (final target in draft.requiredClaimDeviceIds) {
         check();
-        if (draft.routes.first.expiresAtMillis <= clock().millisecondsSinceEpoch) {
+        if (draft.routes.first.expiresAtMillis <=
+            clock().millisecondsSinceEpoch) {
           throw const FormatException('Prepared message expired during claims');
         }
-        claims.add(await api.claim(conversationId: conversation, deviceId: target,
-            claimId: draft.claimIds[target]!));
+        claims.add(
+          await api.claim(
+            conversationId: conversation,
+            deviceId: target,
+            claimId: draft.claimIds[target]!,
+          ),
+        );
         check();
       }
       check();
-      if (draft.routes.first.expiresAtMillis <= clock().millisecondsSinceEpoch) {
-        throw const FormatException('Prepared message expired before encryption');
+      if (draft.routes.first.expiresAtMillis <=
+          clock().millisecondsSinceEpoch) {
+        throw const FormatException(
+          'Prepared message expired before encryption',
+        );
       }
       await crypto.complete(draft, claims);
       check();
@@ -96,7 +120,10 @@ class DirectMessageRecoveryCoordinator {
   Future<int> retryPending(String conversationId) =>
       _guarded((check) => _retryPending(publicId(conversationId), check));
 
-  Future<int> _retryPending(String conversationId, void Function() check) async {
+  Future<int> _retryPending(
+    String conversationId,
+    void Function() check,
+  ) async {
     final batches = await crypto.pending(conversationId);
     check();
     var accepted = 0;

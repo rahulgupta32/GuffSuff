@@ -140,10 +140,14 @@ class AndroidDirectCrypto {
   }
 
   Map<String, List<int>> _batch(
-    dynamic value, String message, Set<String> ids,
+    dynamic value,
+    String message,
+    Set<String> ids,
   ) {
     final response = publicObject(value, {
-      'messageId', 'protocolVersion', 'deviceEnvelopes',
+      'messageId',
+      'protocolVersion',
+      'deviceEnvelopes',
     });
     if (response['messageId'] != message ||
         response['protocolVersion'] is! int ||
@@ -189,12 +193,15 @@ class AndroidDirectCrypto {
     if (snapshot.first.expiresAtMillis <= clock().millisecondsSinceEpoch) {
       throw const FormatException('Message expired');
     }
-    final result = _prepared(await _invoke('prepareDirectMessage', {
-      'messageId': message,
-      'routes': snapshot.map((route) => route.json).toList(),
-      'text': text,
-    }));
-    if (result.messageId != message || result.text != text ||
+    final result = _prepared(
+      await _invoke('prepareDirectMessage', {
+        'messageId': message,
+        'routes': snapshot.map((route) => route.json).toList(),
+        'text': text,
+      }),
+    );
+    if (result.messageId != message ||
+        result.text != text ||
         jsonEncode(result.routes.map((route) => route.json).toList()) !=
             jsonEncode(snapshot.map((route) => route.json).toList())) {
       throw const FormatException('Prepared intent mismatch');
@@ -205,9 +212,10 @@ class AndroidDirectCrypto {
   /// Restores original drafts, including expired drafts retained for recovery.
   Future<List<PreparedDirectIntent>> prepared(String conversationId) async {
     final conversation = publicId(conversationId);
-    final response = publicObject(await _invoke('preparedDirectMessages', {
-      'conversationId': conversation,
-    }), {'prepared'});
+    final response = publicObject(
+      await _invoke('preparedDirectMessages', {'conversationId': conversation}),
+      {'prepared'},
+    );
     final rows = response['prepared'];
     if (rows is! List || rows.length > 64) {
       throw const FormatException('Invalid prepared list');
@@ -227,7 +235,8 @@ class AndroidDirectCrypto {
 
   /// Uses the stored native intent; failed completion retains it atomically.
   Future<Map<String, List<int>>> complete(
-    PreparedDirectIntent intent, List<PublicPrekeyBundle> claimedBundles,
+    PreparedDirectIntent intent,
+    List<PublicPrekeyBundle> claimedBundles,
   ) async {
     _outgoingRoutes(intent.routes);
     final ids = intent.routes.map((route) => route.recipientDeviceId).toSet();
@@ -241,34 +250,54 @@ class AndroidDirectCrypto {
       if (!ids.contains(target) || !targets.add(target)) {
         throw const FormatException('Claim target mismatch');
       }
-      claims.add(PublicPrekeyBundle.parse(claim.json,
-          now: clock(), expectedDeviceId: target).json);
+      claims.add(
+        PublicPrekeyBundle.parse(
+          claim.json,
+          now: clock(),
+          expectedDeviceId: target,
+        ).json,
+      );
     }
-    return _batch(await _invoke('completePreparedMessage', {
-      'messageId': intent.messageId, 'claimedBundles': claims,
-    }), intent.messageId, ids);
+    return _batch(
+      await _invoke('completePreparedMessage', {
+        'messageId': intent.messageId,
+        'claimedBundles': claims,
+      }),
+      intent.messageId,
+      ids,
+    );
   }
 
   void _outgoingRoutes(List<DirectCryptoRoute> routes) {
     final account = publicId(session.userId);
     final device = publicId(session.deviceId);
-    if (routes.isEmpty || routes.length > 16 ||
-        routes.map((route) => route.recipientDeviceId).toSet().length != routes.length) {
+    if (routes.isEmpty ||
+        routes.length > 16 ||
+        routes.map((route) => route.recipientDeviceId).toSet().length !=
+            routes.length) {
       throw const FormatException('Invalid prepared inventory');
     }
     final first = routes.first;
-    if (routes.any((route) => route.senderUserId != account ||
-        route.senderDeviceId != device || route.conversationId != first.conversationId ||
-        route.recipientUserId != first.recipientUserId ||
-        route.createdAtMillis != first.createdAtMillis ||
-        route.expiresAtMillis != first.expiresAtMillis)) {
+    if (routes.any(
+      (route) =>
+          route.senderUserId != account ||
+          route.senderDeviceId != device ||
+          route.conversationId != first.conversationId ||
+          route.recipientUserId != first.recipientUserId ||
+          route.createdAtMillis != first.createdAtMillis ||
+          route.expiresAtMillis != first.expiresAtMillis,
+    )) {
       throw const FormatException('Prepared routing mismatch');
     }
   }
 
   PreparedDirectIntent _prepared(dynamic value) {
     final row = publicObject(value, {
-      'messageId', 'routes', 'text', 'claimIds', 'requiredClaimDeviceIds',
+      'messageId',
+      'routes',
+      'text',
+      'claimIds',
+      'requiredClaimDeviceIds',
     });
     final message = publicId(row['messageId']);
     final entries = row['routes'];
@@ -286,11 +315,14 @@ class AndroidDirectCrypto {
     if (text is! String) throw const FormatException('Invalid prepared text');
     _text(text);
     final rawClaims = row['claimIds'];
-    if (rawClaims is! Map<String, dynamic> || rawClaims.length != targets.length ||
+    if (rawClaims is! Map<String, dynamic> ||
+        rawClaims.length != targets.length ||
         !rawClaims.keys.every(targets.contains)) {
       throw const FormatException('Invalid prepared claim inventory');
     }
-    final claims = rawClaims.map((target, claim) => MapEntry(target, publicId(claim)));
+    final claims = rawClaims.map(
+      (target, claim) => MapEntry(target, publicId(claim)),
+    );
     if (claims.values.toSet().length != claims.length) {
       throw const FormatException('Duplicate prepared claims');
     }
@@ -303,8 +335,13 @@ class AndroidDirectCrypto {
         !requiredIds.every(targets.contains)) {
       throw const FormatException('Required claim target mismatch');
     }
-    return PreparedDirectIntent._(message, List.unmodifiable(routes), text,
-        Map.unmodifiable(claims), List.unmodifiable(requiredIds));
+    return PreparedDirectIntent._(
+      message,
+      List.unmodifiable(routes),
+      text,
+      Map.unmodifiable(claims),
+      List.unmodifiable(requiredIds),
+    );
   }
 
   /// Only verified text is returned after the native history transaction commits.
@@ -506,8 +543,13 @@ class PreparedDirectIntent {
   final List<DirectCryptoRoute> routes;
   final Map<String, String> claimIds;
   final List<String> requiredClaimDeviceIds;
-  PreparedDirectIntent._(this.messageId, this.routes, this.text, this.claimIds,
-      this.requiredClaimDeviceIds);
+  PreparedDirectIntent._(
+    this.messageId,
+    this.routes,
+    this.text,
+    this.claimIds,
+    this.requiredClaimDeviceIds,
+  );
 }
 
 class RecoveredDirectBatch {
