@@ -67,6 +67,9 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
         require(sorted.all { it == first.copy(recipientDeviceId = it.recipientDeviceId) }) { "Inconsistent batch routing" }
         require(nowMillis > 0 && first.expiresAtMillis > nowMillis) { "Message expired" }
         require(claimedBundles.keys.all { id -> sorted.any { it.recipientDeviceId == id } })
+        state.prepared[messageId]?.let { prepared ->
+            require(prepared.routes == sorted && prepared.text == text) { "Prepared message intent changed" }
+        }
         val textBytes = encodeText(text)
         val intent = canonicalIntent(messageId, sorted, textBytes)
         try {
@@ -102,7 +105,9 @@ internal class DirectMessageCipher(private val state: DeviceKeyState, private va
                 require(batch.size <= NativeMessageJournal.MAX_BATCH) { "Ciphertext batch capacity exceeded" }
                 batch to payload(messageId, first, textBytes)
             }
-            return decodeBatch(record.ciphertext())
+            val batch = decodeBatch(record.ciphertext())
+            state.prepared.remove(messageId)
+            return batch
         } finally { textBytes.fill(0); intent.fill(0) }
     }
 

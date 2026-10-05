@@ -13,6 +13,9 @@ internal class NativeCryptoBridge(private val store: DeviceIdentityStore) {
     fun execute(method: String, arguments: Any?, nowMillis: Long = System.currentTimeMillis()): Map<String, Any> {
         require(method in METHODS)
         val fields = when (method) {
+            "prepareDirectMessage" -> setOf("accountId", "deviceId", "messageId", "routes", "text")
+            "completePreparedMessage" -> setOf("accountId", "deviceId", "messageId", "claimedBundles")
+            "preparedDirectMessages" -> setOf("accountId", "deviceId", "conversationId")
             "sendDirectMessage" -> setOf("accountId", "deviceId", "messageId", "routes", "text", "claimedBundles")
             "receiveDirectMessage" -> setOf("accountId", "deviceId", "envelopeId", "route", "opaquePayloadBase64")
             "pendingDirectMessages", "directMessageHistory" -> setOf("accountId", "deviceId", "conversationId")
@@ -24,6 +27,38 @@ internal class NativeCryptoBridge(private val store: DeviceIdentityStore) {
         return when (method) {
             "initializeIdentity" -> store.initialize(account, device)
             "initializePreKeys" -> store.initializePreKeys(account, device)
+            "prepareDirectMessage" -> {
+                val message = BridgeValues.id(args["messageId"])
+                val text = args["text"] as? String ?: throw IllegalArgumentException("Text required")
+                val routes = BridgeValues.list(args["routes"], 1, 16).map { BridgeValues.route(it) }
+                store.withState(account, device) { state ->
+                    preparedRow(PreparedDirectMessage.prepare(state, account, device, message, routes, text, nowMillis), state)
+                }
+            }
+            "preparedDirectMessages" -> {
+                val conversation = BridgeValues.id(args["conversationId"])
+                store.withState(account, device) { state ->
+                    require(state.prepared.values.all { it.routes.first().senderUserId == account && it.routes.first().senderDeviceId == device })
+                    mapOf("prepared" to state.prepared.values.filter { it.routes.first().conversationId == conversation }
+                        .map { preparedRow(it, state) })
+                }
+            }
+            "completePreparedMessage" -> {
+                val message = BridgeValues.id(args["messageId"])
+                val bundles = sortedMapOf<String, PreKeyBundle>()
+                for (claim in BridgeValues.list(args["claimedBundles"], 0, 16)) {
+                    val (id, bundle) = BridgeValues.claim(claim, nowMillis)
+                    require(!bundles.containsKey(id)); bundles[id] = bundle
+                }
+                store.withState(account, device) { state ->
+                    val prepared = state.prepared[message]
+                    val batch = if (prepared == null) {
+                        require(bundles.isEmpty()) { "Completed retries must use saved ciphertext" }
+                        DirectMessageRecovery(state, account, device).savedBatch(message)
+                    } else DirectMessageCipher(state, account, device).send(message, prepared.routes, prepared.text, bundles, nowMillis)
+                    batchRow(message, batch)
+                }
+            }
             "sendDirectMessage" -> {
                 val message = BridgeValues.id(args["messageId"])
                 val text = args["text"] as? String ?: throw IllegalArgumentException("Text required")
@@ -72,9 +107,19 @@ internal class NativeCryptoBridge(private val store: DeviceIdentityStore) {
         }
     }
 
+    private fun preparedRow(prepared: PreparedDirectMessage, state: DeviceKeyState): Map<String, Any> = mapOf(
+        "messageId" to prepared.messageId, "routes" to prepared.routes.map { BridgeValues.routeMap(it) },
+        "text" to prepared.text, "claimIds" to prepared.claimIds,
+        "requiredClaimDeviceIds" to prepared.requiredClaimDeviceIds(state))
+
+    private fun batchRow(message: String, batch: Map<String, ByteArray>): Map<String, Any> = mapOf(
+        "messageId" to message, "protocolVersion" to 2, "deviceEnvelopes" to batch.map { (id, bytes) ->
+            mapOf("recipientDeviceId" to id, "opaquePayloadBase64" to Base64.getEncoder().encodeToString(bytes)) })
+
     companion object {
         val METHODS = setOf("initializeIdentity", "initializePreKeys", "sendDirectMessage", "receiveDirectMessage",
-            "pendingDirectMessages", "directMessageHistory", "markDirectMessageAccepted")
+            "pendingDirectMessages", "directMessageHistory", "markDirectMessageAccepted",
+            "prepareDirectMessage", "preparedDirectMessages", "completePreparedMessage")
     }
 }
 

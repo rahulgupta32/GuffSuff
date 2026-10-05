@@ -82,7 +82,7 @@ class DirectMessageRecoveryTest {
         DirectMessageRecovery(sender, alice, aliceDevice).accepted(message, envelope, fingerprint(pending))
         // Existing format-3 accepted tombstones had no envelope-ID table.
         sender.acceptedEnvelopes.clear()
-        val legacy = sender.encode().dropLast(4).toByteArray().apply { this[3] = 3 }
+        val legacy = sender.encode().dropLast(8).toByteArray().apply { this[3] = 3 }
         val restored = DeviceKeyState.decode(legacy)
         assertTrue(restored.outbox.getValue(message).isAccepted && restored.acceptedEnvelopes.isEmpty())
         val recovery = DirectMessageRecovery(restored, alice, aliceDevice)
@@ -109,11 +109,11 @@ class DirectMessageRecoveryTest {
         recovery.accepted(message, id(), fingerprint(recovery.pending(conversation).single()))
         val encoded = state.encode()
         assertThrows(IllegalArgumentException::class.java) {
-            DeviceKeyState.decode(encoded.copyOf().apply { this[size - 36] = 'g'.code.toByte() })
+            DeviceKeyState.decode(encoded.copyOf().apply { this[size - 40] = 'g'.code.toByte() })
         }
         val unknown = id().toByteArray(Charsets.UTF_8)
         assertThrows(IllegalArgumentException::class.java) {
-            DeviceKeyState.decode(encoded.copyOf().apply { System.arraycopy(unknown, 0, this, size - 74, 36) })
+            DeviceKeyState.decode(encoded.copyOf().apply { System.arraycopy(unknown, 0, this, size - 78, 36) })
         }
     }
 

@@ -339,7 +339,22 @@ class DeviceIdentityStoreTest {
         val messageId = UUID.randomUUID().toString()
         val request = args(alice) + mapOf("messageId" to messageId, "routes" to listOf(BridgeValues.routeMap(route)),
             "text" to "गफसफ Flutter bridge fixture", "claimedBundles" to listOf(claimed))
-        val outgoing = bridge().execute("sendDirectMessage", request, now)
+        val preparation = request.filterKeys { it != "claimedBundles" }
+        val prepared = bridge().execute("prepareDirectMessage", preparation, now)
+        assertEquals(prepared, bridge().execute("prepareDirectMessage", preparation, now))
+        val preparedQuery = args(alice) + ("conversationId" to route.conversationId)
+        assertEquals(listOf(prepared), bridge().execute("preparedDirectMessages", preparedQuery)["prepared"])
+        assertEquals(listOf(bob.second), prepared["requiredClaimDeviceIds"])
+        val completion = args(alice) + mapOf("messageId" to messageId, "claimedBundles" to listOf(claimed))
+        val beforeFailedCompletion = record(alice).readBytes()
+        assertThrows(IllegalStateException::class.java) {
+            bridge().execute("completePreparedMessage", completion + ("claimedBundles" to emptyList<Any>()), now)
+        }
+        assertArrayEquals(beforeFailedCompletion, record(alice).readBytes())
+        assertEquals(prepared, bridge().execute("prepareDirectMessage", preparation, now))
+        val outgoing = bridge().execute("completePreparedMessage", completion, now)
+        assertTrue((bridge().execute("preparedDirectMessages", preparedQuery)["prepared"] as List<*>).isEmpty())
+        assertEquals(outgoing, bridge().execute("completePreparedMessage", completion + ("claimedBundles" to emptyList<Any>()), route.expiresAtMillis))
         assertEquals(setOf("messageId", "protocolVersion", "deviceEnvelopes"), outgoing.keys)
         val wire = ((outgoing["deviceEnvelopes"] as List<*>).single() as Map<*, *>)["opaquePayloadBase64"] as String
         assertEquals(outgoing, bridge().execute("sendDirectMessage", request + ("claimedBundles" to emptyList<Any>()), now))

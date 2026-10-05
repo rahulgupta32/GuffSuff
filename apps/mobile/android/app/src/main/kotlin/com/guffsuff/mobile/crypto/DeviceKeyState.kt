@@ -24,6 +24,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     val outbox = sortedMapOf<String, JournalRecord>()
     val inbox = sortedMapOf<String, JournalRecord>()
     val acceptedEnvelopes = sortedMapOf<String, String>()
+    val prepared = sortedMapOf<String, PreparedDirectMessage>()
 
     fun initializePreKeys(now: Long) {
         if (signedPreKey != null) return
@@ -45,7 +46,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
     fun encode(): ByteArray {
         val output = BoundedOutput()
         DataOutputStream(output).use { stream ->
-            stream.writeInt(4)
+            stream.writeInt(5)
             val identityBytes = identity.encode()
             try { stream.blob(identityBytes, 4096) } finally { identityBytes.fill(0) }
             stream.writeLong(bundleCreatedAt)
@@ -67,6 +68,13 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
             for ((message, envelope) in acceptedEnvelopes) {
                 require(uuid.matches(message) && uuid.matches(envelope) && outbox[message]?.isAccepted == true)
                 stream.writeUTF(message); stream.writeUTF(envelope)
+            }
+            require(outbox.size + prepared.size <= NativeMessageJournal.MAX_OUTBOX)
+            require(prepared.keys.none { outbox.containsKey(it) })
+            stream.writeInt(prepared.size)
+            for ((id, intent) in prepared) {
+                require(id == intent.messageId)
+                intent.write(stream)
             }
         }
         require(output.size() <= MAX_BYTES) { "Secure state capacity exceeded" }
@@ -98,7 +106,7 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
                 val version = stream.readInt()
                 when (version) {
                     1 -> return DeviceKeyState(IdentityMaterial.decode(bytes)) // Preserve the original identity.
-                    2, 3, 4 -> Unit
+                    2, 3, 4, 5 -> Unit
                     else -> throw IllegalArgumentException("Unsupported secure state version")
                 }
                 val identityBytes = stream.blob(4096)
@@ -132,6 +140,14 @@ internal class DeviceKeyState(val identity: IdentityMaterial) {
                         require(state.outbox[message]?.isAccepted == true)
                         state.acceptedEnvelopes[message] = envelope
                     }
+                }
+                if (version >= 5) {
+                    repeat(stream.count(NativeMessageJournal.MAX_OUTBOX)) {
+                        val intent = PreparedDirectMessage.read(stream)
+                        require(!state.prepared.containsKey(intent.messageId) && !state.outbox.containsKey(intent.messageId))
+                        state.prepared[intent.messageId] = intent
+                    }
+                    require(state.outbox.size + state.prepared.size <= NativeMessageJournal.MAX_OUTBOX)
                 }
                 require(stream.available() == 0) { "Trailing secure state data" }
                 state.validateBundle()

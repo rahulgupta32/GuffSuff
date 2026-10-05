@@ -11,6 +11,12 @@ internal class DirectMessageRecovery(private val state: DeviceKeyState, private 
     init { BridgeValues.id(accountId); BridgeValues.id(deviceId) }
     private data class Outgoing(val message: ReceivedDirectMessage, val batch: Map<String, ByteArray>, val fingerprint: ByteArray, val intent: ByteArray)
 
+    fun savedBatch(messageId: String): Map<String, ByteArray> {
+        BridgeValues.id(messageId)
+        val recovered = outgoing(messageId, state.outbox[messageId] ?: error("Unknown outgoing message"))
+        try { return recovered.batch } finally { recovered.intent.fill(0) }
+    }
+
     fun pending(conversationId: String): List<Map<String, Any>> {
         BridgeValues.id(conversationId)
         return state.outbox.filterValues { !it.isAccepted }.mapNotNull { (id, record) ->
