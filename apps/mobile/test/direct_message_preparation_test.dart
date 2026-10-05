@@ -160,7 +160,7 @@ void main() {
           },
         ],
         [
-          {...draft(), 'text': '\uD800'},
+          {...draft(), 'text': '   '},
         ],
         [
           {...draft(), 'text': 'न'.padRight(8193, 'न')},
@@ -225,6 +225,14 @@ void main() {
           messageId: fixture.retry,
           routes: [route(expired: true)],
           text: 'expired',
+        ),
+        throwsFormatException,
+      );
+      await expectLater(
+        crypto.prepare(
+          messageId: fixture.retry,
+          routes: [route()],
+          text: '\uD800',
         ),
         throwsFormatException,
       );
