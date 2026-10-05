@@ -218,11 +218,7 @@ void main() {
           'route': {...route, 'conversationId': fixture.peer},
           'text': 'hello',
         },
-        {
-          'messageId': fixture.retry,
-          'route': route,
-          'text': ' ',
-        },
+        {'messageId': fixture.retry, 'route': route, 'text': ' '},
         {
           'messageId': fixture.retry,
           'route': {...route, 'createdAtMillis': 1.0},
