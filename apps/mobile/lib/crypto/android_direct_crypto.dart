@@ -110,8 +110,9 @@ class AndroidDirectCrypto {
     )) {
       throw const FormatException('Inconsistent outgoing routes');
     }
-    if (claimedBundles.length > 16)
+    if (claimedBundles.length > 16) {
       throw const FormatException('Too many claims');
+    }
     final claims = <Map<String, dynamic>>[];
     final claimIds = <String>{};
     for (final claim in claimedBundles) {
@@ -304,8 +305,9 @@ Map<String, dynamic> _codecObject(dynamic value) {
   dynamic convert(dynamic item) {
     if (item is Map) return _codecObject(item);
     if (item is List) return item.map(convert).toList(growable: false);
-    if (item == null || item is String || item is int || item is bool)
+    if (item == null || item is String || item is int || item is bool) {
       return item;
+    }
     throw const FormatException('Invalid native value');
   }
 
@@ -327,6 +329,7 @@ void _text(String text) {
       throw const FormatException('Invalid Unicode text');
     }
   }
-  if (utf8.encode(text).length > 8192)
+  if (utf8.encode(text).length > 8192) {
     throw const FormatException('Text too large');
+  }
 }
